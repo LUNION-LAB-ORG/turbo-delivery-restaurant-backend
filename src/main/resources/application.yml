@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: turbo-restaurant
+  datasource:
+    url: jdbc:postgresql://localhost:5432/turboresto
+    username: amoa
+    password: amoa1201@
+    driverClassName: org.postgresql.Driver
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        formatsql: true
