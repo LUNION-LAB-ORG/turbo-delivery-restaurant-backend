@@ -13,3 +13,6 @@ spring:
     properties:
       hibernate:
         formatsql: true
+# jwt token expiration time in hours
+jwt:
+  time-exp: 1
