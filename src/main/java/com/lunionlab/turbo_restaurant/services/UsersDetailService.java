@@ -23,6 +23,9 @@ public class UsersDetailService implements UserDetailsService {
     @Autowired
     UserService userService;
 
+    @Autowired
+    RoleService roleService;
+
     @Override
     public UserDetails loadUserByUsername(String token) {
         Map<String, String> jwtData = jwtService.getInfoFromToken(token);
@@ -31,7 +34,8 @@ public class UsersDetailService implements UserDetailsService {
             UserModel userModel = userService.getUserByUsernameAndStatus(jwtData.get("identifier"),
                     StatusEnum.DEFAULT_ENABLE);
             if (userModel != null) {
-                String role = "ROLE_" + userModel.getRole().getLibelle().toUpperCase();
+                String role = userModel.getRole() != null ? "ROLE_" + userModel.getRole().getLibelle().toUpperCase()
+                        : "ROLE_" + roleService.getAdmin();
                 SimpleGrantedAuthority[] roleArr = new SimpleGrantedAuthority[] {
                         new SimpleGrantedAuthority(role),
                         new SimpleGrantedAuthority("ROLE_" + JwtAudienceEnum.USER)

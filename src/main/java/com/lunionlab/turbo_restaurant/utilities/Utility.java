@@ -1,9 +1,12 @@
 package com.lunionlab.turbo_restaurant.utilities;
 
 import java.security.SecureRandom;
+import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.temporal.TemporalUnit;
 import java.util.Date;
+import java.util.regex.*;
 
 import org.springframework.security.crypto.bcrypt.BCrypt;
 
@@ -21,6 +24,18 @@ public class Utility {
         // format = "dd-MM-yyyy";
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(format);
         return simpleDateFormat.format(date);
+    }
+
+    public static Date dateFromString(String date) {
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+
+        try {
+            Date d = dateFormat.parse(date);
+            return d;
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     public static String changeDateFormat(String date, String outputFormat) {
@@ -70,5 +85,41 @@ public class Utility {
 
     public static Boolean checkPassword(String password, String hash) {
         return BCrypt.checkpw(password, hash);
+    }
+
+    public static boolean checkEmail(String email) {
+        String emailRegex = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
+        Pattern emailPattern = Pattern.compile(emailRegex);
+        if (email.isEmpty() || email == null) {
+            return false;
+        }
+        Matcher matcher = emailPattern.matcher(email);
+
+        return matcher.matches();
+    }
+
+    public static Boolean passwordValidator(String password, int PassLength) {
+        // mot de passe doit contenir au moins passLength caractere
+        if (password.length() < PassLength) {
+            return false;
+        }
+
+        // mot de passe doit contenir au moins un chiffre
+        if (!password.matches(".*\\d.*")) {
+            return false;
+        }
+        // mot de passe doit contenir au moins une lettre Minisc
+        if (!password.matches(".*[a-z].*")) {
+            return false;
+        }
+        // mot de passe doit contenir au moins une lettre MAJ
+        if (!password.matches(".*[A-Z].*")) {
+            return false;
+        }
+        // mot de passe doit contenir au moins un caractere special
+        if (!password.matches(".*[@#_].*")) {
+            return false;
+        }
+        return true;
     }
 }

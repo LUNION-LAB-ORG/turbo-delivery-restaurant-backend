@@ -25,10 +25,12 @@ public class RestaurantModel extends BaseModel {
     private String logo;
     private String logo_Url;
     private Date dateService;
+    private String documentUrl;
+    private String cni;
 
     public RestaurantModel(String nomEtablissement, String description, String email, String telephone,
             String codePostal, String commune, String localisation, String siteWeb, String logo, String logo_Url,
-            Date dateService) {
+            Date dateService, String documentUrl, String cni) {
         this.nomEtablissement = nomEtablissement;
         this.description = description;
         this.email = email;
@@ -40,6 +42,8 @@ public class RestaurantModel extends BaseModel {
         this.logo = logo;
         this.logo_Url = logo_Url;
         this.dateService = dateService;
+        this.cni = cni;
+        this.documentUrl = documentUrl;
     }
 
     @Override

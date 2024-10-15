@@ -16,3 +16,20 @@ spring:
 # jwt token expiration time in hours
 jwt:
   time-exp: 1
+
+password:
+  # nombre de tentative de connexion
+  max-tentative: 3
+  # delais d'expiration du mot de passe en jour
+  expired-delay: 30
+  # longueur du mot de passe
+  length: 8
+
+code-opt:
+  # longueur du code opt
+  length: 4
+  # delai d'expiration du code en minute
+  delay: 5
+
+doc:
+  root: C:\\Users\\pc\\Documents\\amoa\\lunionlab\\turbo\\upload
