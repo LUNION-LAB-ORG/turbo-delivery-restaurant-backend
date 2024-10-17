@@ -37,7 +37,8 @@ public class WebSecureConfig {
         security.authorizeHttpRequests(auth -> {
             auth.requestMatchers("/test/**", "/error", "/api/V1/turbo/resto/user/login",
                     "/api/V1/turbo/resto/user/register/stepfirst", "/api/V1/turbo/resto/user/register/stepsecond",
-                    "/api/V1/turbo/resto/user/register/finalstep", "/api/V1/turbo/resto/user/change/password")
+                    "/api/V1/turbo/resto/user/register/finalstep", "/api/V1/turbo/resto/user/change/password",
+                    "/api/V1/turbo/resto/user/forget/password", "/api/V1/turbo/resto/user/new/password")
                     .permitAll().anyRequest().authenticated();
         });
 

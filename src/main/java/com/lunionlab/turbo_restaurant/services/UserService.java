@@ -12,6 +12,7 @@ import com.lunionlab.turbo_restaurant.Enums.JwtAudienceEnum;
 import com.lunionlab.turbo_restaurant.Enums.StatusEnum;
 import com.lunionlab.turbo_restaurant.form.ChangePasswordForm;
 import com.lunionlab.turbo_restaurant.form.LoginForm;
+import com.lunionlab.turbo_restaurant.form.NewPasswordForm;
 import com.lunionlab.turbo_restaurant.form.RegisterFirstStepForm;
 import com.lunionlab.turbo_restaurant.form.RegisterSecondStepForm;
 import com.lunionlab.turbo_restaurant.form.RegisterThirdStepForm;
@@ -29,6 +30,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Optional;
 import java.time.temporal.*;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -59,6 +61,9 @@ public class UserService {
     @Value("${code-opt.delay}")
     private Integer CODE_DELAY;
 
+    @Value("${front.base_url}")
+    private String FRONT_BASEURL;
+
     public Object getUserByUsername(String username) {
         return userRepository.findFirstByUsernameAndDeleted(username, DeletionEnum.NO).orElse(null);
 
@@ -66,6 +71,10 @@ public class UserService {
 
     public UserModel getUserByUsernameAndStatus(String username, Integer status) {
         return userRepository.findFirstByUsernameAndStatusAndDeleted(username, status, DeletionEnum.NO).orElse(null);
+    }
+
+    public UserModel getUserByEmail(String email) {
+        return userRepository.findFirstByEmailAndDeleted(email, DeletionEnum.NO).orElse(null);
     }
 
     public Object login(@Valid LoginForm form, BindingResult result) {
@@ -161,7 +170,7 @@ public class UserService {
                     .body(Report.getMessage("message", "Cet utilisateur existe deja", "code", "EM11"));
         }
         String codeOpt = genericService.generateOptCode();
-        boolean hasSend = genericService.sendMail("Acme <onboarding@resend.dev>", form.getEmail(),
+        boolean hasSend = genericService.sendMail("support@turbodeliveryapp.com", form.getEmail(),
                 "Code de confirmation", codeOpt);
         if (!hasSend) {
             log.error("email not sended");
@@ -192,6 +201,7 @@ public class UserService {
         CodeOptModel codeModel = codeOpt.get();
         if (codeModel.getExpired().compareTo(now) < 0) {
             log.error("code expiré");
+            codeOptRepository.delete(codeModel);
             return ResponseEntity.badRequest().body(Report.getMessage("message", "code expiré", "code", "OPT11"));
         }
 
@@ -250,7 +260,8 @@ public class UserService {
         if (!isValid) {
             return ResponseEntity.badRequest().body(
                     Report.getMessage("message",
-                            "le mot de passe doit contenir au moins une lettre majuscule,miniscule,chiffre et un caractere special",
+                            "le mot de passe doit contenir au moins" + PASSWORD_LENGTH
+                                    + " , dont  une lettre majuscule,miniscule,chiffre et un caractere special",
                             "code", "CHP13"));
         }
 
@@ -267,6 +278,80 @@ public class UserService {
         user.setExpiredPassword(Utility.dateFromInteger(PASSWORD_DELAY, ChronoUnit.DAYS));
         user = userRepository.save(user);
 
+        return ResponseEntity.ok(user);
+    }
+
+    public Object forgetPassword(@Valid RegisterFirstStepForm form, BindingResult result) {
+        if (result.hasErrors()) {
+            log.error("mauvais format des données");
+            return ResponseEntity.badRequest().body(Report.getErrors(result));
+        }
+        if (!Utility.checkEmail(form.getEmail())) {
+            log.error("email invalide");
+            return ResponseEntity.badRequest().body(Report.getMessage("message", "email invalide", "code", "EM10"));
+        }
+
+        UserModel userModel = this.getUserByEmail(form.getEmail());
+
+        if (userModel == null) {
+            log.error("user not found");
+            return ResponseEntity.badRequest().body(Report.getMessage("message", "email not exists", "code", "EM13"));
+        }
+
+        String token = UUID.randomUUID().toString();
+        String link = FRONT_BASEURL + "/auth/recover-password?step=2&token=" + token;
+        CodeOptModel code = new CodeOptModel(token, Utility.dateFromInteger(CODE_DELAY, ChronoUnit.MINUTES), userModel);
+        boolean hasSend = genericService.sendMail("support@turbodeliveryapp.com", form.getEmail(),
+                "Modification du mot de passe", link);
+        if (!hasSend) {
+            log.error("email not sended");
+            return ResponseEntity.badRequest()
+                    .body(Report.getMessage("message", "mail non distrué", "code", "EM12"));
+        }
+        code = codeOptRepository.save(code);
+        Map<String, Object> response = Map.of("link", link, "initBy", userModel);
+        return ResponseEntity.ok(response);
+    }
+
+    public Object newPassword(@Valid NewPasswordForm form, BindingResult result) {
+        if (result.hasErrors()) {
+            log.error("mauvais format des données");
+            return ResponseEntity.badRequest().body(Report.getErrors(result));
+        }
+        Optional<CodeOptModel> codeOpt = codeOptRepository.findFirstByCode(form.getToken());
+        Date now = new Date();
+        if (codeOpt.isEmpty()) {
+            log.error("token invalid");
+            return ResponseEntity.badRequest().body(Report.getMessage("message", "token invalide", "code", "OPT10"));
+        }
+        CodeOptModel code = codeOpt.get();
+        UserModel user = code.getUser();
+        if (code.getExpired().compareTo(now) < 0) {
+            log.error("token expired");
+            codeOptRepository.delete(code);
+            return ResponseEntity.badRequest().body(Report.getMessage("message", "code expiré", "code", "OPT11"));
+        }
+        if (!Utility.passwordValidator(form.getNewPassword(), PASSWORD_LENGTH)) {
+            return ResponseEntity.badRequest().body(
+                    Report.getMessage("message",
+                            "le mot de passe doit contenir au moins" + PASSWORD_LENGTH
+                                    + " , dont une lettre majuscule,miniscule,chiffre et un caractere special",
+                            "code", "CHP13"));
+        }
+
+        boolean isExist = userPasswordService.saveUserPassword(form.getNewPassword(), user);
+        if (!isExist) {
+            log.error("cet mot de passe existe deja");
+            return ResponseEntity.badRequest().body(
+                    Report.getMessage("message", "vous avez déjà utiliser ce mot de pass", "code", "CHP12"));
+        }
+
+        // update password
+        user.setPassword(Utility.hashPassword(form.getNewPassword()));
+        user.setChangePassword(ChangePassword.YES);
+        user.setExpiredPassword(Utility.dateFromInteger(PASSWORD_DELAY, ChronoUnit.DAYS));
+        user = userRepository.save(user);
+        codeOptRepository.delete(code);
         return ResponseEntity.ok(user);
     }
 }

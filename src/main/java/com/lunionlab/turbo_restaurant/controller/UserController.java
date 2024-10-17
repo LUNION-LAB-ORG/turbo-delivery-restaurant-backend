@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.lunionlab.turbo_restaurant.form.ChangePasswordForm;
 import com.lunionlab.turbo_restaurant.form.LoginForm;
+import com.lunionlab.turbo_restaurant.form.NewPasswordForm;
 import com.lunionlab.turbo_restaurant.form.RegisterFirstStepForm;
 import com.lunionlab.turbo_restaurant.form.RegisterSecondStepForm;
 import com.lunionlab.turbo_restaurant.form.RegisterThirdStepForm;
@@ -46,6 +47,16 @@ public class UserController {
     @PostMapping("/change/password")
     public Object changeMyPassword(@Valid @RequestBody ChangePasswordForm form, BindingResult result) {
         return userService.changeMyPassword(form, result);
+    }
+
+    @PostMapping("/forget/password")
+    public Object forgetPassword(@Valid @RequestBody RegisterFirstStepForm form, BindingResult result) {
+        return userService.forgetPassword(form, result);
+    }
+
+    @PostMapping("/new/password")
+    public Object newPassword(@Valid @RequestBody NewPasswordForm form, BindingResult result) {
+        return userService.newPassword(form, result);
     }
 
 }

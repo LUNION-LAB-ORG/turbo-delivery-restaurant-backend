@@ -33,3 +33,6 @@ code-opt:
 
 doc:
   root: C:\\Users\\pc\\Documents\\amoa\\lunionlab\\turbo\\upload
+
+front:
+  base_url: http://localhost:3000

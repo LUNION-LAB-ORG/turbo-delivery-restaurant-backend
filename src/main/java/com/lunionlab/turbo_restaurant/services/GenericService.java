@@ -74,7 +74,7 @@ public class GenericService {
     }
 
     public boolean sendMail(String from, String to, String subject, Object data) {
-        Resend resend = new Resend("re_UjbGkrUw_2cuAsz87JUaEPa9skpYp6mAQ");
+        Resend resend = new Resend("re_bAWMzqfR_DtHaJDyKXxuhEiFuMKsY5Xdm");
         CreateEmailOptions params = CreateEmailOptions.builder().from(from).to(to).subject(subject).html(
                 "<strong>" + data + "</strong>")
                 .build();
