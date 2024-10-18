@@ -171,7 +171,11 @@ public class UserService {
         }
         String codeOpt = genericService.generateOptCode();
         boolean hasSend = genericService.sendMail("support@turbodeliveryapp.com", form.getEmail(),
-                "Code de confirmation", codeOpt);
+                "Code de confirmation",
+                genericService.template("Votre code de confirmation pour TurboDelivery", "\r\n" + //
+                        "                                <p>Ce code ne sera valide que pour les 5 prochaines minutes</p>\r\n"
+                        + //
+                        "                                <div class=\"code\">" + codeOpt + "</div>"));
         if (!hasSend) {
             log.error("email not sended");
             return ResponseEntity.badRequest()
@@ -302,7 +306,10 @@ public class UserService {
         String link = FRONT_BASEURL + "/auth/recover-password?step=2&token=" + token;
         CodeOptModel code = new CodeOptModel(token, Utility.dateFromInteger(CODE_DELAY, ChronoUnit.MINUTES), userModel);
         boolean hasSend = genericService.sendMail("support@turbodeliveryapp.com", form.getEmail(),
-                "Modification du mot de passe", link);
+                "Modification du mot de passe", genericService.template("Lien de modification du mot de passe",
+                        "<p>Ce lien ne sera valide que pour les 5 prochaines minutes</p>\r\n" + //
+                                "<a href=\"" + link
+                                + "\" class=\"login-button\" style=\"color: white;\">cliquez ici</a>"));
         if (!hasSend) {
             log.error("email not sended");
             return ResponseEntity.badRequest()
