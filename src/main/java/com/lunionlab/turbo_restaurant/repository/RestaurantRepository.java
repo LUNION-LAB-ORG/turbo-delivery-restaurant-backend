@@ -7,5 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.lunionlab.turbo_restaurant.model.RestaurantModel;
 
 public interface RestaurantRepository extends JpaRepository<RestaurantModel, UUID> {
-    Boolean existsByNomEtablissementAndDeleted(String nomEtablissement, Boolean deleted);
+    Boolean existsByNomEtablissementAndEmailAndDeleted(String nomEtablissement, String email, Boolean deleted);
 }

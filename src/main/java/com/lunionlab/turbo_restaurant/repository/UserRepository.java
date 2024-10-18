@@ -13,4 +13,6 @@ public interface UserRepository extends JpaRepository<UserModel, UUID> {
     Optional<UserModel> findFirstByUsernameAndStatusAndDeleted(String username, Integer status, Boolean deleted);
 
     Optional<UserModel> findFirstByEmail(String email);
+
+    Optional<UserModel> findFirstByEmailAndDeleted(String email, Boolean deleted);
 }

@@ -13,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.lunionlab.turbo_restaurant.Enums.DeletionEnum;
 import com.lunionlab.turbo_restaurant.form.CreateRestaurantForm;
+import com.lunionlab.turbo_restaurant.form.UpdateRestaurant;
 import com.lunionlab.turbo_restaurant.model.RestaurantModel;
 import com.lunionlab.turbo_restaurant.model.UserModel;
 import com.lunionlab.turbo_restaurant.repository.RestaurantRepository;
@@ -44,8 +45,8 @@ public class RestaurantService {
             log.error("mauvais format des données");
             return ResponseEntity.badRequest().body(Report.getErrors(result));
         }
-        boolean isExist = restaurantRepository.existsByNomEtablissementAndDeleted(form.getNomEtablissement(),
-                DeletionEnum.NO);
+        boolean isExist = restaurantRepository.existsByNomEtablissementAndEmailAndDeleted(form.getNomEtablissement(),
+                form.getEmail(), DeletionEnum.NO);
         if (isExist) {
             log.error("le restaurant existe déjà");
             return ResponseEntity.badRequest().body(Report.message("message", "le restaurant existe déjà"));
@@ -140,5 +141,107 @@ public class RestaurantService {
         user = userRepository.save(user);
         Map<String, Object> response = Map.of("restaurant", restaurant, "createdBy", user);
         return ResponseEntity.ok(response);
+    }
+
+    public Object updateRestaurant(MultipartFile logoUrl, MultipartFile cniUrl, MultipartFile docUrl,
+            UpdateRestaurant form) {
+        UserModel userAuth = genericService.getAuthUser();
+        RestaurantModel restaurant = userAuth.getRestaurant();
+        if (!logoUrl.isEmpty() && logoUrl != null) {
+            String logExtension = genericService.getFileExtension(logoUrl.getOriginalFilename());
+            if (!logExtension.equalsIgnoreCase("png") && !logExtension.equalsIgnoreCase("jpg")) {
+                log.error(logExtension);
+                return ResponseEntity.badRequest()
+                        .body(Report.message("logo", "le logo doit etre au format jpg ou png"));
+            }
+            String logo = genericService.generateFileName("logo");
+            File logFile = new File(logo + "." + logExtension);
+            try {
+                logoUrl.transferTo(logFile.toPath());
+                restaurant.setLogo(logo);
+                restaurant.setLogo_Url(logo);
+            } catch (IllegalStateException | IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        if (!cniUrl.isEmpty() && cniUrl != null) {
+            String cniExtension = genericService.getFileExtension(cniUrl.getOriginalFilename());
+            if (!cniExtension.equalsIgnoreCase("pdf")) {
+                return ResponseEntity.badRequest().body(Report.message("cni", "la cni doit etre au format pdf"));
+            }
+            String cni = genericService.generateFileName("cni");
+            File cniFile = new File(cni + "." + cniExtension);
+            try {
+                cniUrl.transferTo(cniFile.toPath());
+                restaurant.setCni(cni);
+            } catch (IllegalStateException | IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        if (!docUrl.isEmpty() && docUrl != null) {
+            String docExtension = genericService.getFileExtension(docUrl.getOriginalFilename());
+            if (!docExtension.equalsIgnoreCase("pdf")) {
+                return ResponseEntity.badRequest()
+                        .body(Report.message("documentUrl", "le registre de commerce doit etre au format pdf"));
+            }
+            String document = genericService.generateFileName("document");
+            File docFile = new File(document + "." + docExtension);
+            try {
+                docUrl.transferTo(docFile.toPath());
+                restaurant.setDocumentUrl(document);
+            } catch (IllegalStateException | IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        if (form.getCodePostal() != null && !form.getCodePostal().isEmpty()) {
+            restaurant.setCodePostal(form.getCodePostal());
+        }
+
+        if (form.getCommune() != null && !form.getCommune().isEmpty()) {
+            restaurant.setCommune(form.getCommune());
+        }
+
+        if (form.getDateService() != null && !form.getDateService().isEmpty()) {
+            restaurant.setDateService(Utility.dateFromString(form.getDateService()));
+        }
+
+        if (form.getDescription() != null && !form.getDescription().isEmpty()) {
+            restaurant.setDescription(form.getDescription());
+        }
+
+        if (form.getEmail() != null && !form.getEmail().isEmpty()) {
+            restaurant.setEmail(form.getEmail());
+        }
+        if (form.getLocalisation() != null && !form.getLocalisation().isEmpty()) {
+            restaurant.setLocalisation(form.getLocalisation());
+        }
+        if (form.getNomEtablissement() != null && !form.getNomEtablissement().isEmpty()) {
+            restaurant.setNomEtablissement(form.getNomEtablissement());
+        }
+
+        if (form.getSiteWeb() != null && !form.getSiteWeb().isEmpty()) {
+            restaurant.setSiteWeb(form.getSiteWeb());
+        }
+
+        if (form.getTelephone() != null && !form.getTelephone().isEmpty()) {
+            restaurant.setTelephone(form.getTelephone());
+        }
+
+        restaurant = restaurantRepository.save(restaurant);
+
+        return ResponseEntity.ok(restaurant);
+    }
+
+    public Object getUserAuthRestaurant() {
+        UserModel user = genericService.getAuthUser();
+        if (user.getRestaurant() == null) {
+            log.error("this user hasn't any restaurant");
+            return ResponseEntity.badRequest()
+                    .body(Report.message("message", "Cet utilisateur n'a pas encore ajouté son restaurant"));
+        }
+        return ResponseEntity.ok(user.getRestaurant());
     }
 }

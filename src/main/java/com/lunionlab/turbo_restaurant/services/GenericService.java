@@ -73,10 +73,10 @@ public class GenericService {
         }
     }
 
-    public boolean sendMail(String from, String to, String subject, Object data) {
-        Resend resend = new Resend("re_UjbGkrUw_2cuAsz87JUaEPa9skpYp6mAQ");
-        CreateEmailOptions params = CreateEmailOptions.builder().from(from).to(to).subject(subject).html(
-                "<strong>" + data + "</strong>")
+    public boolean sendMail(String from, String to, String subject, String template) {
+        Resend resend = new Resend("re_bAWMzqfR_DtHaJDyKXxuhEiFuMKsY5Xdm");
+        CreateEmailOptions params = CreateEmailOptions.builder().from(from).to(to).subject(subject)
+                .html(template)
                 .build();
         try {
             CreateEmailResponse response = resend.emails().send(params);
@@ -117,6 +117,113 @@ public class GenericService {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String username = auth.getName();
         return userRepository.findFirstByUsernameAndDeleted(username, DeletionEnum.NO).orElse(null);
+    }
+
+    public String template(String title, String body) {
+        return String.format(
+                """
+                        <!DOCTYPE html>
+                        <html lang="fr">
+                        <head>
+                            <meta charset="UTF-8">
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                            <title>Votre code de connexion pour TurboDelivery</title>
+                            <style>
+                                body {
+                                    font-family: Arial, sans-serif;
+                                    background-color: #fff;
+                                    display: flex;
+                                    justify-content: center;
+                                    align-items: center;
+                                    height: 100vh;
+                                    margin: 0;
+                                }
+                                .card {
+                                    background-color: white;
+                                    padding: 40px;
+                                    border-radius: 8px;
+                                    box-shadow: 0 2px 10px rgba(255, 25, 1, 0.1);
+                                    text-align: center;
+                                    max-width: 400px;
+                                    width: 100%%;
+                                }
+                                .logo {
+                                    width: 50px;
+                                    height: 50px;
+                                    background-color: #FF1901;
+                                    border-radius: 50%%;
+                                    margin: 0 auto 20px;
+                                    position: relative;
+                                    overflow: hidden;
+                                }
+                                .logo::before {
+                                    content: "";
+                                    position: absolute;
+                                    top: 10px;
+                                    left: 10px;
+                                    width: 30px;
+                                    height: 30px;
+                                    background-color: white;
+                                    transform: rotate(45deg);
+                                }
+                                h1 {
+                                    color: #333;
+                                    font-size: 24px;
+                                    margin-bottom: 30px;
+                                }
+                                .login-button {
+                                    background-color: #FF1901;
+                                    color: white;
+                                    border: none;
+                                    padding: 12px 0;
+                                    width: 100%%;
+                                    border-radius: 6px;
+                                    font-size: 16px;
+                                    cursor: pointer;
+                                    margin-bottom: 20px;
+                                    transition: background-color 0.3s ease;
+                                    text-decoration: none;
+                                    display: inline-block;
+                                }
+                                .login-button:hover {
+                                    background-color: #E61600;
+                                }
+                                p {
+                                    color: #666;
+                                    font-size: 14px;
+                                    line-height: 1.5;
+                                    margin-bottom: 20px;
+                                }
+                                .code {
+                                    background-color: #f8f8f8;
+                                    padding: 10px;
+                                    border-radius: 4px;
+                                    font-family: monospace;
+                                    font-size: 18px;
+                                    color: #FF1901;
+                                    border: 1px solid #FFD1CC;
+                                }
+                                .footer {
+                                    margin-top: 40px;
+                                    color: #999;
+                                    font-size: 12px;
+                                }
+                            </style>
+                        </head>
+                        <body>
+                            <div class="card">
+                                <div class="logo"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTarUXLw74I_E3jlLameOwATbm6PpVOAPYo6Q&s" alt="logo" width="100%%" height="100%%"></div>
+                                <h1>%s</h1>
+                                    %s
+                                <div class="footer">TurboDelivery</div>
+                            </div>
+                        </body>
+                        </html>
+                        """,
+                title,
+                body // Le code OTP ou toute autre donnée que vous passez
+        );
+
     }
 
 }
