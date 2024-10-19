@@ -32,11 +32,7 @@ code-opt:
   delay: 5
 
 doc:
-<<<<<<< HEAD
   root: /Users/andersonkouadio/Documents/Projets/TURBO DELIVERY/storage
-=======
-  root: C:\\Users\\pc\\Documents\\amoa\\lunionlab\\turbo\\upload
 
 front:
   base_url: http://localhost:3000
->>>>>>> origin/andy
