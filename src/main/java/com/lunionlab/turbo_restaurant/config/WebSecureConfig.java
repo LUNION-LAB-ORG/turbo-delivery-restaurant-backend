@@ -38,7 +38,9 @@ public class WebSecureConfig {
             auth.requestMatchers("/test/**", "/error", "/api/V1/turbo/resto/user/login",
                     "/api/V1/turbo/resto/user/register/stepfirst", "/api/V1/turbo/resto/user/register/stepsecond",
                     "/api/V1/turbo/resto/user/register/finalstep", "/api/V1/turbo/resto/user/change/password",
-                    "/api/V1/turbo/resto/user/forget/password", "/api/V1/turbo/resto/user/new/password")
+                    "/api/V1/turbo/resto/user/forget/password", "/api/V1/turbo/resto/user/new/password",
+                    "/api/turbo/resto/collection/get", "/api/turbo/resto/collection/add",
+                    "/api/turbo/resto/collection/detail/**", "/api/turbo/resto/collection/update/**")
                     .permitAll().anyRequest().authenticated();
         });
 
