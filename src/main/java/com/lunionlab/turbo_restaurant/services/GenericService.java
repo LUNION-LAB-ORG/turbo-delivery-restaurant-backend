@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.lunionlab.turbo_restaurant.Enums.DeletionEnum;
 import com.lunionlab.turbo_restaurant.model.UserModel;
@@ -15,6 +16,7 @@ import com.resend.services.emails.model.CreateEmailOptions;
 import com.resend.services.emails.model.CreateEmailResponse;
 
 import lombok.extern.slf4j.Slf4j;
+import net.coobird.thumbnailator.Thumbnails;
 
 import java.util.Random;
 import java.util.UUID;
@@ -224,6 +226,16 @@ public class GenericService {
                 body // Le code OTP ou toute autre donnée que vous passez
         );
 
+    }
+
+    public boolean compressImage(MultipartFile file, File output) {
+        try {
+            Thumbnails.of(file.getInputStream()).scale(1).outputQuality(0.5).toFile(output);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
 }

@@ -13,6 +13,11 @@ spring:
     properties:
       hibernate:
         formatsql: true
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+
 # jwt token expiration time in hours
 jwt:
   time-exp: 1
@@ -36,3 +41,6 @@ doc:
 
 front:
   base_url: http://localhost:3000
+
+picture:
+  max: 5

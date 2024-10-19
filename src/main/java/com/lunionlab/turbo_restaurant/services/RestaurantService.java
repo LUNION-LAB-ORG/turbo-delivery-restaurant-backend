@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
+import java.util.ArrayList;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -14,9 +16,13 @@ import org.springframework.web.multipart.MultipartFile;
 import com.lunionlab.turbo_restaurant.Enums.DeletionEnum;
 import com.lunionlab.turbo_restaurant.form.CreateRestaurantForm;
 import com.lunionlab.turbo_restaurant.form.UpdateRestaurant;
+import com.lunionlab.turbo_restaurant.model.PictureRestaurantModel;
 import com.lunionlab.turbo_restaurant.model.RestaurantModel;
+import com.lunionlab.turbo_restaurant.model.TypeCuisineRestaurantModel;
 import com.lunionlab.turbo_restaurant.model.UserModel;
+import com.lunionlab.turbo_restaurant.repository.PictureRestoRepository;
 import com.lunionlab.turbo_restaurant.repository.RestaurantRepository;
+import com.lunionlab.turbo_restaurant.repository.TypeCuisineRestoRepository;
 import com.lunionlab.turbo_restaurant.repository.UserRepository;
 import com.lunionlab.turbo_restaurant.utilities.Report;
 import com.lunionlab.turbo_restaurant.utilities.Utility;
@@ -38,6 +44,12 @@ public class RestaurantService {
 
     @Autowired
     UserRepository userRepository;
+
+    @Autowired
+    PictureRestoRepository pictureRestoRepository;
+
+    @Autowired
+    TypeCuisineRestoRepository typeCuisineRestoRepository;
 
     public Object createRestaurant(MultipartFile logoUrl, MultipartFile cniUrl, MultipartFile docUrl,
             @Valid CreateRestaurantForm form, BindingResult result) {
@@ -84,8 +96,8 @@ public class RestaurantService {
                 return ResponseEntity.badRequest()
                         .body(Report.message("logo", "le logo doit etre au format jpg ou png"));
             }
-            logo = genericService.generateFileName("logo");
-            File logFile = new File(logo + "." + logExtension);
+            logo = genericService.generateFileName("logo") + "." + logExtension;
+            File logFile = new File(logo);
             try {
                 logoUrl.transferTo(logFile.toPath());
             } catch (IllegalStateException | IOException e) {
@@ -99,8 +111,8 @@ public class RestaurantService {
             if (!cniExtension.equalsIgnoreCase("pdf")) {
                 return ResponseEntity.badRequest().body(Report.message("cni", "la cni doit etre au format pdf"));
             }
-            cni = genericService.generateFileName("cni");
-            File cniFile = new File(cni + "." + cniExtension);
+            cni = genericService.generateFileName("cni") + "." + cniExtension;
+            File cniFile = new File(cni);
             try {
                 cniUrl.transferTo(cniFile.toPath());
             } catch (IllegalStateException | IOException e) {
@@ -114,8 +126,8 @@ public class RestaurantService {
                 return ResponseEntity.badRequest()
                         .body(Report.message("documentUrl", "le registre de commerce doit etre au format pdf"));
             }
-            document = genericService.generateFileName("document");
-            File docFile = new File(document + "." + docExtension);
+            document = genericService.generateFileName("document") + "." + docExtension;
+            File docFile = new File(document);
             try {
                 docUrl.transferTo(docFile.toPath());
             } catch (IllegalStateException | IOException e) {
@@ -170,8 +182,8 @@ public class RestaurantService {
             if (!cniExtension.equalsIgnoreCase("pdf")) {
                 return ResponseEntity.badRequest().body(Report.message("cni", "la cni doit etre au format pdf"));
             }
-            String cni = genericService.generateFileName("cni");
-            File cniFile = new File(cni + "." + cniExtension);
+            String cni = genericService.generateFileName("cni") + "." + cniExtension;
+            File cniFile = new File(cni);
             try {
                 cniUrl.transferTo(cniFile.toPath());
                 restaurant.setCni(cni);
@@ -186,8 +198,8 @@ public class RestaurantService {
                 return ResponseEntity.badRequest()
                         .body(Report.message("documentUrl", "le registre de commerce doit etre au format pdf"));
             }
-            String document = genericService.generateFileName("document");
-            File docFile = new File(document + "." + docExtension);
+            String document = genericService.generateFileName("document") + "." + docExtension;
+            File docFile = new File(document);
             try {
                 docUrl.transferTo(docFile.toPath());
                 restaurant.setDocumentUrl(document);
@@ -237,11 +249,19 @@ public class RestaurantService {
 
     public Object getUserAuthRestaurant() {
         UserModel user = genericService.getAuthUser();
+        List<PictureRestaurantModel> pictures = new ArrayList<>();
+        List<TypeCuisineRestaurantModel> typecuisines = new ArrayList<>();
         if (user.getRestaurant() == null) {
             log.error("this user hasn't any restaurant");
             return ResponseEntity.badRequest()
                     .body(Report.message("message", "Cet utilisateur n'a pas encore ajouté son restaurant"));
         }
-        return ResponseEntity.ok(user.getRestaurant());
+        pictures = pictureRestoRepository.findByRestaurantAndDeleted(user.getRestaurant(), DeletionEnum.NO);
+        typecuisines = typeCuisineRestoRepository.findByRestaurantAndDeleted(user.getRestaurant(), DeletionEnum.NO);
+        Map<String, Object> response = new HashMap<>();
+        response.put("restaurant", user.getRestaurant());
+        response.put("pictures", pictures);
+        response.put("typecuisine", typecuisines);
+        return ResponseEntity.ok(response);
     }
 }
