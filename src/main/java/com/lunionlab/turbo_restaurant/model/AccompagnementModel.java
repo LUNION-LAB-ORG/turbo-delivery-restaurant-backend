@@ -17,4 +17,10 @@ public class AccompagnementModel extends BaseModel {
     private Long price;
     @ManyToOne
     private PlatModel platModel;
+
+    public AccompagnementModel(String libelle, Long price, PlatModel platModel) {
+        this.libelle = libelle;
+        this.price = price;
+        this.platModel = platModel;
+    }
 }
