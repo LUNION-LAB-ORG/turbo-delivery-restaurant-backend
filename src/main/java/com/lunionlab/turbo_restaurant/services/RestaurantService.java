@@ -4,16 +4,20 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.List;
 import java.util.ArrayList;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.lunionlab.turbo_restaurant.Enums.DeletionEnum;
+import com.lunionlab.turbo_restaurant.Enums.StatusEnum;
 import com.lunionlab.turbo_restaurant.form.CreateRestaurantForm;
 import com.lunionlab.turbo_restaurant.form.UpdateRestaurant;
 import com.lunionlab.turbo_restaurant.model.PictureRestaurantModel;
@@ -263,5 +267,65 @@ public class RestaurantService {
         response.put("pictures", pictures);
         response.put("typecuisine", typecuisines);
         return ResponseEntity.ok(response);
+    }
+
+    public Object getAllRestaurantNotValidated(Integer page) {
+        List<Integer> status = new ArrayList<>();
+        status.add(StatusEnum.RESTO_VALID_BY_AUTHSERVICE);
+        status.add(StatusEnum.RESTO_VALID_BY_OPSMANAGER);
+        Page<RestaurantModel> restaurants = restaurantRepository
+                .findByStatusNotInAndDeletedOrderByDateCreationDesc(status, DeletionEnum.NO,
+                        genericService.pagination(page));
+        return ResponseEntity.ok(restaurants);
+    }
+
+    public Object getAllRestaurantValidByAuthService(Integer page) {
+        Page<RestaurantModel> restaurants = restaurantRepository.findByStatusAndDeletedOrderByDateCreationDesc(
+                StatusEnum.RESTO_VALID_BY_AUTHSERVICE, DeletionEnum.NO, genericService.pagination(page));
+        return ResponseEntity.ok(restaurants);
+    }
+
+    public Object getAllRestaurantValidByOpsManager(Integer page) {
+        Page<RestaurantModel> restaurants = restaurantRepository.findByStatusAndDeletedOrderByDateCreationDesc(
+                StatusEnum.RESTO_VALID_BY_OPSMANAGER, DeletionEnum.NO, genericService.pagination(page));
+        return ResponseEntity.ok(restaurants);
+    }
+
+    public Object restaurantValidatedByAuthService(UUID restoId) {
+        Optional<RestaurantModel> restaurantOpt = restaurantRepository.findFirstByIdAndStatusAndDeleted(restoId,
+                StatusEnum.DEFAULT_ENABLE, DeletionEnum.NO);
+        if (restaurantOpt.isEmpty()) {
+            log.error("this restaurant not found");
+            return Report.notFound("this restaurant not found");
+        }
+        RestaurantModel restaurant = restaurantOpt.get();
+        restaurant.setStatus(StatusEnum.RESTO_VALID_BY_AUTHSERVICE);
+        restaurant = restaurantRepository.save(restaurant);
+        log.info("restaurant validated by auth service");
+        return ResponseEntity.ok(restaurant);
+    }
+
+    public Object restaurantValidatedByOpsManager(UUID restoId) {
+        Optional<RestaurantModel> restaurantOpt = restaurantRepository.findFirstByIdAndStatusAndDeleted(restoId,
+                StatusEnum.RESTO_VALID_BY_AUTHSERVICE, DeletionEnum.NO);
+        if (restaurantOpt.isEmpty()) {
+            log.error("this restaurant not found");
+            return Report.notFound("this restaurant not found");
+        }
+        RestaurantModel restaurant = restaurantOpt.get();
+        restaurant.setStatus(StatusEnum.RESTO_VALID_BY_OPSMANAGER);
+        restaurant = restaurantRepository.save(restaurant);
+        log.info("restaurant validated by Ops manager");
+        return ResponseEntity.ok(restaurant);
+    }
+
+    public Object restaurantDetail(UUID restoId) {
+        Optional<RestaurantModel> restaurantOpt = restaurantRepository.findFirstByIdAndDeleted(restoId,
+                DeletionEnum.NO);
+        if (restaurantOpt.isEmpty()) {
+            log.error("this restaurant isn't found");
+            return ResponseEntity.badRequest().body("this restaurant isn't found");
+        }
+        return ResponseEntity.ok(restaurantOpt.get());
     }
 }

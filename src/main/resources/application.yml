@@ -44,3 +44,9 @@ front:
 
 picture:
   max: 5
+paginate:
+  size: 20
+
+erp:
+  server:
+    address: http://localhost:8000/api

@@ -8,13 +8,10 @@ public class SeederService {
     @Autowired
     RoleService roleService;
     @Autowired
-    CollectionService collectionService;
-    @Autowired
     TypeCuisineService typeCuisineService;
 
     public void run() {
         roleService.RoleSeeder();
         typeCuisineService.TypeCuisineSeeder();
-        collectionService.collectionSeed();
     }
 }

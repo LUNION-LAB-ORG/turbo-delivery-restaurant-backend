@@ -26,8 +26,10 @@ import com.lunionlab.turbo_restaurant.utilities.Utility;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import java.util.Map;
+// import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+// import java.util.List;
 import java.util.Optional;
 import java.time.temporal.*;
 import java.util.UUID;
@@ -130,10 +132,14 @@ public class UserService {
                 response.put("is_New", false);
             }
 
-            if (user.getRestaurant() != null
-                    && user.getRestaurant().getStatus().intValue() != StatusEnum.RESTO_VALID.intValue()) {
-                response.put("is_New", true);
-            }
+            // List<Integer> status = new ArrayList<>();
+            // status.add(StatusEnum.RESTO_VALID_BY_AUTHSERVICE);
+            // status.add(StatusEnum.RESTO_VALID_BY_OPSMANAGER);
+
+            // if (user.getRestaurant() != null
+            // && !status.contains(user.getStatus())) {
+            // response.put("is_New", true);
+            // }
 
             return ResponseEntity.ok(response);
         }

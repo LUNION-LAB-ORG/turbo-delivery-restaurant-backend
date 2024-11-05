@@ -2,9 +2,15 @@ package com.lunionlab.turbo_restaurant.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.lunionlab.turbo_restaurant.Enums.DeletionEnum;
@@ -21,7 +27,9 @@ import net.coobird.thumbnailator.Thumbnails;
 import java.util.Random;
 import java.util.UUID;
 import java.io.File;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @Slf4j
@@ -36,6 +44,9 @@ public class GenericService {
     private Integer CODE_LENGTH;
     @Value("${doc.root}")
     private String PATH_ROOT;
+
+    @Value("${paginate.size}")
+    private Integer PAGE_SIZE;
 
     public String generateOptCode() {
         Random random = new Random();
@@ -236,6 +247,28 @@ public class GenericService {
             e.printStackTrace();
             return false;
         }
+    }
+
+    public PageRequest pagination(Integer page) {
+        return PageRequest.of(page, PAGE_SIZE);
+    }
+
+    public ResponseEntity<String> httpGet(String uri) throws HttpClientErrorException {
+        RestTemplate httpClient = new RestTemplate();
+        ResponseEntity<String> response = httpClient.getForEntity(uri, String.class);
+        return response;
+    }
+
+    public ResponseEntity<String> httpPost(String uri, Map<String, Object> data) throws HttpClientErrorException {
+
+        RestTemplate httpClient = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        Map<String, String> head = new HashMap<String, String>();
+        head.put("Content-Type", "application/json");
+        headers.setAll(head);
+        HttpEntity<?> request = new HttpEntity<>(data, headers);
+        ResponseEntity<String> response = httpClient.postForEntity(uri, request, String.class);
+        return response;
     }
 
 }

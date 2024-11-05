@@ -1,5 +1,7 @@
 package com.lunionlab.turbo_restaurant.controller;
 
+import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.validation.BindingResult;
@@ -41,5 +43,35 @@ public class RestaurantController {
     @GetMapping("/info")
     public Object getUserRestaurant() {
         return restaurantService.getUserAuthRestaurant();
+    }
+
+    @GetMapping("/not/validated/{page}")
+    public Object getAllRestaurantNotValidated(@PathVariable Integer page) {
+        return restaurantService.getAllRestaurantNotValidated(page);
+    }
+
+    @GetMapping("/validated/authservice/{page}")
+    public Object getAllRestaurantValidByAuthService(@PathVariable Integer page) {
+        return restaurantService.getAllRestaurantValidByAuthService(page);
+    }
+
+    @GetMapping("/validated/opsmanager/{page}")
+    public Object getAllRestaurantValidByOpsManager(@PathVariable Integer page) {
+        return restaurantService.getAllRestaurantValidByOpsManager(page);
+    }
+
+    @GetMapping("/approved/authservice/{restoId}")
+    public Object restaurantValidatedByAuthService(@PathVariable UUID restoId) {
+        return restaurantService.restaurantValidatedByAuthService(restoId);
+    }
+
+    @GetMapping("/approved/opsmanager/{restoId}")
+    public Object restaurantValidatedByOpsManager(@PathVariable UUID restoId) {
+        return restaurantService.restaurantValidatedByOpsManager(restoId);
+    }
+
+    @GetMapping("/detail/erp/{restoId}")
+    public Object restaurantDetail(@PathVariable UUID restoId) {
+        return restaurantService.restaurantDetail(restoId);
     }
 }
