@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -255,7 +256,10 @@ public class GenericService {
 
     public ResponseEntity<String> httpGet(String uri) throws HttpClientErrorException {
         RestTemplate httpClient = new RestTemplate();
-        ResponseEntity<String> response = httpClient.getForEntity(uri, String.class);
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Accept", "application/json");
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+        ResponseEntity<String> response = httpClient.exchange(uri, HttpMethod.GET, entity, String.class);
         return response;
     }
 

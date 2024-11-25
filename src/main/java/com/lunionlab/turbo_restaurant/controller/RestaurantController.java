@@ -8,11 +8,13 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.lunionlab.turbo_restaurant.form.CreateRestaurantForm;
+import com.lunionlab.turbo_restaurant.form.SearchRestoForm;
 import com.lunionlab.turbo_restaurant.form.UpdateRestaurant;
 import com.lunionlab.turbo_restaurant.services.RestaurantService;
 
@@ -73,5 +75,10 @@ public class RestaurantController {
     @GetMapping("/detail/erp/{restoId}")
     public Object restaurantDetail(@PathVariable UUID restoId) {
         return restaurantService.restaurantDetail(restoId);
+    }
+
+    @PostMapping("/search")
+    public Object searResto(@Valid @RequestBody SearchRestoForm form, BindingResult result) {
+        return restaurantService.searResto(form, result);
     }
 }

@@ -48,7 +48,8 @@ public class BoissonService {
             log.error("this boission is already exists");
             return ResponseEntity.badRequest().body(Report.message("message", "cette boisson existe dejà"));
         }
-        Optional<PlatModel> platOpt = platRepository.findFirstByIdAndDeleted(form.getPlatId(), DeletionEnum.NO);
+        Optional<PlatModel> platOpt = platRepository.findFirstByIdAndDeletedAndDisponibleTrue(form.getPlatId(),
+                DeletionEnum.NO);
         if (platOpt.isEmpty()) {
             log.error("plat not found");
             return ResponseEntity.badRequest().body(Report.message("message", "plat not found"));
@@ -74,7 +75,8 @@ public class BoissonService {
             log.error("restaurant not found");
             return ResponseEntity.badRequest().body(Report.notFound("restaurant not found"));
         }
-        Optional<PlatModel> plat = platRepository.findFirstByIdAndRestaurantAndDeleted(platId, restaurant,
+        Optional<PlatModel> plat = platRepository.findFirstByIdAndRestaurantAndDeletedAndDisponibleTrue(platId,
+                restaurant,
                 DeletionEnum.NO);
         if (plat.isEmpty()) {
             log.error("plat not found");

@@ -7,9 +7,12 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.lunionlab.turbo_restaurant.Enums.DeletionEnum;
+import com.lunionlab.turbo_restaurant.Enums.StatusEnum;
 import com.lunionlab.turbo_restaurant.form.AddOptionPlatForm;
 import com.lunionlab.turbo_restaurant.form.AddOptionValeurForm;
 import com.lunionlab.turbo_restaurant.form.AddPlatForm;
+import com.lunionlab.turbo_restaurant.form.SearchPlatForm;
+import com.lunionlab.turbo_restaurant.form.SearchPlatRestoForm;
 import com.lunionlab.turbo_restaurant.model.CollectionModel;
 import com.lunionlab.turbo_restaurant.model.OptionPlatModel;
 import com.lunionlab.turbo_restaurant.model.OptionValeurModel;
@@ -19,12 +22,14 @@ import com.lunionlab.turbo_restaurant.repository.CollectionRepository;
 import com.lunionlab.turbo_restaurant.repository.OptionPlatRepo;
 import com.lunionlab.turbo_restaurant.repository.OptionValeurRepo;
 import com.lunionlab.turbo_restaurant.repository.PlatRepository;
+import com.lunionlab.turbo_restaurant.repository.RestaurantRepository;
 import com.lunionlab.turbo_restaurant.utilities.Report;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import java.io.File;
 import java.util.Optional;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -44,6 +49,9 @@ public class PlatService {
 
     @Autowired
     OptionValeurRepo optionValeurRepo;
+
+    @Autowired
+    RestaurantRepository restaurantRepository;
 
     public Object addPlat(MultipartFile imageUrl, @Valid AddPlatForm form, BindingResult result) {
         if (result.hasErrors()) {
@@ -81,7 +89,7 @@ public class PlatService {
         }
         PlatModel platModel = new PlatModel(form.getLibelle(), form.getDescription(), form.getPrice(), imageName,
                 restaurantModel, collectionOpt.get());
-
+        platModel.setCookTime(form.getCookTime());
         platModel = platRepository.save(platModel);
 
         return ResponseEntity.ok(platModel);
@@ -92,7 +100,8 @@ public class PlatService {
             log.error("mauvais format des données");
             return ResponseEntity.badRequest().body(Report.getErrors(result));
         }
-        Optional<PlatModel> platOpt = platRepository.findFirstByIdAndDeleted(form.getPlatId(), DeletionEnum.NO);
+        Optional<PlatModel> platOpt = platRepository.findFirstByIdAndDeletedAndDisponibleTrue(form.getPlatId(),
+                DeletionEnum.NO);
         if (platOpt.isEmpty()) {
             log.error("plat not found");
             return ResponseEntity.badRequest().body(Report.message("message", "plat not found"));
@@ -138,5 +147,50 @@ public class PlatService {
         OptionValeurModel optionValeur = new OptionValeurModel(form.getValeur(), form.getPrixSup(), optionPlat.get());
         optionValeur = optionValeurRepo.save(optionValeur);
         return ResponseEntity.ok(optionValeur);
+    }
+
+    // filter or search plats
+
+    public Object searchPlat(@Valid SearchPlatForm form, BindingResult result) {
+        if (result.hasErrors()) {
+            log.error("mauvais de données");
+            return ResponseEntity.badRequest().body(Report.getErrors(result));
+        }
+        Optional<RestaurantModel> restoOpt = restaurantRepository.findFirstByIdAndLocalisationAndStatusAndDeleted(
+                form.getRestoId(), form.getAddress(), StatusEnum.RESTO_VALID_BY_OPSMANAGER, DeletionEnum.NO);
+        if (restoOpt.isEmpty()) {
+            log.error("restaurant not found");
+            return ResponseEntity.badRequest().body("Aucune donnée trouvée");
+        }
+        List<PlatModel> plats = new ArrayList<PlatModel>();
+        Optional<CollectionModel> collectionOpt = null;
+        if (form.getCollectionId() != null) {
+            collectionOpt = collectionRepository.findFirstByIdAndDeleted(form.getCollectionId(), DeletionEnum.NO);
+            plats = platRepository
+                    .findByRestaurantAndCollectionAndPriceGreaterThanEqualAndPriceLessThanEqualAndDeletedAndDisponibleTrue(
+                            restoOpt.get(), collectionOpt.get(), form.getPriceStart(),
+                            form.getPriceEnd(), DeletionEnum.NO);
+        } else {
+            plats = platRepository
+                    .findByRestaurantAndPriceGreaterThanEqualAndPriceLessThanEqualAndDeletedAndDisponibleTrue(
+                            restoOpt.get(),
+                            form.getPriceStart(), form.getPriceEnd(), DeletionEnum.NO);
+        }
+
+        return ResponseEntity.ok(plats);
+
+    }
+
+    public Object searchPlatInResto(SearchPlatRestoForm form) {
+        Optional<RestaurantModel> restoOpt = restaurantRepository
+                .findFirstByNomEtablissementContainingIgnoreCaseAndDeleted(form.getRestoName(), DeletionEnum.NO);
+        if (restoOpt.isEmpty()) {
+            log.error("data not found");
+            return ResponseEntity.badRequest().body("Aucune donnée trouvée");
+        }
+        List<PlatModel> plats = platRepository
+                .findByRestaurantAndLibelleContainingIgnoreCaseAndDisponibleTrueAndDeletedFalse(restoOpt.get(),
+                        form.getPlatName());
+        return ResponseEntity.ok(plats);
     }
 }

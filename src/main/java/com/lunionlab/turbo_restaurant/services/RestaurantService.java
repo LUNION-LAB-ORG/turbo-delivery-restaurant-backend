@@ -19,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.lunionlab.turbo_restaurant.Enums.DeletionEnum;
 import com.lunionlab.turbo_restaurant.Enums.StatusEnum;
 import com.lunionlab.turbo_restaurant.form.CreateRestaurantForm;
+import com.lunionlab.turbo_restaurant.form.SearchRestoForm;
 import com.lunionlab.turbo_restaurant.form.UpdateRestaurant;
 import com.lunionlab.turbo_restaurant.model.PictureRestaurantModel;
 import com.lunionlab.turbo_restaurant.model.RestaurantModel;
@@ -325,6 +326,20 @@ public class RestaurantService {
         if (restaurantOpt.isEmpty()) {
             log.error("this restaurant isn't found");
             return ResponseEntity.badRequest().body("this restaurant isn't found");
+        }
+        return ResponseEntity.ok(restaurantOpt.get());
+    }
+
+    public Object searResto(@Valid SearchRestoForm form, BindingResult result) {
+        if (result.hasErrors()) {
+            log.error("mauvais format des données");
+            return ResponseEntity.badRequest().body(Report.getErrors(result));
+        }
+        Optional<RestaurantModel> restaurantOpt = restaurantRepository
+                .findFirstByNomEtablissementContainingIgnoreCaseAndDeleted(form.getLibelle(), DeletionEnum.NO);
+        if (restaurantOpt.isEmpty()) {
+            log.error("datas not found");
+            return ResponseEntity.badRequest().body("Aucune donnée trouvée");
         }
         return ResponseEntity.ok(restaurantOpt.get());
     }

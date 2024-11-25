@@ -1,22 +1,22 @@
 package com.lunionlab.turbo_restaurant.form;
 
+import java.util.UUID;
+
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
-import java.util.UUID;
 
 @Getter
 @Setter
-public class AddPlatForm {
-    @NotEmpty
-    private String libelle;
-    @NotEmpty
-    private String description;
-    @NotEmpty
-    private String cookTime;
-    @NotNull
-    private Long price;
-    @NotNull
+public class SearchPlatForm {
     private UUID collectionId;
+    @NotEmpty
+    private String address;
+    @NotNull
+    private Long priceStart;
+    @NotNull
+    private Long priceEnd;
+    @NotNull
+    private UUID restoId;
 }

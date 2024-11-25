@@ -12,6 +12,8 @@ import org.springframework.web.multipart.MultipartFile;
 import com.lunionlab.turbo_restaurant.form.AddOptionPlatForm;
 import com.lunionlab.turbo_restaurant.form.AddOptionValeurForm;
 import com.lunionlab.turbo_restaurant.form.AddPlatForm;
+import com.lunionlab.turbo_restaurant.form.SearchPlatForm;
+import com.lunionlab.turbo_restaurant.form.SearchPlatRestoForm;
 import com.lunionlab.turbo_restaurant.services.PlatService;
 
 import jakarta.validation.Valid;
@@ -47,6 +49,16 @@ public class PlatController {
     @PostMapping("/add/option/value")
     public Object addOptionValeur(@Valid @RequestBody AddOptionValeurForm form, BindingResult result) {
         return platService.addOptionValeur(form, result);
+    }
+
+    @PostMapping("/filter")
+    public Object searchPlat(@Valid @RequestBody SearchPlatForm form, BindingResult result) {
+        return platService.searchPlat(form, result);
+    }
+
+    @PostMapping("/search")
+    public Object searchPlatInResto(@RequestBody SearchPlatRestoForm form) {
+        return platService.searchPlatInResto(form);
     }
 
 }

@@ -38,7 +38,8 @@ public class AccompagnementService {
             log.error("mauvais format des données");
             return ResponseEntity.badRequest().body(Report.getErrors(result));
         }
-        Optional<PlatModel> platOpt = platRepository.findFirstByIdAndDeleted(form.getPlatId(), DeletionEnum.NO);
+        Optional<PlatModel> platOpt = platRepository.findFirstByIdAndDeletedAndDisponibleTrue(form.getPlatId(),
+                DeletionEnum.NO);
         if (platOpt.isEmpty()) {
             log.error("aucun plat trouvé");
             return ResponseEntity.badRequest().body(Report.message("message", "aucun plat trouvé"));
@@ -62,7 +63,8 @@ public class AccompagnementService {
             log.error("restaurant not found");
             return ResponseEntity.badRequest().body(Report.notFound("restaurant not found"));
         }
-        Optional<PlatModel> platOpt = platRepository.findFirstByIdAndRestaurantAndDeleted(platId, restaurant,
+        Optional<PlatModel> platOpt = platRepository.findFirstByIdAndRestaurantAndDeletedAndDisponibleTrue(platId,
+                restaurant,
                 DeletionEnum.NO);
         if (platOpt.isEmpty()) {
             log.error("this plat not found");
