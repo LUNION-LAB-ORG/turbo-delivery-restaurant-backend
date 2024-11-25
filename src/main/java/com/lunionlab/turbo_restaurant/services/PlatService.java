@@ -29,6 +29,7 @@ import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import java.io.File;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -192,5 +193,14 @@ public class PlatService {
                 .findByRestaurantAndLibelleContainingIgnoreCaseAndDisponibleTrueAndDeletedFalse(restoOpt.get(),
                         form.getPlatName());
         return ResponseEntity.ok(plats);
+    }
+
+    public Object customerCheckExistingPlat(UUID platId) {
+        Optional<PlatModel> platOpt = platRepository.findFirstByIdAndDeletedAndDisponibleTrue(platId, DeletionEnum.NO);
+        if (platOpt.isEmpty()) {
+            log.error("plat not found");
+            return ResponseEntity.badRequest().body("plat Id " + platId + " est trouvable");
+        }
+        return ResponseEntity.ok(platOpt.get());
     }
 }

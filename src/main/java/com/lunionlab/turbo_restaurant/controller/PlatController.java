@@ -1,5 +1,7 @@
 package com.lunionlab.turbo_restaurant.controller;
 
+import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.validation.BindingResult;
@@ -59,6 +61,11 @@ public class PlatController {
     @PostMapping("/search")
     public Object searchPlatInResto(@RequestBody SearchPlatRestoForm form) {
         return platService.searchPlatInResto(form);
+    }
+
+    @GetMapping("/detail/{platId}")
+    public Object customerCheckExistingPlat(@PathVariable UUID platId) {
+        return platService.customerCheckExistingPlat(platId);
     }
 
 }
