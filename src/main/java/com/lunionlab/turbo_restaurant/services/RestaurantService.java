@@ -71,7 +71,7 @@ public class RestaurantService {
 
         if (!Utility.checkEmail(form.getEmail())) {
             log.error("email invalid");
-            return ResponseEntity.badRequest().body(Report.message("message", "le mail est valide"));
+            return ResponseEntity.badRequest().body(Report.message("message", "le mail est invalide"));
         }
 
         Map<String, String> errors = new HashMap<>();
