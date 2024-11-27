@@ -69,7 +69,7 @@ public class RestaurantService {
             return ResponseEntity.badRequest().body(Report.message("message", "le restaurant existe déjà"));
         }
 
-        if (Utility.checkEmail(form.getEmail())) {
+        if (!Utility.checkEmail(form.getEmail())) {
             log.error("email invalid");
             return ResponseEntity.badRequest().body(Report.message("message", "le mail est valide"));
         }
