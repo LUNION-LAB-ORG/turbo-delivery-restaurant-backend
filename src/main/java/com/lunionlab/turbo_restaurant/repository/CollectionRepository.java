@@ -1,5 +1,6 @@
 package com.lunionlab.turbo_restaurant.repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -13,4 +14,6 @@ public interface CollectionRepository extends JpaRepository<CollectionModel, UUI
     Boolean existsByLibelleAndDeleted(String libelle, Boolean deleted);
 
     Optional<CollectionModel> findFirstByLibelleAndDeleted(String libelle, Boolean deleted);
+
+    List<CollectionModel> findAll();
 }

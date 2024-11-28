@@ -1,6 +1,7 @@
 package com.lunionlab.turbo_restaurant.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import com.lunionlab.turbo_restaurant.model.CollectionModel;
 import com.lunionlab.turbo_restaurant.model.PlatModel;
@@ -25,4 +26,7 @@ public interface PlatRepository extends JpaRepository<PlatModel, UUID> {
 
         List<PlatModel> findByRestaurantAndLibelleContainingIgnoreCaseAndDisponibleTrueAndDeletedFalse(
                         RestaurantModel resto, String libelle);
+
+        @Query("SELECT p.price FROM PlatModel p ORDER BY p.price ASC")
+        List<Long> findAllPriceAsc();
 }

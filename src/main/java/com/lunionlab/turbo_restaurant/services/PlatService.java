@@ -60,7 +60,7 @@ public class PlatService {
             return ResponseEntity.badRequest().body(Report.getErrors(result));
         }
 
-        if (imageUrl.isEmpty() || imageUrl == null) {
+        if (imageUrl == null || imageUrl.isEmpty()) {
             log.error("imageUrl is required");
             return ResponseEntity.badRequest().body(Report.message("message", "Veuillez soumettre l'image du plat"));
         }
@@ -202,5 +202,9 @@ public class PlatService {
             return ResponseEntity.badRequest().body("plat Id " + platId + " est trouvable");
         }
         return ResponseEntity.ok(platOpt.get());
+    }
+
+    public Object getAllFoodPriceAsc() {
+        return ResponseEntity.ok(platRepository.findAllPriceAsc());
     }
 }

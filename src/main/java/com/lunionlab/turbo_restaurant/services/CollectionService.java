@@ -61,7 +61,7 @@ public class CollectionService {
                         collectionRepository.save(collectionModel);
                     }
                 }
-                return ResponseEntity.ok(collectionResponses);
+                return ResponseEntity.ok(collectionRepository.findAll());
             }
         } catch (HttpClientErrorException httpex) {
             log.error(httpex.getMessage());

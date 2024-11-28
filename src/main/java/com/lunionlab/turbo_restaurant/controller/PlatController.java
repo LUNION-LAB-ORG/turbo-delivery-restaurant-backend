@@ -68,4 +68,8 @@ public class PlatController {
         return platService.customerCheckExistingPlat(platId);
     }
 
+    @GetMapping("/all/price")
+    public Object getAllPrice() {
+        return platService.getAllFoodPriceAsc();
+    }
 }
