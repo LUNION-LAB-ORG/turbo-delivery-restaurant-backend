@@ -77,15 +77,15 @@ public class RestaurantService {
         Map<String, String> errors = new HashMap<>();
 
         // verification de la nullité des fichiers
-        if (logoUrl.isEmpty() || logoUrl == null) {
+        if (logoUrl == null || logoUrl.isEmpty()) {
             errors.put("logo", "vous devez soumettre une image");
             return ResponseEntity.badRequest().body(errors);
         }
-        if (cniUrl.isEmpty() || cniUrl == null) {
+        if (cniUrl == null || cniUrl.isEmpty()) {
             errors.put("cni", "vous devez soumettre un fichier pdf");
             return ResponseEntity.badRequest().body(errors);
         }
-        if (docUrl.isEmpty() || docUrl == null) {
+        if (docUrl == null || docUrl.isEmpty()) {
             errors.put("documentUrl", "vous devez soumettre un fichier pdf");
             return ResponseEntity.badRequest().body(errors);
         }
@@ -146,6 +146,11 @@ public class RestaurantService {
             return ResponseEntity.badRequest()
                     .body(Report.message("message", "nous ne pouvons pas donner suite à votre operation"));
         }
+        if (user.getRestaurant() != null) {
+            log.error("ce utilisateur a déjà un restaurant");
+            return ResponseEntity.badRequest().body(Report.getMessage("message",
+                    "vous n'êtes pas habilité à ajouter plusieurs restaurants", "code", "R0"));
+        }
         // save restaurant
         RestaurantModel restaurant = new RestaurantModel(form.getNomEtablissement(), form.getDescription(),
                 form.getEmail(), form.getTelephone(), form.getCodePostal(), form.getCommune(), form.getLocalisation(),
@@ -164,6 +169,11 @@ public class RestaurantService {
             UpdateRestaurant form) {
         UserModel userAuth = genericService.getAuthUser();
         RestaurantModel restaurant = userAuth.getRestaurant();
+        if (restaurant == null) {
+            log.error("restaurant not found");
+            return ResponseEntity.badRequest()
+                    .body(Report.getMessage("message", "vous n'avez pas de restaurant", "code", "R0"));
+        }
         if (!logoUrl.isEmpty() && logoUrl != null) {
             String logExtension = genericService.getFileExtension(logoUrl.getOriginalFilename());
             if (!logExtension.equalsIgnoreCase("png") && !logExtension.equalsIgnoreCase("jpg")) {
