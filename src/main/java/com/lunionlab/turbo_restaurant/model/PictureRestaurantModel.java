@@ -1,5 +1,7 @@
 package com.lunionlab.turbo_restaurant.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -15,6 +17,7 @@ import lombok.Setter;
 public class PictureRestaurantModel extends BaseModel {
     private String pictureUrl;
     @ManyToOne
+    @JsonBackReference
     private RestaurantModel restaurant;
 
     public PictureRestaurantModel(String pictureUrl, RestaurantModel restaurant) {

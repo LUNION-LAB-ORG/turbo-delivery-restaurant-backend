@@ -1,8 +1,14 @@
 package com.lunionlab.turbo_restaurant.model;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -27,6 +33,10 @@ public class RestaurantModel extends BaseModel {
     private Date dateService;
     private String documentUrl;
     private String cni;
+
+    @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<PictureRestaurantModel> pictures = new ArrayList<PictureRestaurantModel>();
 
     public RestaurantModel(String nomEtablissement, String description, String email, String telephone,
             String codePostal, String commune, String localisation, String siteWeb, String logo, String logo_Url,

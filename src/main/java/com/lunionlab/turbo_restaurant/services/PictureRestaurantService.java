@@ -14,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.lunionlab.turbo_restaurant.model.PictureRestaurantModel;
 import com.lunionlab.turbo_restaurant.model.RestaurantModel;
 import com.lunionlab.turbo_restaurant.repository.PictureRestoRepository;
+import com.lunionlab.turbo_restaurant.repository.RestaurantRepository;
 import com.lunionlab.turbo_restaurant.utilities.Report;
 
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +27,8 @@ public class PictureRestaurantService {
     PictureRestoRepository pictureRestoRepository;
     @Autowired
     GenericService genericService;
+    @Autowired
+    RestaurantRepository restaurantRepository;
 
     @Value("${picture.max}")
     private Integer PICTURE_MAX_UPLOAD;
@@ -59,8 +62,10 @@ public class PictureRestaurantService {
             genericService.compressImage(picture, pictureFile);
             PictureRestaurantModel pictureRestaurantModel = new PictureRestaurantModel(pictureName,
                     restaurantModel);
-            pictureRestaurantModel = pictureRestoRepository.save(pictureRestaurantModel);
+            // pictureRestaurantModel = pictureRestoRepository.save(pictureRestaurantModel);
+            restaurantModel.getPictures().add(pictureRestaurantModel);
         }
+        restaurantRepository.save(restaurantModel);
         response.add(Map.of("response", "pictures are uploaded"));
         return ResponseEntity.ok(response);
     }

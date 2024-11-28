@@ -21,7 +21,6 @@ import com.lunionlab.turbo_restaurant.Enums.StatusEnum;
 import com.lunionlab.turbo_restaurant.form.CreateRestaurantForm;
 import com.lunionlab.turbo_restaurant.form.SearchRestoForm;
 import com.lunionlab.turbo_restaurant.form.UpdateRestaurant;
-import com.lunionlab.turbo_restaurant.model.PictureRestaurantModel;
 import com.lunionlab.turbo_restaurant.model.RestaurantModel;
 import com.lunionlab.turbo_restaurant.model.TypeCuisineRestaurantModel;
 import com.lunionlab.turbo_restaurant.model.UserModel;
@@ -264,18 +263,15 @@ public class RestaurantService {
 
     public Object getUserAuthRestaurant() {
         UserModel user = genericService.getAuthUser();
-        List<PictureRestaurantModel> pictures = new ArrayList<>();
         List<TypeCuisineRestaurantModel> typecuisines = new ArrayList<>();
         if (user.getRestaurant() == null) {
             log.error("this user hasn't any restaurant");
             return ResponseEntity.badRequest()
                     .body(Report.message("message", "Cet utilisateur n'a pas encore ajouté son restaurant"));
         }
-        pictures = pictureRestoRepository.findByRestaurantAndDeleted(user.getRestaurant(), DeletionEnum.NO);
         typecuisines = typeCuisineRestoRepository.findByRestaurantAndDeleted(user.getRestaurant(), DeletionEnum.NO);
         Map<String, Object> response = new HashMap<>();
         response.put("restaurant", user.getRestaurant());
-        response.put("pictures", pictures);
         response.put("typecuisine", typecuisines);
         return ResponseEntity.ok(response);
     }
