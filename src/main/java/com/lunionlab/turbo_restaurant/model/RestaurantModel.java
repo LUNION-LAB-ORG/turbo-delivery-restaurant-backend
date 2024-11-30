@@ -37,6 +37,9 @@ public class RestaurantModel extends BaseModel {
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<PictureRestaurantModel> pictures = new ArrayList<PictureRestaurantModel>();
+    @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<OpeningHoursModel> openingHours = new ArrayList<OpeningHoursModel>();
 
     public RestaurantModel(String nomEtablissement, String description, String email, String telephone,
             String codePostal, String commune, String localisation, String siteWeb, String logo, String logo_Url,

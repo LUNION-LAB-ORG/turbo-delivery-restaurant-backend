@@ -45,7 +45,8 @@ public class WebSecureConfig {
                     "/api/V1/turbo/restaurant/approved/opsmanager/**",
                     "/api/V1/turbo/restaurant/detail/erp/**", "/api/serve/file/**", "/api/V1/turbo/resto/plat/filter",
                     "/api/V1/turbo/restaurant/search", "/api/V1/turbo/resto/plat/search",
-                    "/api/V1/turbo/resto/plat/detail/**", "/api/V1/turbo/resto/plat/all/price")
+                    "/api/V1/turbo/resto/plat/detail/**", "/api/V1/turbo/resto/plat/all/price",
+                    "/api/V1/turbo/restaurant/check/opening/**", "/api/V1/turbo/restaurant/save/order")
                     .permitAll().anyRequest().authenticated();
         });
 

@@ -2,6 +2,7 @@ package com.lunionlab.turbo_restaurant.services;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -16,18 +17,29 @@ import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.lunionlab.turbo_restaurant.Enums.DayOfWeekEnum;
 import com.lunionlab.turbo_restaurant.Enums.DeletionEnum;
 import com.lunionlab.turbo_restaurant.Enums.StatusEnum;
+import com.lunionlab.turbo_restaurant.form.AddOpeningForm;
 import com.lunionlab.turbo_restaurant.form.CreateRestaurantForm;
 import com.lunionlab.turbo_restaurant.form.SearchRestoForm;
 import com.lunionlab.turbo_restaurant.form.UpdateRestaurant;
+import com.lunionlab.turbo_restaurant.form.UserOrderForm;
+import com.lunionlab.turbo_restaurant.model.OpeningHoursModel;
+import com.lunionlab.turbo_restaurant.model.OrderItemModel;
+import com.lunionlab.turbo_restaurant.model.PlatModel;
 import com.lunionlab.turbo_restaurant.model.RestaurantModel;
 import com.lunionlab.turbo_restaurant.model.TypeCuisineRestaurantModel;
 import com.lunionlab.turbo_restaurant.model.UserModel;
+import com.lunionlab.turbo_restaurant.model.UserOrderM;
+import com.lunionlab.turbo_restaurant.repository.OpeningHourRepo;
 import com.lunionlab.turbo_restaurant.repository.PictureRestoRepository;
+import com.lunionlab.turbo_restaurant.repository.PlatRepository;
 import com.lunionlab.turbo_restaurant.repository.RestaurantRepository;
 import com.lunionlab.turbo_restaurant.repository.TypeCuisineRestoRepository;
+import com.lunionlab.turbo_restaurant.repository.UserOrderRepo;
 import com.lunionlab.turbo_restaurant.repository.UserRepository;
+import com.lunionlab.turbo_restaurant.response.OrderItemResponse;
 import com.lunionlab.turbo_restaurant.utilities.Report;
 import com.lunionlab.turbo_restaurant.utilities.Utility;
 
@@ -54,6 +66,15 @@ public class RestaurantService {
 
     @Autowired
     TypeCuisineRestoRepository typeCuisineRestoRepository;
+
+    @Autowired
+    OpeningHourRepo openingHourRepo;
+
+    @Autowired
+    UserOrderRepo userOrderRepo;
+
+    @Autowired
+    PlatRepository platRepository;
 
     public Object createRestaurant(MultipartFile logoUrl, MultipartFile cniUrl, MultipartFile docUrl,
             @Valid CreateRestaurantForm form, BindingResult result) {
@@ -349,4 +370,121 @@ public class RestaurantService {
         }
         return ResponseEntity.ok(restaurantOpt.get());
     }
+
+    // init restaurant schedule
+
+    public Object addOpeningHours(@Valid AddOpeningForm form, BindingResult result) {
+        if (result.hasErrors()) {
+            log.error("mauvais format des données");
+            return ResponseEntity.badRequest().body(Report.getErrors(result));
+        }
+
+        if (!DayOfWeekEnum.DAYOFWEEK.contains(form.getDayOfWeek())) {
+            log.error("day of week is invalide");
+            return ResponseEntity.badRequest().body("dayOfWeek is invalide");
+        }
+
+        RestaurantModel restaurantM = genericService.getAuthUser().getRestaurant();
+        if (restaurantM == null) {
+            log.error("this user haven't a restaurant");
+            return ResponseEntity.badRequest().body("Vous n'avez pas de restaurant");
+        }
+
+        Optional<OpeningHoursModel> openingHOpt = restaurantM.getOpeningHours().stream()
+                .filter(item -> item.getDayOfWeek().equalsIgnoreCase(form.getDayOfWeek())).findFirst();
+
+        if (openingHOpt.isPresent()) {
+            OpeningHoursModel openingHoursM = openingHOpt.get();
+            openingHoursM.setOpeningTime(Utility.StrToLocalTime(form.getOpeningTime()));
+            openingHoursM.setClosingTime(Utility.StrToLocalTime(form.getClosingTime()));
+        } else {
+            OpeningHoursModel openingHoursM = new OpeningHoursModel();
+            openingHoursM.setRestaurant(restaurantM);
+            openingHoursM.setDayOfWeek(form.getDayOfWeek());
+            openingHoursM.setOpeningTime(Utility.StrToLocalTime(form.getOpeningTime()));
+            openingHoursM.setClosingTime(Utility.StrToLocalTime(form.getClosingTime()));
+            restaurantM.getOpeningHours().add(openingHoursM);
+        }
+        restaurantM = restaurantRepository.save(restaurantM);
+        log.error("opening hour save");
+        return ResponseEntity.ok(restaurantM.getOpeningHours());
+
+    }
+
+    public Object getOpeningHours() {
+        RestaurantModel restaurantM = genericService.getAuthUser().getRestaurant();
+        if (restaurantM == null) {
+            log.error("this user haven't a restaurant");
+            return ResponseEntity.badRequest().body("Vous n'avez pas de restaurant");
+        }
+        return ResponseEntity.ok(openingHourRepo.findByRestaurantAndDeletedFalse(restaurantM));
+    }
+
+    public ResponseEntity<Boolean> restoIsOpen(UUID restoId) {
+        LocalTime now = LocalTime.now();
+
+        Optional<RestaurantModel> restaurantOpt = restaurantRepository.findFirstByIdAndStatusAndDeletedFalse(restoId,
+                StatusEnum.RESTO_VALID_BY_OPSMANAGER);
+        if (restaurantOpt.isEmpty()) {
+            log.error("restaurant not found");
+            return ResponseEntity.badRequest().body(false);
+        }
+        Optional<OpeningHoursModel> openingOpt = openingHourRepo.findFirstByDayOfWeekAndRestaurantAndDeletedFalse(
+                Utility.getDayOfWeekFrench(),
+                restaurantOpt.get());
+        if (openingOpt.isEmpty()) {
+            log.error("opening hours not found");
+            return ResponseEntity.badRequest().body(false);
+        }
+
+        return ResponseEntity
+                .ok(now.compareTo(openingOpt.get().getOpeningTime()) >= 0
+                        && now.compareTo(openingOpt.get().getClosingTime()) <= 0);
+    }
+
+    public ResponseEntity<Boolean> saveUserOrder(UserOrderForm form) {
+        // get restaurant
+        Optional<RestaurantModel> restOpt = restaurantRepository.findFirstByIdAndStatusAndDeleted(
+                UUID.fromString(form.getRestoId()),
+                StatusEnum.RESTO_VALID_BY_OPSMANAGER, DeletionEnum.NO);
+
+        if (restOpt.isEmpty()) {
+            log.error("resto not found");
+            return ResponseEntity.badRequest().body(false);
+        }
+
+        // check if userOrder exists
+        Boolean isExist = userOrderRepo.existsByOrderIdAndOrderState(form.getId(), form.getOrderState());
+        if (isExist) {
+            log.error("this order is already exists");
+            return ResponseEntity.badRequest().body(false);
+        }
+
+        UserOrderM userOrderM = new UserOrderM();
+        userOrderM.setRestaurant(restOpt.get());
+        userOrderM.setOrderId(form.getId());
+        userOrderM.setOrderState(form.getOrderState());
+        userOrderM.setDeliveryAddress(
+                String.format("%s|%s|%s|%s|%s", form.getAdresseM().etage, form.getAdresseM().batName,
+                        form.getAdresseM().infoSupl, form.getAdresseM().libelle, form.getAdresseM().numeroPorte));
+        userOrderM.setPaymentMethod(form.getPaymentMethod());
+        userOrderM.setRecipientName(form.getRecipientName());
+        userOrderM.setRecipientPhone(form.getRecipientPhone());
+        userOrderM.setTotalAmount(form.getTotalAmount());
+
+        for (OrderItemResponse item : form.getOrderItemM()) {
+            Optional<PlatModel> platM = platRepository.findFirstByIdAndRestaurantAndDeletedAndDisponibleTrue(
+                    UUID.fromString(item.getPlatId()), restOpt.get(), DeletionEnum.NO);
+            if (platM.isEmpty()) {
+                continue;
+            }
+            OrderItemModel orderitem = new OrderItemModel(item.getPrice(), item.getQuantity(), platM.get(), userOrderM);
+            userOrderM.getOrderItemM().add(orderitem);
+        }
+
+        userOrderRepo.save(userOrderM);
+
+        return ResponseEntity.ok(true);
+    }
+
 }

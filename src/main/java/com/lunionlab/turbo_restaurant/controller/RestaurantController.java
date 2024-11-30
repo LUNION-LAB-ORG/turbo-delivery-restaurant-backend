@@ -3,6 +3,7 @@ package com.lunionlab.turbo_restaurant.controller;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,9 +14,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.lunionlab.turbo_restaurant.form.AddOpeningForm;
 import com.lunionlab.turbo_restaurant.form.CreateRestaurantForm;
 import com.lunionlab.turbo_restaurant.form.SearchRestoForm;
 import com.lunionlab.turbo_restaurant.form.UpdateRestaurant;
+import com.lunionlab.turbo_restaurant.form.UserOrderForm;
 import com.lunionlab.turbo_restaurant.services.RestaurantService;
 
 import jakarta.validation.Valid;
@@ -80,5 +83,30 @@ public class RestaurantController {
     @PostMapping("/search")
     public Object searResto(@Valid @RequestBody SearchRestoForm form, BindingResult result) {
         return restaurantService.searResto(form, result);
+    }
+
+    // opening hours
+
+    @Secured({ "ROLE_USER", "ROLE_ADMIN" })
+    @PostMapping("/add/horaire")
+    public Object addOpeningHour(@Valid @RequestBody AddOpeningForm form, BindingResult result) {
+        return restaurantService.addOpeningHours(form, result);
+    }
+
+    @GetMapping("/check/opening/{restoId}")
+    public ResponseEntity<Boolean> restoIspOpening(@PathVariable UUID restoId) {
+        return restaurantService.restoIsOpen(restoId);
+    }
+
+    @Secured({ "ROLE_USER", "ROLE_ADMIN" })
+    @GetMapping("/get/hours")
+    public Object getOpeningHours() {
+        return restaurantService.getOpeningHours();
+    }
+
+    // save user orders
+    @PostMapping("/save/order")
+    public ResponseEntity<Boolean> saveOrder(@RequestBody UserOrderForm form) {
+        return restaurantService.saveUserOrder(form);
     }
 }
