@@ -33,4 +33,6 @@ public interface PlatRepository extends JpaRepository<PlatModel, UUID> {
         List<Long> findAllPriceAsc();
 
         Page<PlatModel> findByDeletedFalseAndDisponibleTrue(Pageable page);
+
+        Page<PlatModel> findByRestaurantAndDeletedFalseAndDisponibleTrue(RestaurantModel restaurant, Pageable page);
 }

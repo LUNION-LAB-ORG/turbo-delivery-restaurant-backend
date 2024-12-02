@@ -81,4 +81,9 @@ public class PlatController {
     public ResponseEntity<PagedModel<EntityModel<PlatModel>>> getAllFood() {
         return platService.getAllFood();
     }
+
+    @GetMapping("/get/by/{restoId}")
+    public Object getPlatByResto(@PathVariable UUID restoId) {
+        return platService.getPlatByRestaurant(restoId);
+    }
 }

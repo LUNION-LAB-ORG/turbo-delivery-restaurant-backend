@@ -220,4 +220,17 @@ public class PlatService {
         PagedModel<EntityModel<PlatModel>> platR = assembler.toModel(platResource);
         return ResponseEntity.ok(platR);
     }
+
+    public Object getPlatByRestaurant(UUID restoId) {
+        Optional<RestaurantModel> restOpt = restaurantRepository.findFirstByIdAndStatusAndDeletedFalse(restoId,
+                StatusEnum.RESTO_VALID_BY_OPSMANAGER);
+        if (restOpt.isEmpty()) {
+            log.error("this restaurant is not exist");
+            return ResponseEntity.badRequest().body("Ce restaurant n'exite pas");
+        }
+        Page<PlatModel> platPage = platRepository.findByRestaurantAndDeletedFalseAndDisponibleTrue(restOpt.get(),
+                genericService.pagination(0));
+
+        return ResponseEntity.ok(assembler.toModel(platPage));
+    }
 }
