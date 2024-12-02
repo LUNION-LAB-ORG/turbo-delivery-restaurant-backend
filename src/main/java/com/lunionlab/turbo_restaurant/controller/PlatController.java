@@ -3,6 +3,9 @@ package com.lunionlab.turbo_restaurant.controller;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,6 +19,7 @@ import com.lunionlab.turbo_restaurant.form.AddOptionValeurForm;
 import com.lunionlab.turbo_restaurant.form.AddPlatForm;
 import com.lunionlab.turbo_restaurant.form.SearchPlatForm;
 import com.lunionlab.turbo_restaurant.form.SearchPlatRestoForm;
+import com.lunionlab.turbo_restaurant.model.PlatModel;
 import com.lunionlab.turbo_restaurant.services.PlatService;
 
 import jakarta.validation.Valid;
@@ -71,5 +75,10 @@ public class PlatController {
     @GetMapping("/all/price")
     public Object getAllPrice() {
         return platService.getAllFoodPriceAsc();
+    }
+
+    @GetMapping("/get/all")
+    public ResponseEntity<PagedModel<EntityModel<PlatModel>>> getAllFood() {
+        return platService.getAllFood();
     }
 }

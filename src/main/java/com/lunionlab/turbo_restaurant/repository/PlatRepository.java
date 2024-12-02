@@ -1,5 +1,7 @@
 package com.lunionlab.turbo_restaurant.repository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -29,4 +31,6 @@ public interface PlatRepository extends JpaRepository<PlatModel, UUID> {
 
         @Query("SELECT p.price FROM PlatModel p ORDER BY p.price ASC")
         List<Long> findAllPriceAsc();
+
+        Page<PlatModel> findByDeletedFalseAndDisponibleTrue(Pageable page);
 }

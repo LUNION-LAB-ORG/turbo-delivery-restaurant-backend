@@ -1,6 +1,10 @@
 package com.lunionlab.turbo_restaurant.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
@@ -53,6 +57,9 @@ public class PlatService {
 
     @Autowired
     RestaurantRepository restaurantRepository;
+
+    @Autowired
+    PagedResourcesAssembler<PlatModel> assembler;
 
     public Object addPlat(MultipartFile imageUrl, @Valid AddPlatForm form, BindingResult result) {
         if (result.hasErrors()) {
@@ -206,5 +213,11 @@ public class PlatService {
 
     public Object getAllFoodPriceAsc() {
         return ResponseEntity.ok(platRepository.findAllPriceAsc());
+    }
+
+    public ResponseEntity<PagedModel<EntityModel<PlatModel>>> getAllFood() {
+        Page<PlatModel> platResource = platRepository.findByDeletedFalseAndDisponibleTrue(genericService.pagination(0));
+        PagedModel<EntityModel<PlatModel>> platR = assembler.toModel(platResource);
+        return ResponseEntity.ok(platR);
     }
 }
