@@ -233,4 +233,29 @@ public class PlatService {
 
         return ResponseEntity.ok(assembler.toModel(platPage));
     }
+
+    public Object getAllRestoCollection(UUID restoId) {
+        List<CollectionModel> collections = new ArrayList<CollectionModel>();
+        Optional<RestaurantModel> restaurant = restaurantRepository.findFirstByIdAndStatusAndDeleted(restoId,
+                StatusEnum.RESTO_VALID_BY_OPSMANAGER, DeletionEnum.NO);
+        if (restaurant.isEmpty()) {
+            log.error("le restaurant {} speficie n'est pas", restoId);
+            return ResponseEntity.badRequest().body("le restaurant speficifié n'existe pas");
+        }
+        List<PlatModel> plats = platRepository.findByRestaurant(restaurant.get());
+        if (plats.size() == 0 || plats.isEmpty()) {
+            log.error("plat resource not found");
+            return ResponseEntity.badRequest().body("aucune donnée trouvée");
+        }
+        for (PlatModel plat : plats) {
+            Optional<CollectionModel> collection = collections.stream()
+                    .filter(c -> c.getId().equals(plat.getCollection().getId())).findFirst();
+            if (collection.isPresent()) {
+                continue;
+            }
+
+            collections.add(plat.getCollection());
+        }
+        return ResponseEntity.ok(collections);
+    }
 }

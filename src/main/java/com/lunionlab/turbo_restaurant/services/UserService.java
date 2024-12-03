@@ -172,8 +172,24 @@ public class UserService {
         Optional<UserModel> userOpt = userRepository.findFirstByEmail(form.getEmail());
         if (userOpt.isPresent()) {
             log.error("utilisateur déjè inscript");
-            return ResponseEntity.badRequest()
-                    .body(Report.getMessage("message", "Cet utilisateur existe deja", "code", "EM11"));
+
+            String codeOpt = genericService.generateOptCode();
+            boolean hasSend = genericService.sendMail("support@turbodeliveryapp.com", form.getEmail(),
+                    "Code de confirmation",
+                    genericService.template("Votre code de confirmation pour TurboDelivery", "\r\n" + //
+                            "                                <p>Ce code ne sera valide que pour les 5 prochaines minutes</p>\r\n"
+                            + //
+                            "                                <div class=\"code\">" + codeOpt + "</div>"));
+            if (!hasSend) {
+                log.error("email not sended");
+                return ResponseEntity.badRequest()
+                        .body(Report.getMessage("message", "mail non distrué", "code", "EM12"));
+            }
+            CodeOptModel code = new CodeOptModel(codeOpt, Utility.dateFromInteger(CODE_DELAY, ChronoUnit.MINUTES),
+                    userOpt.get());
+            code = codeOptRepository.save(code);
+            Map<String, Object> response = Map.of("codeOpt", code.getCode(), "user", userOpt.get());
+            return ResponseEntity.ok(response);
         }
         String codeOpt = genericService.generateOptCode();
         boolean hasSend = genericService.sendMail("support@turbodeliveryapp.com", form.getEmail(),

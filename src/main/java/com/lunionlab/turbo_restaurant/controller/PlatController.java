@@ -86,4 +86,9 @@ public class PlatController {
     public Object getPlatByResto(@PathVariable UUID restoId) {
         return platService.getPlatByRestaurant(restoId);
     }
+
+    @GetMapping("/get/collection/by/{restoId}")
+    public Object getAllRestoCollection(@PathVariable UUID restoId) {
+        return platService.getAllRestoCollection(restoId);
+    }
 }

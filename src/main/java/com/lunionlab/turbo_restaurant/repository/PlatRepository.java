@@ -35,4 +35,6 @@ public interface PlatRepository extends JpaRepository<PlatModel, UUID> {
         Page<PlatModel> findByDeletedFalseAndDisponibleTrue(Pageable page);
 
         Page<PlatModel> findByRestaurantAndDeletedFalseAndDisponibleTrue(RestaurantModel restaurant, Pageable page);
+
+        List<PlatModel> findByRestaurant(RestaurantModel restaurant);
 }
