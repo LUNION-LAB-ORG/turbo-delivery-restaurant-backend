@@ -12,6 +12,9 @@ import java.util.ArrayList;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
@@ -75,6 +78,9 @@ public class RestaurantService {
 
     @Autowired
     PlatRepository platRepository;
+
+    @Autowired
+    PagedResourcesAssembler<UserOrderM> assembler;
 
     public Object createRestaurant(MultipartFile logoUrl, MultipartFile cniUrl, MultipartFile docUrl,
             @Valid CreateRestaurantForm form, BindingResult result) {
@@ -194,7 +200,7 @@ public class RestaurantService {
             return ResponseEntity.badRequest()
                     .body(Report.getMessage("message", "vous n'avez pas de restaurant", "code", "R0"));
         }
-        if (!logoUrl.isEmpty() && logoUrl != null) {
+        if (logoUrl != null && !logoUrl.isEmpty()) {
             String logExtension = genericService.getFileExtension(logoUrl.getOriginalFilename());
             if (!logExtension.equalsIgnoreCase("png") && !logExtension.equalsIgnoreCase("jpg")) {
                 log.error(logExtension);
@@ -212,7 +218,7 @@ public class RestaurantService {
             }
         }
 
-        if (!cniUrl.isEmpty() && cniUrl != null) {
+        if (cniUrl != null && !cniUrl.isEmpty()) {
             String cniExtension = genericService.getFileExtension(cniUrl.getOriginalFilename());
             if (!cniExtension.equalsIgnoreCase("pdf")) {
                 return ResponseEntity.badRequest().body(Report.message("cni", "la cni doit etre au format pdf"));
@@ -227,7 +233,7 @@ public class RestaurantService {
             }
         }
 
-        if (!docUrl.isEmpty() && docUrl != null) {
+        if (docUrl != null && !docUrl.isEmpty()) {
             String docExtension = genericService.getFileExtension(docUrl.getOriginalFilename());
             if (!docExtension.equalsIgnoreCase("pdf")) {
                 return ResponseEntity.badRequest()
@@ -485,6 +491,23 @@ public class RestaurantService {
         userOrderRepo.save(userOrderM);
 
         return ResponseEntity.ok(true);
+    }
+
+    public ResponseEntity<?> getUserOrders() {
+        RestaurantModel restaurant = genericService.getAuthUser().getRestaurant();
+        if (restaurant == null) {
+            log.error("this use hasn't a restaurant");
+            return ResponseEntity.badRequest().body("Vous n'avez pas de commande pour le moment");
+        }
+        Page<UserOrderM> userOrderPage = userOrderRepo.findByRestaurantAndDeletedFalse(restaurant,
+                genericService.pagination(0));
+        if (userOrderPage.getContent().isEmpty()) {
+            log.error("any user order found");
+            return ResponseEntity.badRequest().body("Vous n'avez pas de commande pour le moment");
+        }
+
+        PagedModel<EntityModel<UserOrderM>> userOrderResource = assembler.toModel(userOrderPage);
+        return ResponseEntity.ok(userOrderResource);
     }
 
 }

@@ -109,4 +109,10 @@ public class RestaurantController {
     public ResponseEntity<Boolean> saveOrder(@RequestBody UserOrderForm form) {
         return restaurantService.saveUserOrder(form);
     }
+
+    @Secured({ "ROLE_USER", "ROLE_ADMIN" })
+    @GetMapping("/get/user/orders")
+    public ResponseEntity<?> getUserOrders() {
+        return restaurantService.getUserOrders();
+    }
 }

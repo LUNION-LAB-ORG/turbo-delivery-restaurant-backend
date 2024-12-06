@@ -29,7 +29,7 @@ public interface PlatRepository extends JpaRepository<PlatModel, UUID> {
         List<PlatModel> findByRestaurantAndLibelleContainingIgnoreCaseAndDisponibleTrueAndDeletedFalse(
                         RestaurantModel resto, String libelle);
 
-        @Query("SELECT p.price FROM PlatModel p ORDER BY p.price ASC")
+        @Query("SELECT DISTINCT p.price FROM PlatModel p ORDER BY p.price ASC")
         List<Long> findAllPriceAsc();
 
         Page<PlatModel> findByDeletedFalseAndDisponibleTrue(Pageable page);
