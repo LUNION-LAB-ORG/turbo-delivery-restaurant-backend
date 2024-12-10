@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.lunionlab.turbo_restaurant.Enums.ChangePassword;
 import com.lunionlab.turbo_restaurant.Enums.DeletionEnum;
@@ -16,7 +17,9 @@ import com.lunionlab.turbo_restaurant.form.NewPasswordForm;
 import com.lunionlab.turbo_restaurant.form.RegisterFirstStepForm;
 import com.lunionlab.turbo_restaurant.form.RegisterSecondStepForm;
 import com.lunionlab.turbo_restaurant.form.RegisterThirdStepForm;
+import com.lunionlab.turbo_restaurant.form.UpdateProfileForm;
 import com.lunionlab.turbo_restaurant.model.CodeOptModel;
+import com.lunionlab.turbo_restaurant.model.RoleModel;
 import com.lunionlab.turbo_restaurant.model.UserModel;
 import com.lunionlab.turbo_restaurant.repository.CodeOptRepository;
 import com.lunionlab.turbo_restaurant.repository.UserRepository;
@@ -31,6 +34,7 @@ import java.util.Date;
 import java.util.HashMap;
 // import java.util.List;
 import java.util.Optional;
+import java.io.File;
 import java.time.temporal.*;
 import java.util.UUID;
 
@@ -51,6 +55,8 @@ public class UserService {
 
     @Autowired
     UserPasswordService userPasswordService;
+    @Autowired
+    RoleService roleService;
 
     @Value("${password.expired-delay}")
     private Integer PASSWORD_DELAY;
@@ -383,4 +389,56 @@ public class UserService {
         codeOptRepository.delete(code);
         return ResponseEntity.ok(user);
     }
+
+    public Object profile() {
+        return ResponseEntity.ok(genericService.getAuthUser());
+    }
+
+    public Object updateProfile(MultipartFile avatar, UpdateProfileForm form) {
+        UserModel userM = genericService.getAuthUser();
+        if (form.getRole() != null) {
+            RoleModel role = roleService.getRoleById(form.getRole());
+            userM.setRole(role);
+        }
+        if (form.getFirstName() != null && !form.getFirstName().isEmpty()) {
+            userM.setFirstName(form.getFirstName());
+        }
+        if (form.getLastName() != null && !form.getLastName().isEmpty()) {
+            userM.setLastName(form.getLastName());
+        }
+        if (form.getEmail() != null && !form.getEmail().isEmpty()) {
+            if (!Utility.checkEmail(form.getEmail())) {
+                log.error("email not allow");
+                return ResponseEntity.badRequest().body("email invalide");
+            }
+            userM.setEmail(form.getEmail());
+        }
+        if (form.getTelephone() != null && !form.getTelephone().isEmpty()) {
+            userM.setTelephone(form.getTelephone());
+        }
+
+        if (avatar != null && !avatar.isEmpty()) {
+            String extention = genericService.getFileExtension(avatar.getOriginalFilename());
+            if (!extention.equalsIgnoreCase("png") && !extention.equalsIgnoreCase("jpg")) {
+                log.error("file extension not correct. accept png or jpg");
+                return ResponseEntity.badRequest().body("l'image doit être au format png ou jpg");
+            }
+            String fileName = genericService.generateFileName("avatar") + "." + extention;
+            File file = new File(fileName);
+            Boolean fileIsSave = genericService.compressImage(avatar, file);
+            if (!fileIsSave) {
+                log.error("file not saved");
+                return ResponseEntity.badRequest()
+                        .body(Report.message("message", "Une erreur est survenue lors du sauvegarde de l'image"));
+            }
+
+            userM.setAvatar(fileName);
+            userM.setAvatarUrl(fileName);
+        }
+
+        userM = userRepository.save(userM);
+        log.info("update user {}", userM.getId());
+        return ResponseEntity.ok(userM);
+    }
+
 }

@@ -25,6 +25,7 @@ import com.lunionlab.turbo_restaurant.Enums.DeletionEnum;
 import com.lunionlab.turbo_restaurant.Enums.StatusEnum;
 import com.lunionlab.turbo_restaurant.form.AddOpeningForm;
 import com.lunionlab.turbo_restaurant.form.CreateRestaurantForm;
+import com.lunionlab.turbo_restaurant.form.RejectRestoForm;
 import com.lunionlab.turbo_restaurant.form.SearchRestoForm;
 import com.lunionlab.turbo_restaurant.form.UpdateRestaurant;
 import com.lunionlab.turbo_restaurant.form.UserOrderForm;
@@ -326,8 +327,9 @@ public class RestaurantService {
     }
 
     public Object restaurantValidatedByAuthService(UUID restoId) {
-        Optional<RestaurantModel> restaurantOpt = restaurantRepository.findFirstByIdAndStatusAndDeleted(restoId,
-                StatusEnum.DEFAULT_ENABLE, DeletionEnum.NO);
+        List<Integer> statusAllow = List.of(StatusEnum.DEFAULT_DESABLE, StatusEnum.DEFAULT_ENABLE);
+        Optional<RestaurantModel> restaurantOpt = restaurantRepository.findFirstByIdAndStatusInAndDeleted(restoId,
+                statusAllow, DeletionEnum.NO);
         if (restaurantOpt.isEmpty()) {
             log.error("this restaurant not found");
             return Report.notFound("this restaurant not found");
@@ -508,6 +510,37 @@ public class RestaurantService {
 
         PagedModel<EntityModel<UserOrderM>> userOrderResource = assembler.toModel(userOrderPage);
         return ResponseEntity.ok(userOrderResource);
+    }
+
+    public Object rejectRestaurant(RejectRestoForm form) {
+        Optional<RestaurantModel> restOpt = restaurantRepository.findFirstByIdAndDeleted(form.getRestoId(),
+                DeletionEnum.NO);
+        if (restOpt.isEmpty()) {
+            log.error("restaurant not found");
+            return ResponseEntity.badRequest().body("le restaurant specifié n'existe pas");
+        }
+        RestaurantModel restaurantM = restOpt.get();
+        if (restaurantM.getStatus().intValue() != StatusEnum.DEFAULT_DESABLE.intValue()) {
+            log.info("reject restaurant");
+            restaurantM.setStatus(StatusEnum.DEFAULT_DESABLE);
+        } else {
+            log.info("ce restaurant a été rejecté");
+            return ResponseEntity.badRequest().body(Report.message("message", "ce restaurant a déjà été rejecté"));
+        }
+
+        Boolean isSended = genericService.sendMail("info@turbodeliveryapp.com", restaurantM.getEmail(),
+                "Status du compte", genericService.templateReject("Rejet des Infos", "\r\n"
+                        + //
+                        "                                <div class=\"code\">" + form.getMotif() + "</div>"));
+        if (!isSended) {
+            log.error("email not sended");
+            return ResponseEntity.badRequest()
+                    .body(Report.message("message", "mail non distrué"));
+        }
+        restaurantM = restaurantRepository.save(restaurantM);
+        log.info("reject resto {}", restaurantM.getId());
+        return ResponseEntity.ok(restaurantM);
+
     }
 
 }

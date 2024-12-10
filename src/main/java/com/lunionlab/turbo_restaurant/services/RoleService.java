@@ -1,6 +1,7 @@
 package com.lunionlab.turbo_restaurant.services;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -66,5 +67,9 @@ public class RoleService {
     public Object getRoles() {
         List<RoleModel> roles = roleRepository.findAllByDeleted(DeletionEnum.NO);
         return ResponseEntity.ok(roles);
+    }
+
+    public RoleModel getRoleById(UUID roleId) {
+        return roleRepository.findFirstByIdAndDeletedFalse(roleId).orElse(null);
     }
 }

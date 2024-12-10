@@ -16,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.lunionlab.turbo_restaurant.form.AddOpeningForm;
 import com.lunionlab.turbo_restaurant.form.CreateRestaurantForm;
+import com.lunionlab.turbo_restaurant.form.RejectRestoForm;
 import com.lunionlab.turbo_restaurant.form.SearchRestoForm;
 import com.lunionlab.turbo_restaurant.form.UpdateRestaurant;
 import com.lunionlab.turbo_restaurant.form.UserOrderForm;
@@ -114,5 +115,10 @@ public class RestaurantController {
     @GetMapping("/get/user/orders")
     public ResponseEntity<?> getUserOrders() {
         return restaurantService.getUserOrders();
+    }
+
+    @PostMapping("/reject")
+    public Object rejectRestaurant(@RequestBody RejectRestoForm form) {
+        return restaurantService.rejectRestaurant(form);
     }
 }

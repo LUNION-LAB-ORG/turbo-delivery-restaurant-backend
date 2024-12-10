@@ -12,4 +12,6 @@ public interface RoleRepository extends JpaRepository<RoleModel, UUID> {
     Optional<RoleModel> findFirstByLibelleAndDeleted(String libelle, Boolean deleted);
 
     List<RoleModel> findAllByDeleted(Boolean deleted);
+
+    Optional<RoleModel> findFirstByIdAndDeletedFalse(UUID roleId);
 }
