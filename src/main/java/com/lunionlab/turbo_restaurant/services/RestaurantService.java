@@ -29,14 +29,20 @@ import com.lunionlab.turbo_restaurant.form.RejectRestoForm;
 import com.lunionlab.turbo_restaurant.form.SearchRestoForm;
 import com.lunionlab.turbo_restaurant.form.UpdateRestaurant;
 import com.lunionlab.turbo_restaurant.form.UserOrderForm;
+import com.lunionlab.turbo_restaurant.model.AccompagnementModel;
+import com.lunionlab.turbo_restaurant.model.BoissonModel;
 import com.lunionlab.turbo_restaurant.model.OpeningHoursModel;
+import com.lunionlab.turbo_restaurant.model.OptionValeurModel;
 import com.lunionlab.turbo_restaurant.model.OrderItemModel;
 import com.lunionlab.turbo_restaurant.model.PlatModel;
 import com.lunionlab.turbo_restaurant.model.RestaurantModel;
 import com.lunionlab.turbo_restaurant.model.TypeCuisineRestaurantModel;
 import com.lunionlab.turbo_restaurant.model.UserModel;
 import com.lunionlab.turbo_restaurant.model.UserOrderM;
+import com.lunionlab.turbo_restaurant.repository.AccompagnementRepo;
+import com.lunionlab.turbo_restaurant.repository.BoissonRespository;
 import com.lunionlab.turbo_restaurant.repository.OpeningHourRepo;
+import com.lunionlab.turbo_restaurant.repository.OptionValeurRepo;
 import com.lunionlab.turbo_restaurant.repository.PictureRestoRepository;
 import com.lunionlab.turbo_restaurant.repository.PlatRepository;
 import com.lunionlab.turbo_restaurant.repository.RestaurantRepository;
@@ -82,6 +88,15 @@ public class RestaurantService {
 
     @Autowired
     PagedResourcesAssembler<UserOrderM> assembler;
+
+    @Autowired
+    BoissonRespository boissonRespository;
+
+    @Autowired
+    AccompagnementRepo accompagnementRepo;
+
+    @Autowired
+    OptionValeurRepo optionValeurRepo;
 
     public Object createRestaurant(MultipartFile logoUrl, MultipartFile cniUrl, MultipartFile docUrl,
             @Valid CreateRestaurantForm form, BindingResult result) {
@@ -182,7 +197,8 @@ public class RestaurantService {
         RestaurantModel restaurant = new RestaurantModel(form.getNomEtablissement(), form.getDescription(),
                 form.getEmail(), form.getTelephone(), form.getCodePostal(), form.getCommune(), form.getLocalisation(),
                 form.getSiteWeb(), logo, logo, Utility.dateFromString(form.getDateService()), document, cni);
-
+        restaurant.setLatitude(form.getLatitude());
+        restaurant.setLongitude(form.getLongitude());
         restaurant = restaurantRepository.save(restaurant);
 
         user.setRole(roleService.getAdmin());
@@ -282,6 +298,13 @@ public class RestaurantService {
 
         if (form.getTelephone() != null && !form.getTelephone().isEmpty()) {
             restaurant.setTelephone(form.getTelephone());
+        }
+
+        if (form.getLatitude() != null) {
+            restaurant.setLatitude(form.getLatitude());
+        }
+        if (form.getLongitude() != null) {
+            restaurant.setLongitude(form.getLongitude());
         }
 
         restaurant = restaurantRepository.save(restaurant);
@@ -486,7 +509,14 @@ public class RestaurantService {
             if (platM.isEmpty()) {
                 continue;
             }
-            OrderItemModel orderitem = new OrderItemModel(item.getPrice(), item.getQuantity(), platM.get(), userOrderM);
+            BoissonModel boissonM = boissonRespository
+                    .findFirstByIdAndDeleted(UUID.fromString(item.getDrinkId()), DeletionEnum.NO).orElse(null);
+            AccompagnementModel accompagnementM = accompagnementRepo
+                    .findFirstByIdAndDeleted(UUID.fromString(item.getAccompId()), DeletionEnum.NO).orElse(null);
+            OptionValeurModel optionValeurM = optionValeurRepo.findFirstByValeurAndDeletedFalse(item.getOptionValue())
+                    .orElse(null);
+            OrderItemModel orderitem = new OrderItemModel(item.getPrice(), item.getQuantity(), platM.get(), userOrderM,
+                    optionValeurM, accompagnementM, boissonM);
             userOrderM.getOrderItemM().add(orderitem);
         }
 

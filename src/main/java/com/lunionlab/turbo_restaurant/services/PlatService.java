@@ -17,16 +17,21 @@ import com.lunionlab.turbo_restaurant.form.AddOptionValeurForm;
 import com.lunionlab.turbo_restaurant.form.AddPlatForm;
 import com.lunionlab.turbo_restaurant.form.SearchPlatForm;
 import com.lunionlab.turbo_restaurant.form.SearchPlatRestoForm;
+import com.lunionlab.turbo_restaurant.model.AccompagnementModel;
+import com.lunionlab.turbo_restaurant.model.BoissonPlatModel;
 import com.lunionlab.turbo_restaurant.model.CollectionModel;
 import com.lunionlab.turbo_restaurant.model.OptionPlatModel;
 import com.lunionlab.turbo_restaurant.model.OptionValeurModel;
 import com.lunionlab.turbo_restaurant.model.PlatModel;
 import com.lunionlab.turbo_restaurant.model.RestaurantModel;
+import com.lunionlab.turbo_restaurant.repository.AccompagnementRepo;
+import com.lunionlab.turbo_restaurant.repository.BoissonPlatRepository;
 import com.lunionlab.turbo_restaurant.repository.CollectionRepository;
 import com.lunionlab.turbo_restaurant.repository.OptionPlatRepo;
 import com.lunionlab.turbo_restaurant.repository.OptionValeurRepo;
 import com.lunionlab.turbo_restaurant.repository.PlatRepository;
 import com.lunionlab.turbo_restaurant.repository.RestaurantRepository;
+import com.lunionlab.turbo_restaurant.response.CustomerPlatResponse;
 import com.lunionlab.turbo_restaurant.utilities.Report;
 
 import jakarta.validation.Valid;
@@ -60,6 +65,12 @@ public class PlatService {
 
     @Autowired
     PagedResourcesAssembler<PlatModel> assembler;
+
+    @Autowired
+    AccompagnementRepo accompagnementRepo;
+
+    @Autowired
+    BoissonPlatRepository boissonPlatRepository;
 
     public Object addPlat(MultipartFile imageUrl, @Valid AddPlatForm form, BindingResult result) {
         if (result.hasErrors()) {
@@ -145,11 +156,14 @@ public class PlatService {
             log.error("this option selected not found");
             return ResponseEntity.badRequest().body(Report.message("message", "optionPlat selected not found"));
         }
-        Boolean isExist = optionValeurRepo.existsByValeurAndOptionPlatModelAndDeleted(form.getValeur(),
+        Optional<OptionValeurModel> optionValeurOpt = optionValeurRepo.findFirstByValeurAndOptionPlatModelAndDeleted(
+                form.getValeur(),
                 optionPlat.get(), DeletionEnum.NO);
-        if (isExist) {
-            log.error("this option value is exsite");
-            return ResponseEntity.badRequest().body(Report.message("message", "cette option valeur existe deja"));
+        if (optionValeurOpt.isPresent()) {
+            OptionValeurModel optionValeurM = optionValeurOpt.get();
+            optionValeurM.setPrixSup(form.getPrixSup());
+            optionValeurM = optionValeurRepo.save(optionValeurM);
+            return ResponseEntity.ok(optionValeurM);
         }
 
         OptionValeurModel optionValeur = new OptionValeurModel(form.getValeur(), form.getPrixSup(), optionPlat.get());
@@ -164,26 +178,83 @@ public class PlatService {
             log.error("mauvais de données");
             return ResponseEntity.badRequest().body(Report.getErrors(result));
         }
-        Optional<RestaurantModel> restoOpt = restaurantRepository.findFirstByIdAndLocalisationAndStatusAndDeleted(
-                form.getRestoId(), form.getAddress(), StatusEnum.RESTO_VALID_BY_OPSMANAGER, DeletionEnum.NO);
-        if (restoOpt.isEmpty()) {
-            log.error("restaurant not found");
-            return ResponseEntity.badRequest().body("Aucune donnée trouvée");
-        }
         List<PlatModel> plats = new ArrayList<PlatModel>();
+        Optional<RestaurantModel> restoOpt = Optional.empty();
+        // search by resto
+        if (form.getRestoId() != null) {
+            restoOpt = restaurantRepository.findFirstByIdAndStatusAndDeletedFalse(
+                    form.getRestoId(), StatusEnum.RESTO_VALID_BY_OPSMANAGER);
+
+            if (restoOpt.isEmpty()) {
+                log.error("restaurant not found");
+                return ResponseEntity.badRequest().body("Aucune donnée trouvée");
+            }
+            plats = platRepository
+                    .findByPriceGreaterThanEqualAndPriceLessThanEqualAndDeletedFalseAndDisponibleTrueAndRestaurant(
+                            form.getPriceStart(), form.getPriceEnd(), restoOpt.get());
+
+            return ResponseEntity.ok(plats);
+        }
+
+        // by address
+        if (form.getAddress() != null) {
+            restoOpt = restaurantRepository.findFirstByLocalisationAndStatusAndDeleted(
+                    form.getAddress(), StatusEnum.RESTO_VALID_BY_OPSMANAGER, DeletionEnum.NO);
+
+            if (restoOpt.isEmpty()) {
+                log.error("restaurant not found");
+                return ResponseEntity.badRequest().body("Aucune donnée trouvée");
+            }
+            plats = platRepository
+                    .findByPriceGreaterThanEqualAndPriceLessThanEqualAndDeletedFalseAndDisponibleTrueAndRestaurant(
+                            form.getPriceStart(), form.getPriceEnd(), restoOpt.get());
+
+            return ResponseEntity.ok(plats);
+        }
+
         Optional<CollectionModel> collectionOpt = null;
+        // by collection
         if (form.getCollectionId() != null) {
             collectionOpt = collectionRepository.findFirstByIdAndDeleted(form.getCollectionId(), DeletionEnum.NO);
+            if (collectionOpt.isEmpty()) {
+                log.error("collection not found");
+                return ResponseEntity.badRequest().body("aucune donnée trouvée");
+            }
             plats = platRepository
-                    .findByRestaurantAndCollectionAndPriceGreaterThanEqualAndPriceLessThanEqualAndDeletedAndDisponibleTrue(
-                            restoOpt.get(), collectionOpt.get(), form.getPriceStart(),
+                    .findByCollectionAndPriceGreaterThanEqualAndPriceLessThanEqualAndDeletedAndDisponibleTrue(
+                            collectionOpt.get(), form.getPriceStart(),
                             form.getPriceEnd(), DeletionEnum.NO);
-        } else {
-            plats = platRepository
-                    .findByRestaurantAndPriceGreaterThanEqualAndPriceLessThanEqualAndDeletedAndDisponibleTrue(
-                            restoOpt.get(),
-                            form.getPriceStart(), form.getPriceEnd(), DeletionEnum.NO);
+
+            return ResponseEntity.ok(plats);
         }
+
+        // by all param
+        if ((form.getAddress() != null
+                && !form.getAddress().isEmpty()) && form.getCollectionId() != null
+                && form.getRestoId() != null) {
+            collectionOpt = collectionRepository.findFirstByIdAndDeleted(form.getCollectionId(), DeletionEnum.NO);
+            if (collectionOpt.isEmpty()) {
+                log.error("collection not found");
+                return ResponseEntity.badRequest().body("aucune donnée trouvée");
+            }
+            restoOpt = restaurantRepository.findFirstByIdAndLocalisationAndStatusAndDeleted(form.getRestoId(),
+                    form.getAddress(), StatusEnum.RESTO_VALID_BY_OPSMANAGER, DeletionEnum.NO);
+            if (restoOpt.isEmpty()) {
+                log.error("restaurant not found");
+                return ResponseEntity.badRequest().body("Aucune donnée trouvée");
+            }
+
+            plats = platRepository
+                    .findByPriceGreaterThanEqualAndPriceLessThanEqualAndDeletedFalseAndDisponibleTrueAndRestaurantAndCollection(
+                            form.getPriceStart(), form.getPriceEnd(), restoOpt.get(), collectionOpt.get());
+            log.info("get plat");
+            return ResponseEntity.ok(plats);
+        }
+
+        // by price
+        plats = platRepository
+                .findByPriceGreaterThanEqualAndPriceLessThanEqualAndDeletedFalseAndDisponibleTrue(
+                        form.getPriceStart(), form.getPriceEnd());
 
         return ResponseEntity.ok(plats);
 
@@ -208,7 +279,18 @@ public class PlatService {
             log.error("plat not found");
             return ResponseEntity.badRequest().body("plat Id " + platId + " est trouvable");
         }
-        return ResponseEntity.ok(platOpt.get());
+        // get accompagnements lier au plat
+        List<AccompagnementModel> accompagnements = accompagnementRepo.findByPlatModelAndDeleted(platOpt.get(),
+                DeletionEnum.NO);
+        // get Option du plat
+        List<OptionPlatModel> optionPlatModels = optionPlatRepo.findByPlatAndDeletedFalse(platOpt.get());
+        // get drink link to plat
+        List<BoissonPlatModel> boissonPlatModels = boissonPlatRepository.findByPlatAndDeleted(platOpt.get(),
+                DeletionEnum.NO);
+        // format response
+        CustomerPlatResponse response = new CustomerPlatResponse(platOpt.get(), accompagnements, optionPlatModels,
+                boissonPlatModels);
+        return ResponseEntity.ok(response);
     }
 
     public Object getAllFoodPriceAsc() {
@@ -257,5 +339,23 @@ public class PlatService {
             collections.add(plat.getCollection());
         }
         return ResponseEntity.ok(collections);
+    }
+
+    public Object getPlatByCollection(UUID collectionId) {
+        Optional<CollectionModel> collectionOpt = collectionRepository.findFirstByIdAndDeleted(collectionId,
+                DeletionEnum.NO);
+        if (collectionOpt.isEmpty()) {
+            log.error("collection not found");
+            return ResponseEntity.badRequest().body("le type de plat spécifié est introuvable");
+        }
+        RestaurantModel restaurantM = genericService.getAuthUser().getRestaurant();
+        if (restaurantM == null) {
+            log.error("this user has not restaurant");
+            return ResponseEntity.badRequest().body("le type de plat spécifié est introuvable");
+        }
+        List<PlatModel> plats = platRepository.findByCollectionAndRestaurantAndDeletedFalse(collectionOpt.get(),
+                restaurantM);
+        log.info("get plat from collection");
+        return ResponseEntity.ok(plats);
     }
 }

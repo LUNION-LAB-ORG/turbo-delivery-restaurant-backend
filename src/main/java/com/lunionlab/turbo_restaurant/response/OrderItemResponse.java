@@ -12,4 +12,8 @@ public class OrderItemResponse {
     private Integer price;
     private Integer quantity;
     private String platId;
+    private String optionId;
+    private String optionValue;
+    private String AccompId;
+    private String drinkId;
 }

@@ -19,8 +19,8 @@ public interface PlatRepository extends JpaRepository<PlatModel, UUID> {
         Optional<PlatModel> findFirstByIdAndRestaurantAndDeletedAndDisponibleTrue(UUID id, RestaurantModel restaurant,
                         Boolean deleted);
 
-        List<PlatModel> findByRestaurantAndCollectionAndPriceGreaterThanEqualAndPriceLessThanEqualAndDeletedAndDisponibleTrue(
-                        RestaurantModel resto, CollectionModel collection, Long priceStart, Long priceEnd,
+        List<PlatModel> findByCollectionAndPriceGreaterThanEqualAndPriceLessThanEqualAndDeletedAndDisponibleTrue(
+                        CollectionModel collection, Long priceStart, Long priceEnd,
                         Boolean deleted);
 
         List<PlatModel> findByRestaurantAndPriceGreaterThanEqualAndPriceLessThanEqualAndDeletedAndDisponibleTrue(
@@ -37,4 +37,16 @@ public interface PlatRepository extends JpaRepository<PlatModel, UUID> {
         Page<PlatModel> findByRestaurantAndDeletedFalseAndDisponibleTrue(RestaurantModel restaurant, Pageable page);
 
         List<PlatModel> findByRestaurant(RestaurantModel restaurant);
+
+        List<PlatModel> findByPriceGreaterThanEqualAndPriceLessThanEqualAndDeletedFalseAndDisponibleTrueAndRestaurant(
+                        Long priceStart, Long priceEnd, RestaurantModel restaurant);
+
+        List<PlatModel> findByPriceGreaterThanEqualAndPriceLessThanEqualAndDeletedFalseAndDisponibleTrueAndRestaurantAndCollection(
+                        Long priceStart, Long priceEnd, RestaurantModel restaurant, CollectionModel collectionModel);
+
+        List<PlatModel> findByPriceGreaterThanEqualAndPriceLessThanEqualAndDeletedFalseAndDisponibleTrue(
+                        Long priceStart, Long priceEnd);
+
+        List<PlatModel> findByCollectionAndRestaurantAndDeletedFalse(CollectionModel collectionModel,
+                        RestaurantModel restaurantModel);
 }

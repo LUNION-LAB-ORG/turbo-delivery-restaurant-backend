@@ -29,11 +29,14 @@ public interface RestaurantRepository extends JpaRepository<RestaurantModel, UUI
         Optional<RestaurantModel> findFirstByIdAndStatusInAndDeleted(UUID restoId, List<Integer> status,
                         Boolean deleted);
 
-        Optional<RestaurantModel> findFirstByIdAndLocalisationAndStatusAndDeleted(UUID restoId, String localisation,
-                        Integer status, Boolean deleted);
-
         Optional<RestaurantModel> findFirstByNomEtablissementContainingIgnoreCaseAndDeleted(String libelle,
                         Boolean deleted);
 
         Optional<RestaurantModel> findFirstByIdAndStatusAndDeletedFalse(UUID restoId, Integer status);
+
+        Optional<RestaurantModel> findFirstByLocalisationAndStatusAndDeleted(String localisation,
+                        Integer status, Boolean deleted);
+
+        Optional<RestaurantModel> findFirstByIdAndLocalisationAndStatusAndDeleted(UUID restoId, String localisation,
+                        Integer status, Boolean deleted);
 }

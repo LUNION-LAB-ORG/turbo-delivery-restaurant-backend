@@ -13,6 +13,8 @@ public class UpdateRestaurant {
     private String localisation;
     private String siteWeb;
     private String dateService;
+    private Double latitude;
+    private Double longitude;
 
     public void setNomEtablissement(String nomEtablissement) {
         this.nomEtablissement = nomEtablissement;

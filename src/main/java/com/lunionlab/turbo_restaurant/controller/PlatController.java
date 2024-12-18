@@ -91,4 +91,10 @@ public class PlatController {
     public Object getAllRestoCollection(@PathVariable UUID restoId) {
         return platService.getAllRestoCollection(restoId);
     }
+
+    @Secured("ROLE_USER")
+    @GetMapping("/collection/{collectionId}")
+    public Object getPlatByCollection(@PathVariable UUID collectionId) {
+        return platService.getPlatByCollection(collectionId);
+    }
 }

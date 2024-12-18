@@ -1,6 +1,7 @@
 package com.lunionlab.turbo_restaurant.form;
 
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 
 @Getter
@@ -23,9 +24,12 @@ public class CreateRestaurantForm {
     private String siteWeb;
     @NotEmpty
     private String dateService;
-    // private MultipartFile logo;
-    // private MultipartFile cni;
-    // private MultipartFile documentUrl;
+
+    @NotNull
+    private Double longitude;
+
+    @NotNull
+    private Double latitude;
 
     public void setNomEtablissement(String nomEtablissement) {
         this.nomEtablissement = nomEtablissement;

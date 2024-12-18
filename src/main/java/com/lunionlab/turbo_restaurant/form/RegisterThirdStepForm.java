@@ -34,7 +34,7 @@ public class RegisterThirdStepForm {
     }
 
     public void setUsername(String username) {
-        this.username = username.toUpperCase();
+        this.username = username.toUpperCase().replace(" ", "").trim();
     }
 
 }
