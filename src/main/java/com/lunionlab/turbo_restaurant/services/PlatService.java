@@ -32,6 +32,7 @@ import com.lunionlab.turbo_restaurant.repository.OptionValeurRepo;
 import com.lunionlab.turbo_restaurant.repository.PlatRepository;
 import com.lunionlab.turbo_restaurant.repository.RestaurantRepository;
 import com.lunionlab.turbo_restaurant.response.CustomerPlatResponse;
+import com.lunionlab.turbo_restaurant.response.PlatByCollectionResponse;
 import com.lunionlab.turbo_restaurant.utilities.Report;
 
 import jakarta.validation.Valid;
@@ -356,6 +357,37 @@ public class PlatService {
         List<PlatModel> plats = platRepository.findByCollectionAndRestaurantAndDeletedFalse(collectionOpt.get(),
                 restaurantM);
         log.info("get plat from collection");
+        return ResponseEntity.ok(plats);
+    }
+
+    public Object platgeted() {
+        RestaurantModel restaurantM = genericService.getAuthUser().getRestaurant();
+        if (restaurantM == null) {
+            log.error("restaurant not found");
+            return ResponseEntity.badRequest().body("Vous n'avez pas de restaurant");
+        }
+        List<PlatByCollectionResponse> platByCollectionResponses = new ArrayList<>();
+        List<CollectionModel> collectionModels = platRepository
+                .findCollectionHasPlat(genericService.getAuthUser().getRestaurant());
+        for (CollectionModel collectionModel : collectionModels) {
+            PlatByCollectionResponse platByCollectionResponse = new PlatByCollectionResponse();
+            long totalPlat = platRepository.countByCollectionAndDeletedFalse(collectionModel);
+            platByCollectionResponse.setTotalPlat(totalPlat);
+            platByCollectionResponse.setCollectionModel(collectionModel);
+            platByCollectionResponses.add(platByCollectionResponse);
+        }
+
+        return ResponseEntity.ok(platByCollectionResponses);
+    }
+
+    public Object getPlatByCollectionForCustomer(UUID collectionId) {
+        Optional<CollectionModel> collectionOpt = collectionRepository.findFirstByIdAndDeleted(collectionId,
+                DeletionEnum.NO);
+        if (collectionOpt.isEmpty()) {
+            log.error("collection not found");
+            return ResponseEntity.badRequest().body("le type de plat spécifié est introuvable");
+        }
+        List<PlatModel> plats = platRepository.findByCollectionAndDeletedFalseAndDisponibleTrue(collectionOpt.get());
         return ResponseEntity.ok(plats);
     }
 }

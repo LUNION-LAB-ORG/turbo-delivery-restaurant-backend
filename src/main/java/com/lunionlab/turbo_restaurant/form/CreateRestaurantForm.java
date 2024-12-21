@@ -31,6 +31,9 @@ public class CreateRestaurantForm {
     @NotNull
     private Double latitude;
 
+    @NotEmpty
+    private String idLocation;
+
     public void setNomEtablissement(String nomEtablissement) {
         this.nomEtablissement = nomEtablissement;
     }

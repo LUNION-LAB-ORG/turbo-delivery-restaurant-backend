@@ -49,4 +49,14 @@ public interface PlatRepository extends JpaRepository<PlatModel, UUID> {
 
         List<PlatModel> findByCollectionAndRestaurantAndDeletedFalse(CollectionModel collectionModel,
                         RestaurantModel restaurantModel);
+
+        @Query("SELECT DISTINCT p.collection FROM PlatModel p WHERE p.deleted=false  AND p.restaurant= ?1")
+        List<CollectionModel> findCollectionHasPlat(RestaurantModel restaurant);
+
+        long countByCollectionAndDeletedFalse(CollectionModel collectionModel);
+
+        List<PlatModel> findByCollectionAndRestaurantAndDeleted(CollectionModel collectionModel,
+                        RestaurantModel restaurantM, Boolean deleted);
+
+        List<PlatModel> findByCollectionAndDeletedFalseAndDisponibleTrue(CollectionModel collectionModel);
 }

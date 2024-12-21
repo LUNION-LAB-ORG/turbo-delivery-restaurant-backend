@@ -20,7 +20,7 @@ spring:
 
 # jwt token expiration time in hours
 jwt:
-  time-exp: 1
+  time-exp: 24
 
 password:
   # nombre de tentative de connexion

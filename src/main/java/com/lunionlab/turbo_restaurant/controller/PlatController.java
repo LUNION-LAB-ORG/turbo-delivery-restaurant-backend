@@ -97,4 +97,20 @@ public class PlatController {
     public Object getPlatByCollection(@PathVariable UUID collectionId) {
         return platService.getPlatByCollection(collectionId);
     }
+
+    @GetMapping("/get/by/collection")
+    public Object platgeted() {
+        return platService.platgeted();
+    }
+
+    @Secured({ "ROLE_USER", "ROLE_ADMIN" })
+    @GetMapping("/info/{platId}")
+    public Object platInfo(@PathVariable UUID platId) {
+        return platService.customerCheckExistingPlat(platId);
+    }
+
+    @GetMapping("/get/by/collection/{collectionId}")
+    public Object getPlatByCollectionForCustomer(@PathVariable UUID collectionId) {
+        return platService.getPlatByCollectionForCustomer(collectionId);
+    }
 }

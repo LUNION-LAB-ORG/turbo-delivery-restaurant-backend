@@ -27,6 +27,7 @@ public class UserOrderM extends BaseModel {
     private String orderState;
     private Long totalAmount;
     private String deliveryAddress;
+    private String codeOrder;
     @ManyToOne
     private RestaurantModel restaurant;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "userOrderM", orphanRemoval = true)

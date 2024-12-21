@@ -35,6 +35,7 @@ public class RestaurantModel extends BaseModel {
     private String cni;
     private Double longitude;
     private Double latitude;
+    private String idLocation;
 
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference

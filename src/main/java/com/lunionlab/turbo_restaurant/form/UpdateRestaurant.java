@@ -15,6 +15,7 @@ public class UpdateRestaurant {
     private String dateService;
     private Double latitude;
     private Double longitude;
+    private String idLocation;
 
     public void setNomEtablissement(String nomEtablissement) {
         this.nomEtablissement = nomEtablissement;

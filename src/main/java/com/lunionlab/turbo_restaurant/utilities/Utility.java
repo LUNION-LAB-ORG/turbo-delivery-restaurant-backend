@@ -138,4 +138,11 @@ public class Utility {
         DayOfWeek dayOfWeek = LocalDate.now().getDayOfWeek();
         return dayOfWeek.getDisplayName(TextStyle.FULL, Locale.FRENCH).toUpperCase();
     }
+
+    public static String generateOrderCode(Long totalAmount, String restaurantName) {
+        String resto = restaurantName.substring(0, 3).toUpperCase();
+        String code = "CMD" + resto + String.valueOf(totalAmount);
+        code += new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
+        return code;
+    }
 }

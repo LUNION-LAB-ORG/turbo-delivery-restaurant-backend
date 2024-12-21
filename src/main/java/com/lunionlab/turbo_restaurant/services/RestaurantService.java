@@ -199,6 +199,7 @@ public class RestaurantService {
                 form.getSiteWeb(), logo, logo, Utility.dateFromString(form.getDateService()), document, cni);
         restaurant.setLatitude(form.getLatitude());
         restaurant.setLongitude(form.getLongitude());
+        restaurant.setIdLocation(form.getIdLocation());
         restaurant = restaurantRepository.save(restaurant);
 
         user.setRole(roleService.getAdmin());
@@ -305,6 +306,10 @@ public class RestaurantService {
         }
         if (form.getLongitude() != null) {
             restaurant.setLongitude(form.getLongitude());
+        }
+        if (form.getIdLocation() != null && !form.getIdLocation().isEmpty()) {
+            restaurant.setIdLocation(form.getIdLocation());
+
         }
 
         restaurant = restaurantRepository.save(restaurant);
@@ -509,17 +514,29 @@ public class RestaurantService {
             if (platM.isEmpty()) {
                 continue;
             }
-            BoissonModel boissonM = boissonRespository
-                    .findFirstByIdAndDeleted(UUID.fromString(item.getDrinkId()), DeletionEnum.NO).orElse(null);
-            AccompagnementModel accompagnementM = accompagnementRepo
-                    .findFirstByIdAndDeleted(UUID.fromString(item.getAccompId()), DeletionEnum.NO).orElse(null);
-            OptionValeurModel optionValeurM = optionValeurRepo.findFirstByValeurAndDeletedFalse(item.getOptionValue())
-                    .orElse(null);
+            BoissonModel boissonM = null;
+            AccompagnementModel accompagnementM = null;
+            OptionValeurModel optionValeurM = null;
+            if (item.getDrinkId() != null && !item.getDrinkId().isEmpty()) {
+
+                boissonM = boissonRespository
+                        .findFirstByIdAndDeleted(UUID.fromString(item.getDrinkId()), DeletionEnum.NO).orElse(null);
+            }
+            if (item.getAccompId() != null && !item.getAccompId().isEmpty()) {
+                accompagnementM = accompagnementRepo
+                        .findFirstByIdAndDeleted(UUID.fromString(item.getAccompId()), DeletionEnum.NO).orElse(null);
+            }
+            if (item.getOptionValue() != null && !item.getOptionValue().isEmpty()) {
+
+                optionValeurM = optionValeurRepo.findFirstByValeurAndDeletedFalse(item.getOptionValue())
+                        .orElse(null);
+            }
             OrderItemModel orderitem = new OrderItemModel(item.getPrice(), item.getQuantity(), platM.get(), userOrderM,
                     optionValeurM, accompagnementM, boissonM);
             userOrderM.getOrderItemM().add(orderitem);
         }
-
+        userOrderM.setCodeOrder(Utility.generateOrderCode(userOrderM.getTotalAmount(),
+                userOrderM.getRestaurant().getNomEtablissement()));
         userOrderRepo.save(userOrderM);
 
         return ResponseEntity.ok(true);
