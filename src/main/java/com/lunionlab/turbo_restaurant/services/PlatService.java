@@ -18,7 +18,6 @@ import com.lunionlab.turbo_restaurant.form.AddPlatForm;
 import com.lunionlab.turbo_restaurant.form.SearchPlatForm;
 import com.lunionlab.turbo_restaurant.form.SearchPlatRestoForm;
 import com.lunionlab.turbo_restaurant.model.AccompagnementModel;
-import com.lunionlab.turbo_restaurant.model.BoissonPlatModel;
 import com.lunionlab.turbo_restaurant.model.CollectionModel;
 import com.lunionlab.turbo_restaurant.model.OptionPlatModel;
 import com.lunionlab.turbo_restaurant.model.OptionValeurModel;
@@ -252,6 +251,26 @@ public class PlatService {
             return ResponseEntity.ok(plats);
         }
 
+        if (form.getRestoId() != null && form.getCollectionId() != null) {
+            collectionOpt = collectionRepository.findFirstByIdAndDeleted(form.getCollectionId(), DeletionEnum.NO);
+            if (collectionOpt.isEmpty()) {
+                log.error("collection not found");
+                return ResponseEntity.badRequest().body("aucune donnée trouvée");
+            }
+            restoOpt = restaurantRepository.findFirstByIdAndStatusAndDeletedFalse(form.getRestoId(),
+                    StatusEnum.RESTO_VALID_BY_OPSMANAGER);
+            if (restoOpt.isEmpty()) {
+                log.error("restaurant not found");
+                return ResponseEntity.badRequest().body("Aucune donnée trouvée");
+            }
+            plats = platRepository
+                    .findByCollectionAndPriceGreaterThanEqualAndPriceLessThanEqualAndDeletedAndDisponibleTrueAndRestaurant(
+                            collectionOpt.get(), form.getPriceStart(), form.getPriceEnd(), DeletionEnum.NO,
+                            restoOpt.get());
+            return ResponseEntity.ok(plats);
+
+        }
+
         // by price
         plats = platRepository
                 .findByPriceGreaterThanEqualAndPriceLessThanEqualAndDeletedFalseAndDisponibleTrue(
@@ -286,11 +305,11 @@ public class PlatService {
         // get Option du plat
         List<OptionPlatModel> optionPlatModels = optionPlatRepo.findByPlatAndDeletedFalse(platOpt.get());
         // get drink link to plat
-        List<BoissonPlatModel> boissonPlatModels = boissonPlatRepository.findByPlatAndDeleted(platOpt.get(),
-                DeletionEnum.NO);
+        // List<BoissonPlatModel> boissonPlatModels =
+        // boissonPlatRepository.findByPlatAndDeleted(platOpt.get(),
+        // DeletionEnum.NO);
         // format response
-        CustomerPlatResponse response = new CustomerPlatResponse(platOpt.get(), accompagnements, optionPlatModels,
-                boissonPlatModels);
+        CustomerPlatResponse response = new CustomerPlatResponse(platOpt.get(), accompagnements, optionPlatModels);
         return ResponseEntity.ok(response);
     }
 

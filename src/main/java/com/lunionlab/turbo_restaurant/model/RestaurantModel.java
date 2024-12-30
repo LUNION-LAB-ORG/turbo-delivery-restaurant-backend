@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.lunionlab.turbo_restaurant.Enums.ClosedEnums;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -36,6 +37,7 @@ public class RestaurantModel extends BaseModel {
     private Double longitude;
     private Double latitude;
     private String idLocation;
+    private Boolean isOpen = ClosedEnums.YES;
 
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference

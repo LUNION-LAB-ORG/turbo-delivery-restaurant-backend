@@ -70,4 +70,16 @@ public class CreateRestaurantForm {
         this.dateService = dateService;
     }
 
+    public void setLongitude(String longitude) {
+        this.longitude = Double.parseDouble(longitude);
+    }
+
+    public void setLatitude(String latitude) {
+        this.latitude = Double.parseDouble(latitude);
+    }
+
+    public void setIdLocation(String idLocation) {
+        this.idLocation = idLocation;
+    }
+
 }

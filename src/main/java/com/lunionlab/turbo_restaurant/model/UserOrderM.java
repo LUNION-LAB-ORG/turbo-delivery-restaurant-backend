@@ -28,6 +28,8 @@ public class UserOrderM extends BaseModel {
     private Long totalAmount;
     private String deliveryAddress;
     private String codeOrder;
+    private Long deliveryFee;
+    private Long serviceFee;
     @ManyToOne
     private RestaurantModel restaurant;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "userOrderM", orphanRemoval = true)

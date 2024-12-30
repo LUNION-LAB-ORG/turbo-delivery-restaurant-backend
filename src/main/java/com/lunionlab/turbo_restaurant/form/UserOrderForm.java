@@ -22,5 +22,7 @@ public class UserOrderForm {
     private List<OrderItemResponse> orderItemM;
     private AddressRepose adresseM;
     private String restoId;
+    private Long deliveryFee;
+    private Long serviceFee;
 
 }

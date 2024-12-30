@@ -48,4 +48,20 @@ public class BoissonController {
         return boissonService.updateBoisson(boissonId, form);
     }
 
+    @GetMapping("/get/{boissonId}")
+    public Object getBoisson(@PathVariable UUID boissonId) {
+        return boissonService.drinkInfo(boissonId);
+    }
+
+    @Secured({ "ROLE_USER", "ROLE_ADMIN" })
+    @GetMapping("/info/{boissonId}")
+    public Object getBoissonInfo(@PathVariable UUID boissonId) {
+        return boissonService.drinkInfo(boissonId);
+    }
+
+    @GetMapping("/get/by/resto/{restoId}")
+    public Object getBoissonByResto(@PathVariable UUID restoId) {
+        return boissonService.getRestoDrink(restoId);
+    }
+
 }

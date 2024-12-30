@@ -74,4 +74,9 @@ public class CollectionService {
         return ResponseEntity.badRequest().body("can't get collection resource");
     }
 
+    public Object getCollectionByCustomer() {
+        List<CollectionModel> collections = collectionRepository.findAll();
+        return ResponseEntity.ok(collections);
+    }
+
 }

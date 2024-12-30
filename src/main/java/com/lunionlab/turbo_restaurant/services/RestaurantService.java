@@ -351,6 +351,10 @@ public class RestaurantService {
     public Object getAllRestaurantValidByOpsManager(Integer page) {
         Page<RestaurantModel> restaurants = restaurantRepository.findByStatusAndDeletedOrderByDateCreationDesc(
                 StatusEnum.RESTO_VALID_BY_OPSMANAGER, DeletionEnum.NO, genericService.pagination(page));
+        restaurants.forEach(restaurant -> {
+            restaurant.setIsOpen(this.isOpen(restaurant));
+            restaurantRepository.save(restaurant);
+        });
         return ResponseEntity.ok(restaurants);
     }
 
@@ -473,9 +477,19 @@ public class RestaurantService {
             return ResponseEntity.badRequest().body(false);
         }
 
-        return ResponseEntity
-                .ok(now.compareTo(openingOpt.get().getOpeningTime()) >= 0
-                        && now.compareTo(openingOpt.get().getClosingTime()) <= 0);
+        LocalTime openingTime = openingOpt.get().getOpeningTime();
+        LocalTime closingTime = openingOpt.get().getClosingTime();
+        Boolean isOpened;
+        if (closingTime.isBefore(openingTime)) {
+            // if closing time is before opening time, the restaurant is open if the current
+            isOpened = now.compareTo(openingTime) >= 0 || now.compareTo(closingTime) <= 0;
+        } else {
+            // if closing time is after opening time, the restaurant is open if the current
+            isOpened = now.compareTo(openingTime) >= 0 && now.compareTo(closingTime) <= 0;
+
+        }
+
+        return ResponseEntity.ok(isOpened);
     }
 
     public ResponseEntity<Boolean> saveUserOrder(UserOrderForm form) {
@@ -507,6 +521,8 @@ public class RestaurantService {
         userOrderM.setRecipientName(form.getRecipientName());
         userOrderM.setRecipientPhone(form.getRecipientPhone());
         userOrderM.setTotalAmount(form.getTotalAmount());
+        userOrderM.setDeliveryFee(form.getDeliveryFee());
+        userOrderM.setServiceFee(form.getServiceFee());
 
         for (OrderItemResponse item : form.getOrderItemM()) {
             Optional<PlatModel> platM = platRepository.findFirstByIdAndRestaurantAndDeletedAndDisponibleTrue(
@@ -588,6 +604,30 @@ public class RestaurantService {
         log.info("reject resto {}", restaurantM.getId());
         return ResponseEntity.ok(restaurantM);
 
+    }
+
+    public Boolean isOpen(RestaurantModel restaurant) {
+        LocalTime now = LocalTime.now();
+        Optional<OpeningHoursModel> openingOpt = openingHourRepo.findFirstByDayOfWeekAndRestaurantAndDeletedFalse(
+                Utility.getDayOfWeekFrench(),
+                restaurant);
+        if (openingOpt.isEmpty()) {
+            log.error("opening hours not found");
+            return false;
+        }
+        LocalTime openingTime = openingOpt.get().getOpeningTime();
+        LocalTime closingTime = openingOpt.get().getClosingTime();
+        Boolean isOpened;
+        if (closingTime.isBefore(openingTime)) {
+            // if closing time is before opening time, the restaurant is open if the current
+            isOpened = now.compareTo(openingTime) >= 0 || now.compareTo(closingTime) <= 0;
+        } else {
+            // if closing time is after opening time, the restaurant is open if the current
+            isOpened = now.compareTo(openingTime) >= 0 && now.compareTo(closingTime) <= 0;
+
+        }
+        log.info("Restaurant with ID {} is currently {}", restaurant.getId(), isOpened ? "open" : "closed");
+        return isOpened;
     }
 
 }
