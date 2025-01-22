@@ -22,6 +22,8 @@ import com.lunionlab.turbo_restaurant.services.UserService;
 
 import jakarta.validation.Valid;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping(path = "api/V1/turbo/resto/user")
 public class UserController {
@@ -82,4 +84,8 @@ public class UserController {
         return userService.updateProfile(avatar, form);
     }
 
+    @GetMapping("/{restoId}/users")
+    public Object restaurantDetail(@PathVariable UUID restoId) {
+        return userService.usersRestaurant(restoId);
+    }
 }

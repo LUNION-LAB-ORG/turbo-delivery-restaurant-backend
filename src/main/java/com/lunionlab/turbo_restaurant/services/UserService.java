@@ -1,5 +1,6 @@
 package com.lunionlab.turbo_restaurant.services;
 
+import com.lunionlab.turbo_restaurant.model.RestaurantModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -28,15 +29,12 @@ import com.lunionlab.turbo_restaurant.utilities.Utility;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import java.util.Map;
+
+import java.util.*;
 // import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
 // import java.util.List;
-import java.util.Optional;
 import java.io.File;
 import java.time.temporal.*;
-import java.util.UUID;
 
 @Service
 @Slf4j
@@ -439,6 +437,11 @@ public class UserService {
         userM = userRepository.save(userM);
         log.info("update user {}", userM.getId());
         return ResponseEntity.ok(userM);
+    }
+
+    public Object usersRestaurant(UUID restoId) {
+        List<UserModel> users = userRepository.findAllByRestaurantIdAndDeletedFalse(restoId);
+        return ResponseEntity.ok(users);
     }
 
 }

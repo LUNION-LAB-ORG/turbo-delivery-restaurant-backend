@@ -1,5 +1,6 @@
 package com.lunionlab.turbo_restaurant.repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -15,4 +16,6 @@ public interface UserRepository extends JpaRepository<UserModel, UUID> {
     Optional<UserModel> findFirstByEmail(String email);
 
     Optional<UserModel> findFirstByEmailAndDeleted(String email, Boolean deleted);
+
+    List<UserModel> findAllByRestaurantIdAndDeletedFalse(UUID restoId);
 }
