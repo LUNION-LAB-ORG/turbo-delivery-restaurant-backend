@@ -1,5 +1,6 @@
 package com.lunionlab.turbo_restaurant.model;
 
+import com.lunionlab.turbo_restaurant.objetvaleur.TypeCommission;
 import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -25,6 +26,8 @@ public class UserModel extends BaseModel {
     private String telephone;
     private String username;
     private String avatar;
+    private TypeCommission typeCommission;
+    private double commission;
     private String avatarUrl;
     private Integer attempt;
     @Temporal(TemporalType.TIMESTAMP)
