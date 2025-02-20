@@ -629,7 +629,8 @@ public class RestaurantService {
     public void updateRestoCommission(UpdateRestoCommissionForm form) {
         TypeCommission type = form.getType();
         double commission = form.getCommission();
-        RestaurantModel resto = (RestaurantModel) this.restaurantDetail(form.getRestoId());
+        RestaurantModel resto = restaurantRepository.findFirstByIdAndDeleted(form.getRestoId(), DeletionEnum.NO)
+                .orElseThrow(() -> new RuntimeException("Le restaurant n'existe pas !"));
         resto.setTypeCommission(type);
         resto.setCommission(commission);
         this.restaurantRepository.save(resto);
