@@ -2,6 +2,7 @@ package com.lunionlab.turbo_restaurant.controller;
 
 import java.util.UUID;
 
+import com.lunionlab.turbo_restaurant.form.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
@@ -14,12 +15,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.lunionlab.turbo_restaurant.form.AddOpeningForm;
-import com.lunionlab.turbo_restaurant.form.CreateRestaurantForm;
-import com.lunionlab.turbo_restaurant.form.RejectRestoForm;
-import com.lunionlab.turbo_restaurant.form.SearchRestoForm;
-import com.lunionlab.turbo_restaurant.form.UpdateRestaurant;
-import com.lunionlab.turbo_restaurant.form.UserOrderForm;
 import com.lunionlab.turbo_restaurant.services.RestaurantService;
 
 import jakarta.validation.Valid;
@@ -120,5 +115,10 @@ public class RestaurantController {
     @PostMapping("/reject")
     public Object rejectRestaurant(@RequestBody RejectRestoForm form) {
         return restaurantService.rejectRestaurant(form);
+    }
+
+    @PostMapping("/update-commission")
+    public void updateRestoCommission(@Valid @RequestBody UpdateRestoCommissionForm form) {
+        restaurantService.updateRestoCommission(form);
     }
 }

@@ -50,7 +50,9 @@ public class WebSecureConfig {
                     "/api/V1/turbo/resto/plat/get/all", "/api/V1/turbo/resto/plat/get/by/**",
                     "/api/V1/turbo/resto/plat/get/collection/by/**", "/api/V1/turbo/restaurant/reject",
                     "/api/V1/turbo/resto/plat/get/by/collection/**", "/api/V1/turbo/resto/boisson/get/**",
-                    "/api/V1/turbo/resto/boisson/get/by/resto/**", "/api/turbo/resto/collection/get/by/customer")
+                    "/api/V1/turbo/resto/boisson/get/by/resto/**", "/api/turbo/resto/collection/get/by/customer",
+                    "api/V1/turbo/restaurant/update-commission"
+                    )
                     .permitAll().anyRequest().authenticated();
         });
 

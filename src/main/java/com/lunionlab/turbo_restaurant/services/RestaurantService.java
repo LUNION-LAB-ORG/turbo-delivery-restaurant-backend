@@ -10,6 +10,8 @@ import java.util.UUID;
 import java.util.List;
 import java.util.ArrayList;
 
+import com.lunionlab.turbo_restaurant.form.*;
+import com.lunionlab.turbo_restaurant.objetvaleur.TypeCommission;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.web.PagedResourcesAssembler;
@@ -23,12 +25,6 @@ import org.springframework.web.multipart.MultipartFile;
 import com.lunionlab.turbo_restaurant.Enums.DayOfWeekEnum;
 import com.lunionlab.turbo_restaurant.Enums.DeletionEnum;
 import com.lunionlab.turbo_restaurant.Enums.StatusEnum;
-import com.lunionlab.turbo_restaurant.form.AddOpeningForm;
-import com.lunionlab.turbo_restaurant.form.CreateRestaurantForm;
-import com.lunionlab.turbo_restaurant.form.RejectRestoForm;
-import com.lunionlab.turbo_restaurant.form.SearchRestoForm;
-import com.lunionlab.turbo_restaurant.form.UpdateRestaurant;
-import com.lunionlab.turbo_restaurant.form.UserOrderForm;
 import com.lunionlab.turbo_restaurant.model.AccompagnementModel;
 import com.lunionlab.turbo_restaurant.model.BoissonModel;
 import com.lunionlab.turbo_restaurant.model.OpeningHoursModel;
@@ -630,4 +626,12 @@ public class RestaurantService {
         return isOpened;
     }
 
+    public void updateRestoCommission(UpdateRestoCommissionForm form) {
+        TypeCommission type = form.getType();
+        double commission = form.getCommission();
+        RestaurantModel resto = (RestaurantModel) this.restaurantDetail(form.getRestoId());
+        resto.setTypeCommission(type);
+        resto.setCommission(commission);
+        this.restaurantRepository.save(resto);
+    }
 }
