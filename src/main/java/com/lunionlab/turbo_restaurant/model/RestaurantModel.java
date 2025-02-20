@@ -1,5 +1,6 @@
 package com.lunionlab.turbo_restaurant.model;
 
+import com.lunionlab.turbo_restaurant.objetvaleur.TypeCommission;
 import java.util.Date;
 
 import jakarta.persistence.Entity;
@@ -21,6 +22,8 @@ public class RestaurantModel extends BaseModel {
     private String codePostal;
     private String commune;
     private String localisation;
+    private TypeCommission typeCommission;
+    private double commission;
     private String siteWeb;
     private String logo;
     private String logo_Url;

@@ -26,8 +26,6 @@ public class UserModel extends BaseModel {
     private String telephone;
     private String username;
     private String avatar;
-    private TypeCommission typeCommission;
-    private double commission;
     private String avatarUrl;
     private Integer attempt;
     @Temporal(TemporalType.TIMESTAMP)
