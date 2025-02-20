@@ -1,6 +1,7 @@
 package com.lunionlab.turbo_restaurant.model;
 
 import java.util.ArrayList;
+import com.lunionlab.turbo_restaurant.objetvaleur.TypeCommission;
 import java.util.Date;
 import java.util.List;
 
@@ -28,6 +29,8 @@ public class RestaurantModel extends BaseModel {
     private String codePostal;
     private String commune;
     private String localisation;
+    private TypeCommission typeCommission;
+    private double commission;
     private String siteWeb;
     private String logo;
     private String logo_Url;
