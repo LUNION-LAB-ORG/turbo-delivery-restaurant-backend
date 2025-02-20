@@ -3,7 +3,6 @@ package com.lunionlab.turbo_restaurant.controller;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -47,6 +46,22 @@ public class BoissonController {
     @PostMapping("/update/{boissonId}")
     public Object updateBoisson(@PathVariable UUID boissonId, @RequestBody UpdateBoissonForm form) {
         return boissonService.updateBoisson(boissonId, form);
+    }
+
+    @GetMapping("/get/{boissonId}")
+    public Object getBoisson(@PathVariable UUID boissonId) {
+        return boissonService.drinkInfo(boissonId);
+    }
+
+    @Secured({ "ROLE_USER", "ROLE_ADMIN" })
+    @GetMapping("/info/{boissonId}")
+    public Object getBoissonInfo(@PathVariable UUID boissonId) {
+        return boissonService.drinkInfo(boissonId);
+    }
+
+    @GetMapping("/get/by/resto/{restoId}")
+    public Object getBoissonByResto(@PathVariable UUID restoId) {
+        return boissonService.getRestoDrink(restoId);
     }
 
 }

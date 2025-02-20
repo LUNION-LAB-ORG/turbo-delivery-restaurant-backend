@@ -1,5 +1,7 @@
 package com.lunionlab.turbo_restaurant.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -16,6 +18,7 @@ public class OptionValeurModel extends BaseModel {
     private String valeur;
     private Long prixSup;
     @ManyToOne
+    @JsonBackReference
     private OptionPlatModel optionPlatModel;
 
     public OptionValeurModel(String valeur, Long prixSup, OptionPlatModel optionPlatModel) {

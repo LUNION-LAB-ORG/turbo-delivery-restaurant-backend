@@ -7,6 +7,7 @@ import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.lunionlab.turbo_restaurant.model.BoissonModel;
+import com.lunionlab.turbo_restaurant.model.RestaurantModel;
 
 public interface BoissonRespository extends JpaRepository<BoissonModel, UUID> {
     Boolean existsByLibelleAndVolumeAndDeleted(String libelle, Double volume, Boolean deleted);
@@ -14,4 +15,6 @@ public interface BoissonRespository extends JpaRepository<BoissonModel, UUID> {
     Optional<BoissonModel> findFirstByIdAndDeleted(UUID id, Boolean deleted);
 
     List<BoissonModel> findAllByDeleted(Boolean deleted);
+
+    List<BoissonModel> findByRestaurantAndDeletedFalse(RestaurantModel restaurant);
 }

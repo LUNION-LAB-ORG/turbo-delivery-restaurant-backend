@@ -4,8 +4,14 @@ import java.security.SecureRandom;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.TextStyle;
 import java.time.temporal.TemporalUnit;
 import java.util.Date;
+import java.util.Locale;
 import java.util.regex.*;
 
 import org.springframework.security.crypto.bcrypt.BCrypt;
@@ -121,5 +127,22 @@ public class Utility {
             return false;
         }
         return true;
+    }
+
+    public static LocalTime StrToLocalTime(String time) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:M");
+        return LocalTime.parse(time, formatter);
+    }
+
+    public static String getDayOfWeekFrench() {
+        DayOfWeek dayOfWeek = LocalDate.now().getDayOfWeek();
+        return dayOfWeek.getDisplayName(TextStyle.FULL, Locale.FRENCH).toUpperCase();
+    }
+
+    public static String generateOrderCode(Long totalAmount, String restaurantName) {
+        String resto = restaurantName.substring(0, 3).toUpperCase();
+        String code = "CMD" + resto + String.valueOf(totalAmount);
+        code += new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
+        return code;
     }
 }

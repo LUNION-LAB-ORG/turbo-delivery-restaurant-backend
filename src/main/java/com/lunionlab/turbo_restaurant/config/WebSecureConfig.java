@@ -39,8 +39,18 @@ public class WebSecureConfig {
                     "/api/V1/turbo/resto/user/register/stepfirst", "/api/V1/turbo/resto/user/register/stepsecond",
                     "/api/V1/turbo/resto/user/register/finalstep", "/api/V1/turbo/resto/user/change/password",
                     "/api/V1/turbo/resto/user/forget/password", "/api/V1/turbo/resto/user/new/password",
-                    "/api/turbo/resto/collection/get", "/api/turbo/resto/collection/add",
-                    "/api/turbo/resto/collection/detail/**", "/api/turbo/resto/collection/update/**")
+                    "/api/V1/turbo/restaurant/not/validated/**", "/api/V1/turbo/restaurant/validated/authservice/**",
+                    "/api/V1/turbo/restaurant/validated/opsmanager/**",
+                    "/api/V1/turbo/restaurant/approved/authservice/**",
+                    "/api/V1/turbo/restaurant/approved/opsmanager/**",
+                    "/api/V1/turbo/restaurant/detail/erp/**", "/api/serve/file/**", "/api/V1/turbo/resto/plat/filter",
+                    "/api/V1/turbo/restaurant/search", "/api/V1/turbo/resto/plat/search",
+                    "/api/V1/turbo/resto/plat/detail/**", "/api/V1/turbo/resto/plat/all/price",
+                    "/api/V1/turbo/restaurant/check/opening/**", "/api/V1/turbo/restaurant/save/order",
+                    "/api/V1/turbo/resto/plat/get/all", "/api/V1/turbo/resto/plat/get/by/**",
+                    "/api/V1/turbo/resto/plat/get/collection/by/**", "/api/V1/turbo/restaurant/reject",
+                    "/api/V1/turbo/resto/plat/get/by/collection/**", "/api/V1/turbo/resto/boisson/get/**",
+                    "/api/V1/turbo/resto/boisson/get/by/resto/**", "/api/turbo/resto/collection/get/by/customer")
                     .permitAll().anyRequest().authenticated();
         });
 

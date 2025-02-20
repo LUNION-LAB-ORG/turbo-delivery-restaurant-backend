@@ -13,6 +13,9 @@ public class UpdateRestaurant {
     private String localisation;
     private String siteWeb;
     private String dateService;
+    private Double latitude;
+    private Double longitude;
+    private String idLocation;
 
     public void setNomEtablissement(String nomEtablissement) {
         this.nomEtablissement = nomEtablissement;
@@ -48,6 +51,18 @@ public class UpdateRestaurant {
 
     public void setDateService(String dateService) {
         this.dateService = dateService;
+    }
+
+    public void setLatitude(String latitude) {
+        this.latitude = Double.parseDouble(latitude);
+    }
+
+    public void setLongitude(String longitude) {
+        this.longitude = Double.parseDouble(longitude);
+    }
+
+    public void setIdLocation(String idLocation) {
+        this.idLocation = idLocation;
     }
 
 }
