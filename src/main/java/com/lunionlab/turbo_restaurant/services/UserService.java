@@ -169,16 +169,17 @@ public class UserService {
             log.error("mauvais format de données");
             return ResponseEntity.badRequest().body(Report.getErrors(result));
         }
-        if (!Utility.checkEmail(form.getEmail())) {
+        String email = form.getEmail();
+        if (!Utility.checkEmail(email)) {
             log.error("email invalide");
             return ResponseEntity.badRequest().body(Report.getMessage("message", "email invalide", "code", "EM10"));
         }
-        Optional<UserModel> userOpt = userRepository.findFirstByEmail(form.getEmail());
+        Optional<UserModel> userOpt = userRepository.findFirstByEmail(email);
         if (userOpt.isPresent()) {
             log.error("utilisateur déjè inscript");
 
             String codeOpt = genericService.generateOptCode();
-            boolean hasSend = genericService.sendMail("support@turbodeliveryapp.com", form.getEmail(),
+            boolean hasSend = genericService.sendMail("support@turbodeliveryapp.com", email,
                     "Code de confirmation",
                     genericService.template("Votre code de confirmation pour TurboDelivery", "\r\n" + //
                             "                                <p>Ce code ne sera valide que pour les 5 prochaines minutes</p>\r\n"
@@ -196,7 +197,7 @@ public class UserService {
             return ResponseEntity.ok(response);
         }
         String codeOpt = genericService.generateOptCode();
-        boolean hasSend = genericService.sendMail("support@turbodeliveryapp.com", form.getEmail(),
+        boolean hasSend = genericService.sendMail("support@turbodeliveryapp.com", email,
                 "Code de confirmation",
                 genericService.template("Votre code de confirmation pour TurboDelivery", "\r\n" + //
                         "                                <p>Ce code ne sera valide que pour les 5 prochaines minutes</p>\r\n"
@@ -207,7 +208,7 @@ public class UserService {
             return ResponseEntity.badRequest()
                     .body(Report.getMessage("message", "mail non distrué", "code", "EM12"));
         }
-        UserModel userModel = new UserModel(null, null, form.getEmail(), null, null);
+        UserModel userModel = new UserModel(null, null, email, null, null);
         userModel = userRepository.save(userModel);
         CodeOptModel code = new CodeOptModel(codeOpt, Utility.dateFromInteger(CODE_DELAY, ChronoUnit.MINUTES),
                 userModel);

@@ -354,6 +354,16 @@ public class RestaurantService {
         return ResponseEntity.ok(restaurants);
     }
 
+    public Object getAllRestaurantValidByOpsManager() {
+        List<RestaurantModel> restaurants = restaurantRepository.findByStatusAndDeletedOrderByDateCreationDesc(
+                StatusEnum.RESTO_VALID_BY_OPSMANAGER, DeletionEnum.NO);
+        restaurants.forEach(restaurant -> {
+            restaurant.setIsOpen(this.isOpen(restaurant));
+            restaurantRepository.save(restaurant);
+        });
+        return ResponseEntity.ok(restaurants);
+    }
+
     public Object restaurantValidatedByAuthService(UUID restoId) {
         List<Integer> statusAllow = List.of(StatusEnum.DEFAULT_DESABLE, StatusEnum.DEFAULT_ENABLE);
         Optional<RestaurantModel> restaurantOpt = restaurantRepository.findFirstByIdAndStatusInAndDeleted(restoId,
