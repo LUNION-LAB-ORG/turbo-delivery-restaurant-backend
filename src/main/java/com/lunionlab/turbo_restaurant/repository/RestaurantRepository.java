@@ -24,6 +24,8 @@ public interface RestaurantRepository extends JpaRepository<RestaurantModel, UUI
         Page<RestaurantModel> findByStatusAndDeletedOrderByDateCreationDesc(Integer status, Boolean deleted,
                         Pageable page);
 
+        List<RestaurantModel> findByStatusAndDeletedOrderByDateCreationDesc(Integer status, Boolean deleted);
+
         Optional<RestaurantModel> findFirstByIdAndStatusAndDeleted(UUID restoId, Integer status, Boolean deleted);
 
         Optional<RestaurantModel> findFirstByIdAndStatusInAndDeleted(UUID restoId, List<Integer> status,

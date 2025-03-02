@@ -61,6 +61,11 @@ public class RestaurantController {
         return restaurantService.getAllRestaurantValidByOpsManager(page);
     }
 
+    @GetMapping("/validated/opsmanager")
+    public Object getAllRestaurantValidByOpsManager() {
+        return restaurantService.getAllRestaurantValidByOpsManager();
+    }
+
     @GetMapping("/approved/authservice/{restoId}")
     public Object restaurantValidatedByAuthService(@PathVariable UUID restoId) {
         return restaurantService.restaurantValidatedByAuthService(restoId);
