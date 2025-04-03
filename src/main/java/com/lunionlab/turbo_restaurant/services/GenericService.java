@@ -263,6 +263,15 @@ public class GenericService {
         return response;
     }
 
+    public ResponseEntity<Object> httpPost(String uri, Object commande) throws HttpClientErrorException {
+        RestTemplate httpClient = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Accept", "application/json");
+        headers.set("Content-Type", "application/json");
+        HttpEntity<Object> entity = new HttpEntity<>(commande, headers);
+        return httpClient.postForEntity(uri, entity, Object.class);
+    }
+
     public ResponseEntity<String> httpPost(String uri, Map<String, Object> data) throws HttpClientErrorException {
 
         RestTemplate httpClient = new RestTemplate();
