@@ -50,3 +50,7 @@ paginate:
 erp:
   server:
     address: http://localhost:8000/api
+
+backend:
+  server:
+    address: http://localhost:8080/api

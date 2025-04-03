@@ -1,18 +1,22 @@
 package com.lunionlab.turbo_restaurant.services;
 
-import java.io.File;
-import java.io.IOException;
-import java.time.LocalTime;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.List;
-import java.util.ArrayList;
-
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.lunionlab.turbo_restaurant.Enums.DayOfWeekEnum;
+import com.lunionlab.turbo_restaurant.Enums.DeletionEnum;
+import com.lunionlab.turbo_restaurant.Enums.StatusEnum;
 import com.lunionlab.turbo_restaurant.form.*;
+import com.lunionlab.turbo_restaurant.model.*;
 import com.lunionlab.turbo_restaurant.objetvaleur.TypeCommission;
+import com.lunionlab.turbo_restaurant.repository.*;
+import com.lunionlab.turbo_restaurant.response.CollectionResponse;
+import com.lunionlab.turbo_restaurant.response.OrderItemResponse;
+import com.lunionlab.turbo_restaurant.utilities.Report;
+import com.lunionlab.turbo_restaurant.utilities.Utility;
+import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
@@ -20,37 +24,13 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.lunionlab.turbo_restaurant.Enums.DayOfWeekEnum;
-import com.lunionlab.turbo_restaurant.Enums.DeletionEnum;
-import com.lunionlab.turbo_restaurant.Enums.StatusEnum;
-import com.lunionlab.turbo_restaurant.model.AccompagnementModel;
-import com.lunionlab.turbo_restaurant.model.BoissonModel;
-import com.lunionlab.turbo_restaurant.model.OpeningHoursModel;
-import com.lunionlab.turbo_restaurant.model.OptionValeurModel;
-import com.lunionlab.turbo_restaurant.model.OrderItemModel;
-import com.lunionlab.turbo_restaurant.model.PlatModel;
-import com.lunionlab.turbo_restaurant.model.RestaurantModel;
-import com.lunionlab.turbo_restaurant.model.TypeCuisineRestaurantModel;
-import com.lunionlab.turbo_restaurant.model.UserModel;
-import com.lunionlab.turbo_restaurant.model.UserOrderM;
-import com.lunionlab.turbo_restaurant.repository.AccompagnementRepo;
-import com.lunionlab.turbo_restaurant.repository.BoissonRespository;
-import com.lunionlab.turbo_restaurant.repository.OpeningHourRepo;
-import com.lunionlab.turbo_restaurant.repository.OptionValeurRepo;
-import com.lunionlab.turbo_restaurant.repository.PictureRestoRepository;
-import com.lunionlab.turbo_restaurant.repository.PlatRepository;
-import com.lunionlab.turbo_restaurant.repository.RestaurantRepository;
-import com.lunionlab.turbo_restaurant.repository.TypeCuisineRestoRepository;
-import com.lunionlab.turbo_restaurant.repository.UserOrderRepo;
-import com.lunionlab.turbo_restaurant.repository.UserRepository;
-import com.lunionlab.turbo_restaurant.response.OrderItemResponse;
-import com.lunionlab.turbo_restaurant.utilities.Report;
-import com.lunionlab.turbo_restaurant.utilities.Utility;
-
-import jakarta.validation.Valid;
-import lombok.extern.slf4j.Slf4j;
+import java.io.File;
+import java.io.IOException;
+import java.time.LocalTime;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -94,8 +74,11 @@ public class RestaurantService {
     @Autowired
     OptionValeurRepo optionValeurRepo;
 
+    @Value("${backend.server.address}")
+    private String BACKEND;
+
     public Object createRestaurant(MultipartFile logoUrl, MultipartFile cniUrl, MultipartFile docUrl,
-            @Valid CreateRestaurantForm form, BindingResult result) {
+                                   @Valid CreateRestaurantForm form, BindingResult result) {
         if (result.hasErrors()) {
             log.error("mauvais format des données");
             return ResponseEntity.badRequest().body(Report.getErrors(result));
@@ -134,10 +117,13 @@ public class RestaurantService {
 
         if (!logoUrl.isEmpty() && logoUrl != null) {
             String logExtension = genericService.getFileExtension(logoUrl.getOriginalFilename());
-            if (!logExtension.equalsIgnoreCase("png") && !logExtension.equalsIgnoreCase("jpg")) {
+            if (!logExtension.equalsIgnoreCase("png") &&
+                    !logExtension.equalsIgnoreCase("jpg") &&
+                    !logExtension.equalsIgnoreCase("jpeg")
+            ) {
                 log.error(logExtension);
                 return ResponseEntity.badRequest()
-                        .body(Report.message("logo", "le logo doit etre au format jpg ou png"));
+                        .body(Report.message("logo", "le logo doit etre au format jpg, jpeg ou png"));
             }
             logo = genericService.generateFileName("logo") + "." + logExtension;
             File logFile = new File(logo);
@@ -190,9 +176,12 @@ public class RestaurantService {
                     "vous n'êtes pas habilité à ajouter plusieurs restaurants", "code", "R0"));
         }
         // save restaurant
-        RestaurantModel restaurant = new RestaurantModel(form.getNomEtablissement(), form.getDescription(),
-                form.getEmail(), form.getTelephone(), form.getCodePostal(), form.getCommune(), form.getLocalisation(),
-                form.getSiteWeb(), logo, logo, Utility.dateFromString(form.getDateService()), document, cni);
+        RestaurantModel restaurant = new RestaurantModel(
+                form.getNomEtablissement(), form.getDescription(),
+                form.getEmail(), form.getTelephone(), form.getCodePostal(),
+                form.getCommune(), form.getLocalisation(), form.getSiteWeb(),
+                logo, logo, Utility.dateFromString(form.getDateService()), document, cni
+        );
         restaurant.setLatitude(form.getLatitude());
         restaurant.setLongitude(form.getLongitude());
         restaurant.setIdLocation(form.getIdLocation());
@@ -202,11 +191,14 @@ public class RestaurantService {
         user.setRestaurant(restaurant);
         user = userRepository.save(user);
         Map<String, Object> response = Map.of("restaurant", restaurant, "createdBy", user);
+
+        this.notifierErp(restaurant.getNomEtablissement());
+
         return ResponseEntity.ok(response);
     }
 
     public Object updateRestaurant(MultipartFile logoUrl, MultipartFile cniUrl, MultipartFile docUrl,
-            UpdateRestaurant form) {
+                                   UpdateRestaurant form) {
         UserModel userAuth = genericService.getAuthUser();
         RestaurantModel restaurant = userAuth.getRestaurant();
         if (restaurant == null) {
@@ -216,10 +208,13 @@ public class RestaurantService {
         }
         if (logoUrl != null && !logoUrl.isEmpty()) {
             String logExtension = genericService.getFileExtension(logoUrl.getOriginalFilename());
-            if (!logExtension.equalsIgnoreCase("png") && !logExtension.equalsIgnoreCase("jpg")) {
+            if (!logExtension.equalsIgnoreCase("png") &&
+                    !logExtension.equalsIgnoreCase("jpg") &&
+                    !logExtension.equalsIgnoreCase("jpeg")
+            ) {
                 log.error(logExtension);
                 return ResponseEntity.badRequest()
-                        .body(Report.message("logo", "le logo doit etre au format jpg ou png"));
+                        .body(Report.message("logo", "le logo doit etre au format jpg, jpeg ou png"));
             }
             String logo = genericService.generateFileName("logo");
             File logFile = new File(logo + "." + logExtension);
@@ -644,5 +639,12 @@ public class RestaurantService {
         resto.setTypeCommission(type);
         resto.setCommission(commission);
         this.restaurantRepository.save(resto);
+    }
+
+
+    private void notifierErp(String nomEtablissement) {
+        String message = "Un nouveau restaurant du nom de " + nomEtablissement + " vient d'être créé !";
+        String endpoint = BACKEND + "/erp/notification/notifier/erp";
+        genericService.httpPost(endpoint, message);
     }
 }
