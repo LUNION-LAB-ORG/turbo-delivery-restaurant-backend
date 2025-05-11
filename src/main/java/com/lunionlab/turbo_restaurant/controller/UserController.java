@@ -83,9 +83,4 @@ public class UserController {
     public Object updateProfile(@PathVariable MultipartFile avatar, @Valid UpdateProfileForm form) {
         return userService.updateProfile(avatar, form);
     }
-
-    @GetMapping("/{restoId}/users")
-    public Object restaurantDetail(@PathVariable UUID restoId) {
-        return userService.usersRestaurant(restoId);
-    }
 }

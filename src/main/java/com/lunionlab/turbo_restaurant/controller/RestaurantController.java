@@ -3,6 +3,7 @@ package com.lunionlab.turbo_restaurant.controller;
 import java.util.UUID;
 
 import com.lunionlab.turbo_restaurant.form.*;
+import com.lunionlab.turbo_restaurant.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
@@ -24,6 +25,8 @@ import jakarta.validation.Valid;
 public class RestaurantController {
     @Autowired
     RestaurantService restaurantService;
+    @Autowired
+    UserService userService;
 
     @Secured("ROLE_USER")
     @PostMapping("/create")
@@ -125,5 +128,10 @@ public class RestaurantController {
     @PostMapping("/update-commission")
     public void updateRestoCommission(@Valid @RequestBody UpdateRestoCommissionForm form) {
         restaurantService.updateRestoCommission(form);
+    }
+
+    @GetMapping("/{restoId}/users")
+    public Object usersRestaurant(@PathVariable UUID restoId) {
+        return userService.usersRestaurant(restoId);
     }
 }
