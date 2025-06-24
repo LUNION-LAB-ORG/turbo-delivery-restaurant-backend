@@ -1,5 +1,6 @@
 package com.lunionlab.turbo_restaurant.services;
 
+import com.lunionlab.turbo_restaurant.model.BoissonPlatModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.web.PagedResourcesAssembler;
@@ -305,11 +306,9 @@ public class PlatService {
         // get Option du plat
         List<OptionPlatModel> optionPlatModels = optionPlatRepo.findByPlatAndDeletedFalse(platOpt.get());
         // get drink link to plat
-        // List<BoissonPlatModel> boissonPlatModels =
-        // boissonPlatRepository.findByPlatAndDeleted(platOpt.get(),
-        // DeletionEnum.NO);
+         List<BoissonPlatModel> boissonPlatModels = boissonPlatRepository.findByPlatAndDeleted(platOpt.get(), DeletionEnum.NO);
         // format response
-        CustomerPlatResponse response = new CustomerPlatResponse(platOpt.get(), accompagnements, optionPlatModels);
+        CustomerPlatResponse response = new CustomerPlatResponse(platOpt.get(), accompagnements, optionPlatModels, boissonPlatModels);
         return ResponseEntity.ok(response);
     }
 

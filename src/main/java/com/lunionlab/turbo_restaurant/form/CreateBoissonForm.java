@@ -2,6 +2,7 @@ package com.lunionlab.turbo_restaurant.form;
 
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -14,4 +15,6 @@ public class CreateBoissonForm {
     private Long price;
     @NotNull
     private Double volume;
+    @NotNull
+    private UUID platId;
 }

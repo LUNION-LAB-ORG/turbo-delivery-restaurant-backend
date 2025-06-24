@@ -52,25 +52,24 @@ public class BoissonService {
             log.error("this boission is already exists");
             return ResponseEntity.badRequest().body(Report.message("message", "cette boisson existe dejà"));
         }
-        // Optional<PlatModel> platOpt =
-        // platRepository.findFirstByIdAndDeletedAndDisponibleTrue(form.getPlatId(),
-        // DeletionEnum.NO);
+        Optional<PlatModel> platOpt =
+            platRepository.findFirstByIdAndDeletedAndDisponibleTrue(form.getPlatId(), DeletionEnum.NO);
         RestaurantModel restaurant = genericService.getAuthUser().getRestaurant();
-        // if (platOpt.isEmpty()) {
-        // log.error("plat not found");
-        // return ResponseEntity.badRequest().body(Report.message("message", "plat not
-        // found"));
-        // }
-        // PlatModel plat = platOpt.get();
+         if (platOpt.isEmpty()) {
+         log.error("plat not found");
+         return ResponseEntity.badRequest().body(Report.message("message", "plat not found"));
+         }
+         PlatModel plat = platOpt.get();
         if (restaurant == null) {
             log.error("restaurant not found");
             return ResponseEntity.badRequest().body(Report.notFound("restaurant not found"));
 
         }
+
         BoissonModel boisson = new BoissonModel(form.getLibelle(), form.getPrice(), form.getVolume(), restaurant);
         boisson = boissonRespository.save(boisson);
-        // BoissonPlatModel boissonPlat = new BoissonPlatModel(plat, boisson);
-        // boissonPlat = boissonPlatRepository.save(boissonPlat);
+         BoissonPlatModel boissonPlat = new BoissonPlatModel(plat, boisson);
+         boissonPlatRepository.save(boissonPlat);
 
         log.info("boisson added");
         return ResponseEntity.ok(boisson);

@@ -5,11 +5,17 @@ spring:
     url: jdbc:postgresql://localhost:5432/turboresto
     username: andersonkouadio
     password: Leloup01@
+
+#    url: jdbc:postgresql://147.79.101.226:5432/turborestotest
+#    username: turbo
+#    password: turbo
+
     driverClassName: org.postgresql.Driver
   jpa:
     show-sql: true
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
+#      ddl-auto: update
     properties:
       hibernate:
         formatsql: true
