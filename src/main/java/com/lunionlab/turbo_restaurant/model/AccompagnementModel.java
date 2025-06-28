@@ -1,5 +1,6 @@
 package com.lunionlab.turbo_restaurant.model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -16,11 +17,14 @@ public class AccompagnementModel extends BaseModel {
     private String libelle;
     private Long price;
     @ManyToOne
-    private PlatModel platModel;
+    private RestaurantModel restaurant;
+    @Column(name = "is_free", columnDefinition = "BOOLEAN DEFAULT false", nullable = false)
+    private boolean free;
 
-    public AccompagnementModel(String libelle, Long price, PlatModel platModel) {
+    public AccompagnementModel(String libelle, Long price, RestaurantModel restaurant, boolean free) {
         this.libelle = libelle;
         this.price = price;
-        this.platModel = platModel;
+        this.restaurant = restaurant;
+        this.free = free;
     }
 }

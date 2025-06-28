@@ -1,5 +1,9 @@
 package com.lunionlab.turbo_restaurant.services;
 
+import com.lunionlab.turbo_restaurant.model.AccompagnementPlatModel;
+import com.lunionlab.turbo_restaurant.repository.AccompagnementPlatRepository;
+import com.lunionlab.turbo_restaurant.repository.RestaurantRepository;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -32,6 +36,34 @@ public class AccompagnementService {
 
     @Autowired
     GenericService genericService;
+    @Autowired
+    RestaurantRepository restaurantRepository;
+    @Autowired
+    AccompagnementPlatRepository accompagnementPlatRepository;
+
+//    public Object createAccompagnement(@Valid CreateAccompagnementForm form, BindingResult result) {
+//        if (result.hasErrors()) {
+//            log.error("mauvais format des données");
+//            return ResponseEntity.badRequest().body(Report.getErrors(result));
+//        }
+//        Optional<PlatModel> platOpt = platRepository.findFirstByIdAndDeletedAndDisponibleTrue(form.getPlatId(),
+//                DeletionEnum.NO);
+//        if (platOpt.isEmpty()) {
+//            log.error("aucun plat trouvé");
+//            return ResponseEntity.badRequest().body(Report.message("message", "aucun plat trouvé"));
+//        }
+//        Boolean isExist = accompagnementRepo.existsByLibelleAndPlatModelAndDeleted(form.getLibelle(), platOpt.get(),
+//                DeletionEnum.NO);
+//        if (isExist) {
+//            log.error("cet accompagnement existe déjà");
+//            return ResponseEntity.badRequest().body(Report.message("message", "cet accompagnement existe déjà"));
+//        }
+//        AccompagnementModel accompagnementModel = new AccompagnementModel(form.getLibelle(), form.getPrice(),
+//                platOpt.get(), form.isFree());
+//        accompagnementModel = accompagnementRepo.save(accompagnementModel);
+//        log.info("accompagnement créé avec succès");
+//        return ResponseEntity.ok(accompagnementModel);
+//    }
 
     public Object createAccompagnement(@Valid CreateAccompagnementForm form, BindingResult result) {
         if (result.hasErrors()) {
@@ -39,22 +71,45 @@ public class AccompagnementService {
             return ResponseEntity.badRequest().body(Report.getErrors(result));
         }
         Optional<PlatModel> platOpt = platRepository.findFirstByIdAndDeletedAndDisponibleTrue(form.getPlatId(),
-                DeletionEnum.NO);
+            DeletionEnum.NO);
         if (platOpt.isEmpty()) {
             log.error("aucun plat trouvé");
             return ResponseEntity.badRequest().body(Report.message("message", "aucun plat trouvé"));
         }
-        Boolean isExist = accompagnementRepo.existsByLibelleAndPlatModelAndDeleted(form.getLibelle(), platOpt.get(),
-                DeletionEnum.NO);
-        if (isExist) {
-            log.error("cet accompagnement existe déjà");
-            return ResponseEntity.badRequest().body(Report.message("message", "cet accompagnement existe déjà"));
+        PlatModel platModel = platOpt.get();
+//        RestaurantModel restaurantModel = genericService.getAuthUser().getRestaurant();
+        Optional<RestaurantModel> restaurantModelOptional = this.restaurantRepository.findById(
+            UUID.fromString("040ae1c0-5a4f-4406-95dd-a746e0fb8884"));
+        RestaurantModel restaurantModel = restaurantModelOptional.get();
+        List<AccompagnementModel> accompagnementModels = new ArrayList<>();
+        if(!form.getAccompagnementItemForms().isEmpty()){
+            form.getAccompagnementItemForms().forEach(commande->{
+                Optional<AccompagnementModel> existeAccopagnement = this.accompagnementRepo
+                    .findFirstByLibelleAndDeleted(commande.getLibelle(), DeletionEnum.NO);
+                if(existeAccopagnement.isEmpty()){
+                    AccompagnementModel accompagnementModel = new AccompagnementModel(
+                        commande.getLibelle(), commande.getPrice(), restaurantModel, commande.isFree());
+                    AccompagnementModel accompagnementSave = this.accompagnementRepo.save(accompagnementModel);
+                    this.enregitrerAccopagenemtPlat(accompagnementModels, platModel,accompagnementSave);
+                }else{
+                    AccompagnementModel accompagnementModel = existeAccopagnement.get();
+                    this.enregitrerAccopagenemtPlat(accompagnementModels, platModel,accompagnementModel);
+                }
+            });
         }
-        AccompagnementModel accompagnementModel = new AccompagnementModel(form.getLibelle(), form.getPrice(),
-                platOpt.get());
-        accompagnementModel = accompagnementRepo.save(accompagnementModel);
-        log.info("accompagnement créé avec succès");
-        return ResponseEntity.ok(accompagnementModel);
+        log.info("accompagnements créé avec succès");
+        return ResponseEntity.ok(accompagnementModels);
+    }
+
+    private void enregitrerAccopagenemtPlat(List<AccompagnementModel> accompagnementModels ,
+        PlatModel platModel, AccompagnementModel accompagnementSave ){
+        AccompagnementPlatModel accompagnementPlatModel = new AccompagnementPlatModel(platModel, accompagnementSave);
+        boolean existsAccompagnement = this.accompagnementPlatRepository
+            .existsByPlatModelIdAndAccompagnementModelId(platModel.getId(), accompagnementSave.getId());
+        if(!existsAccompagnement){
+            this.accompagnementPlatRepository.save(accompagnementPlatModel);
+        }
+        accompagnementModels.add(accompagnementSave);
     }
 
     public Object getAccompagnementForPlat(UUID platId) {
@@ -70,7 +125,7 @@ public class AccompagnementService {
             log.error("this plat not found");
             return ResponseEntity.badRequest().body(Report.message("message", "this plat not found"));
         }
-        List<AccompagnementModel> accompagnements = accompagnementRepo.findByPlatModelAndDeleted(platOpt.get(),
+        List<AccompagnementPlatModel> accompagnements = accompagnementPlatRepository.findByPlatModelAndDeleted(platOpt.get(),
                 DeletionEnum.NO);
         log.info("get accompagnement list for a plat");
         return ResponseEntity.ok(accompagnements);

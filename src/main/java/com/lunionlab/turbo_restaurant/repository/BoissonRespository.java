@@ -17,4 +17,5 @@ public interface BoissonRespository extends JpaRepository<BoissonModel, UUID> {
     List<BoissonModel> findAllByDeleted(Boolean deleted);
 
     List<BoissonModel> findByRestaurantAndDeletedFalse(RestaurantModel restaurant);
+
 }

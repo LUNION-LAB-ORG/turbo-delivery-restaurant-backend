@@ -23,14 +23,15 @@ public class OrderItemModel extends BaseModel {
     @JsonBackReference
     private UserOrderM userOrderM;
     @ManyToOne
-    private OptionValeurModel optionValueM;
+    private OptionModel optionValueM;
+//    private OptionValeurModel optionValueM;
     @ManyToOne
     private AccompagnementModel accompagnementM;
     @ManyToOne
     private BoissonModel boissonM;
 
     public OrderItemModel(Integer price, Integer quantity, PlatModel plat, UserOrderM userOrderM,
-            OptionValeurModel optionValueM, AccompagnementModel accompagnementM, BoissonModel boissonM) {
+        OptionModel optionValueM, AccompagnementModel accompagnementM, BoissonModel boissonM) {
         this.price = price;
         this.quantity = quantity;
         this.plat = plat;

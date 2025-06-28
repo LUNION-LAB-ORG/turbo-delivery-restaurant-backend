@@ -33,7 +33,6 @@ public class WebSecureConfig {
         security.formLogin(form -> {
             form.disable();
         });
-
         security.authorizeHttpRequests(auth -> {
             auth.requestMatchers("/test/**", "/error", "/api/V1/turbo/resto/user/login",
                     "/api/V1/turbo/resto/user/register/stepfirst", "/api/V1/turbo/resto/user/register/stepsecond",

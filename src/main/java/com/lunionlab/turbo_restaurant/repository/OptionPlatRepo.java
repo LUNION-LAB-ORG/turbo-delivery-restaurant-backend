@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface OptionPlatRepo extends JpaRepository<OptionPlatModel, UUID> {
-    Boolean existsByLibelleAndPlatAndDeleted(String libelle, PlatModel plat, Boolean deleted);
+//    Boolean existsByLibelleAndPlatAndDeleted(String libelle, PlatModel plat, Boolean deleted);
 
     List<OptionPlatModel> findAllByDeleted(Boolean deleted);
 

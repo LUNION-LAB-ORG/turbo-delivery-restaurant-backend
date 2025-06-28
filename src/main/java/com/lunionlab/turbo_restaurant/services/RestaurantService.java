@@ -73,6 +73,8 @@ public class RestaurantService {
 
     @Autowired
     OptionValeurRepo optionValeurRepo;
+    @Autowired
+    OptionRepositry optionRepositry;
 
     @Value("${backend.server.address}")
     private String BACKEND;
@@ -534,6 +536,7 @@ public class RestaurantService {
             BoissonModel boissonM = null;
             AccompagnementModel accompagnementM = null;
             OptionValeurModel optionValeurM = null;
+            OptionModel optionModel = null;
             if (item.getDrinkId() != null && !item.getDrinkId().isEmpty()) {
 
                 boissonM = boissonRespository
@@ -545,11 +548,12 @@ public class RestaurantService {
             }
             if (item.getOptionValue() != null && !item.getOptionValue().isEmpty()) {
 
-                optionValeurM = optionValeurRepo.findFirstByValeurAndDeletedFalse(item.getOptionValue())
-                        .orElse(null);
+//                optionValeurM = optionValeurRepo.findFirstByValeurAndDeletedFalse(item.getOptionValue())
+//                        .orElse(null);
+                optionModel = optionRepositry.findById(item.getOptionId()).orElse(null);
             }
             OrderItemModel orderitem = new OrderItemModel(item.getPrice(), item.getQuantity(), platM.get(), userOrderM,
-                    optionValeurM, accompagnementM, boissonM);
+                optionModel, accompagnementM, boissonM);
             userOrderM.getOrderItemM().add(orderitem);
         }
         userOrderM.setCodeOrder(Utility.generateOrderCode(userOrderM.getTotalAmount(),

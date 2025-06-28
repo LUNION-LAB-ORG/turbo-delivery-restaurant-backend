@@ -9,8 +9,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface OptionValeurRepo extends JpaRepository<OptionValeurModel, UUID> {
-    Optional<OptionValeurModel> findFirstByValeurAndOptionPlatModelAndDeleted(String valeur, OptionPlatModel optionPlat,
-            Boolean deleted);
+//    Optional<OptionValeurModel> findFirstByValeurAndOptionPlatModelAndDeleted(String valeur, OptionPlatModel optionPlat,
+//            Boolean deleted);
 
     Optional<OptionValeurModel> findFirstByValeurAndDeletedFalse(String value);
 }

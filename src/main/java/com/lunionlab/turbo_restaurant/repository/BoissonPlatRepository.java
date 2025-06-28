@@ -13,4 +13,5 @@ import com.lunionlab.turbo_restaurant.model.PlatModel;
 public interface BoissonPlatRepository extends JpaRepository<BoissonPlatModel, UUID> {
 
     List<BoissonPlatModel> findByPlatAndDeleted(PlatModel plat, Boolean deleted);
+    boolean existsByPlatIdAndBoissonModelId(UUID platId, UUID boissonId);
 }

@@ -14,17 +14,17 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
-public class OptionValeurModel extends BaseModel {
+public class OptionValeurModel extends BaseModel{
     private String valeur;
     private Long prixSup;
-    @ManyToOne
-    @JsonBackReference
-    private OptionPlatModel optionPlatModel;
+//    @ManyToOne
+//    @JsonBackReference
+//    private OptionPlatModel optionPlatModel;
 
-    public OptionValeurModel(String valeur, Long prixSup, OptionPlatModel optionPlatModel) {
+    public OptionValeurModel(String valeur, Long prixSup) {
         this.valeur = valeur;
         this.prixSup = prixSup;
-        this.optionPlatModel = optionPlatModel;
+//        this.optionPlatModel = optionPlatModel;
     }
 
 }

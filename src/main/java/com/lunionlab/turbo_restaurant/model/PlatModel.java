@@ -26,7 +26,7 @@ public class PlatModel extends BaseModel {
     @ManyToOne
     private CollectionModel collection;
 
-    public PlatModel(String libelle, String description, Long price, String imageUrl,
+    public PlatModel(String libelle, String description, Long price,String cookTime, String imageUrl,
             RestaurantModel restaurant, CollectionModel collection) {
         this.libelle = libelle;
         this.description = description;
@@ -34,6 +34,7 @@ public class PlatModel extends BaseModel {
         this.imageUrl = imageUrl;
         this.restaurant = restaurant;
         this.collection = collection;
+        this.cookTime = cookTime;
     }
 
 }
