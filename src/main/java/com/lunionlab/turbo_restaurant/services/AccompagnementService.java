@@ -77,10 +77,7 @@ public class AccompagnementService {
             return ResponseEntity.badRequest().body(Report.message("message", "aucun plat trouvé"));
         }
         PlatModel platModel = platOpt.get();
-//        RestaurantModel restaurantModel = genericService.getAuthUser().getRestaurant();
-        Optional<RestaurantModel> restaurantModelOptional = this.restaurantRepository.findById(
-            UUID.fromString("040ae1c0-5a4f-4406-95dd-a746e0fb8884"));
-        RestaurantModel restaurantModel = restaurantModelOptional.get();
+        RestaurantModel restaurantModel = genericService.getAuthUser().getRestaurant();
         List<AccompagnementModel> accompagnementModels = new ArrayList<>();
         if(!form.getAccompagnementItemForms().isEmpty()){
             form.getAccompagnementItemForms().forEach(commande->{

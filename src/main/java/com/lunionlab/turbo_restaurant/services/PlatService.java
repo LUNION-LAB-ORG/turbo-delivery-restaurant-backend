@@ -204,10 +204,7 @@ public class PlatService {
       log.error("plat not found");
       return ResponseEntity.badRequest().body(Report.message("message", "plat not found"));
     }
-//        RestaurantModel restaurantModel = genericService.getAuthUser().getRestaurant();
-    Optional<RestaurantModel> restaurantModelOptional = this.restaurantRepository.findById(
-        UUID.fromString("040ae1c0-5a4f-4406-95dd-a746e0fb8884"));
-    RestaurantModel restaurantModel = restaurantModelOptional.get();
+        RestaurantModel restaurantModel = genericService.getAuthUser().getRestaurant();
     PlatModel platModel = platOpt.get();
     List<OptionModel> optionModels = new ArrayList<>();
     if (!form.getOptionPlatCommandes().isEmpty()) {
