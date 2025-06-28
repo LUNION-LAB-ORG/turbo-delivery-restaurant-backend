@@ -9,6 +9,7 @@ import com.lunionlab.turbo_restaurant.form.AddOptionValeurForm;
 import com.lunionlab.turbo_restaurant.form.AddPlatForm;
 import com.lunionlab.turbo_restaurant.form.SearchPlatForm;
 import com.lunionlab.turbo_restaurant.form.SearchPlatRestoForm;
+import com.lunionlab.turbo_restaurant.model.AccompagnementModel;
 import com.lunionlab.turbo_restaurant.model.AccompagnementPlatModel;
 import com.lunionlab.turbo_restaurant.model.BoissonModel;
 import com.lunionlab.turbo_restaurant.model.BoissonPlatModel;
@@ -426,21 +427,30 @@ public class PlatService {
       return ResponseEntity.badRequest().body("plat Id " + platId + " est trouvable");
     }
     // get accompagnements lier au plat
-    List<AccompagnementPlatModel> accompagnements = accompagnementPlatRepository.findByPlatModelAndDeleted(
+    List<AccompagnementPlatModel> accompagnementPlat = accompagnementPlatRepository.findByPlatModelAndDeleted(
         platOpt.get(),
         DeletionEnum.NO);
+    List<AccompagnementModel> accompagnementModels = new ArrayList<>();
+    if(!accompagnementPlat.isEmpty()){
+      accompagnementPlat.forEach(accompagnement-> accompagnementModels.add(accompagnement.getAccompagnementModel()));
+    }
     // get Option du plat
     List<OptionPlatModel> optionPlatModels = optionPlatRepo.findByPlatAndDeletedFalse(
         platOpt.get());
+    List<OptionModel> optionModels = new ArrayList<>();
+    if(!optionPlatModels.isEmpty()){
+      optionPlatModels.forEach(optionPlatModel -> optionModels.add(optionPlatModel.getOptionModel()));
+    }
     // get drink link to plat
     List<BoissonPlatModel> boissonPlatModels = boissonPlatRepository.findByPlatAndDeleted(
         platOpt.get(), DeletionEnum.NO);
-     accompagnements.stream().findFirst().get().getAccompagnementModel();
-    // format response
-//    CustomerPlatResponse response = new CustomerPlatResponse(platOpt.get(), accompagnements,
-//        optionPlatModels, boissonPlatModels);
-    CustomerPlatResponse response = new CustomerPlatResponse(platOpt.get(), null,
-        optionPlatModels, boissonPlatModels);
+    List<BoissonModel> boissonModels = new ArrayList<>();
+    if(!boissonPlatModels.isEmpty()){
+      boissonPlatModels.forEach(boissonPlatModel -> boissonModels.add(boissonPlatModel.getBoissonModel()));
+    }
+
+    CustomerPlatResponse response = new CustomerPlatResponse(platOpt.get(), accompagnementModels,
+        optionModels, boissonModels);
     return ResponseEntity.ok(response);
   }
 
