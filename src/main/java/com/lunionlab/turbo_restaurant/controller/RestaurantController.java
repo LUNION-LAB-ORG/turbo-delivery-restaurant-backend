@@ -3,7 +3,10 @@ package com.lunionlab.turbo_restaurant.controller;
 import java.util.UUID;
 
 import com.lunionlab.turbo_restaurant.form.*;
+import com.lunionlab.turbo_restaurant.model.RestaurantModel;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.validation.BindingResult;
@@ -56,9 +59,17 @@ public class RestaurantController {
         return restaurantService.getAllRestaurantValidByAuthService(page);
     }
 
-    @GetMapping("/validated/opsmanager/{page}")
+    @GetMapping("/validater/opsmanager/{page}")
     public Object getAllRestaurantValidByOpsManager(@PathVariable Integer page) {
         return restaurantService.getAllRestaurantValidByOpsManager(page);
+    }
+
+    @GetMapping("/validated/opsmanager/{page}")
+    public ResponseEntity<Page<RestaurantModel>> recupererRestaurantValiderParManager(
+            @PathVariable Integer page) {
+        
+        Page<RestaurantModel> restaurants = restaurantService.recupererRestaurantValiderParManager(page);
+        return ResponseEntity.ok(restaurants);
     }
 
     @GetMapping("/validated/opsmanager")

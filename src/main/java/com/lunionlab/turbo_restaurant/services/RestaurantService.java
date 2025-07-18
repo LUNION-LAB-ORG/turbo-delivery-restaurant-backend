@@ -31,6 +31,7 @@ import java.io.File;
 import java.io.IOException;
 import java.time.LocalTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -349,6 +350,30 @@ public class RestaurantService {
             restaurantRepository.save(restaurant);
         });
         return ResponseEntity.ok(restaurants);
+    }
+
+    public Page<RestaurantModel> recupererRestaurantValiderParManager(Integer page) {
+        if (page == null || page < 0) {
+            page = 0;
+        }
+        
+        Page<RestaurantModel> restaurants = restaurantRepository.findByStatusAndDeletedOrderByDateCreationDesc(
+                StatusEnum.RESTO_VALID_BY_OPSMANAGER, 
+                DeletionEnum.NO, 
+                genericService.pagination(page)
+        );
+        
+        if (page >= restaurants.getTotalPages() && restaurants.getTotalPages() > 0) {
+            restaurants = restaurantRepository.findByStatusAndDeletedOrderByDateCreationDesc(
+                    StatusEnum.RESTO_VALID_BY_OPSMANAGER, 
+                    DeletionEnum.NO, 
+                    genericService.pagination(restaurants.getTotalPages() - 1)
+            );
+        }
+        
+        restaurants.forEach(restaurant -> restaurant.setIsOpen(this.isOpen(restaurant)));
+        
+        return restaurants;
     }
 
     public Object getAllRestaurantValidByOpsManager() {
