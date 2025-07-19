@@ -57,13 +57,15 @@ public class PlatService {
         }
         String imageName = null;
         if (!imageUrl.isEmpty() && imageUrl != null) {
-            String imageExten = genericService.getFileExtension(imageUrl.getOriginalFilename());
-            if (!imageExten.equalsIgnoreCase("png") && !imageExten.equalsIgnoreCase("jpg")) {
-                log.error("format image invalide");
-                return ResponseEntity.badRequest()
-                        .body(Report.message("message", "l'image du plat doit etre au format png ou jpg"));
+            long maxImageSize = 2 * 1024 * 1024; // 5MB en bytes
+            // Vérifier la taille de l'image
+            if (imageUrl.getSize() > maxImageSize) {
+                  log.error("Taille d'image trop importante: {} bytes", imageUrl.getSize());
+                  return ResponseEntity.badRequest()
+                      .body(Report.message("message", "L'image du plat ne doit pas dépasser 2MB"));
             }
-            imageName = genericService.generateFileName("plat_image") + "." + imageExten;
+        
+            imageName = genericService.generateFileName("plat_image") + "." + genericService.getFileExtension(imageUrl.getOriginalFilename());
             File imageFile = new File(imageName);
             // compress and save image
             genericService.compressImage(imageUrl, imageFile);
