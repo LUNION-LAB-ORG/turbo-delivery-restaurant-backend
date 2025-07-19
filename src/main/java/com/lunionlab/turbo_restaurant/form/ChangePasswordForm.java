@@ -2,26 +2,15 @@ package com.lunionlab.turbo_restaurant.form;
 
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
+@Setter
 public class ChangePasswordForm {
-    @NotEmpty
+    @NotEmpty(message = "Le login est obligatoire !")
     private String username;
-    @NotEmpty
+    @NotEmpty(message = "L'ancien mot de passe est obligatoire !")
     private String oldPassword;
-    @NotEmpty
+    @NotEmpty(message = "Le nouveau mot de passe est obligatoire !")
     private String newPassword;
-
-    public void setUsername(String username) {
-        this.username = username.toUpperCase();
-    }
-
-    public void setOldPassword(String oldPassword) {
-        this.oldPassword = oldPassword;
-    }
-
-    public void setNewPassword(String newPassword) {
-        this.newPassword = newPassword;
-    }
-
 }

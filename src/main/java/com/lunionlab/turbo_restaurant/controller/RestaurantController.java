@@ -4,7 +4,6 @@ import java.util.UUID;
 
 import com.lunionlab.turbo_restaurant.form.*;
 import com.lunionlab.turbo_restaurant.services.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.validation.BindingResult;
@@ -23,23 +22,34 @@ import jakarta.validation.Valid;
 @RestController
 @RequestMapping(path = "api/V1/turbo/restaurant")
 public class RestaurantController {
-    @Autowired
-    RestaurantService restaurantService;
-    @Autowired
-    UserService userService;
+
+    private final RestaurantService restaurantService;
+    private final UserService userService;
+
+    public RestaurantController(RestaurantService restaurantService, UserService userService) {
+        this.restaurantService = restaurantService;
+        this.userService = userService;
+    }
 
     @Secured("ROLE_USER")
     @PostMapping("/create")
-    public Object createRestaurant(@PathVariable MultipartFile logoUrl, @PathVariable MultipartFile cniUrl,
-            @PathVariable MultipartFile docUrl, @Valid CreateRestaurantForm form, BindingResult result) {
-        return restaurantService.createRestaurant(logoUrl, cniUrl, docUrl, form, result);
+    public Object createRestaurant(
+            @PathVariable MultipartFile logoUrl,
+            @PathVariable MultipartFile cniUrl,
+            @PathVariable MultipartFile docUrl,
+            @Valid CreateRestaurantForm form
+    ) {
+        return restaurantService.createRestaurant(logoUrl, cniUrl, docUrl, form);
     }
 
     @Secured({ "ROLE_USER", "ROLE_ADMIN" })
     @PostMapping("/update")
-    public Object updateRestaurant(@PathVariable(required = false) MultipartFile logoUrl,
+    public Object updateRestaurant(
+            @PathVariable(required = false) MultipartFile logoUrl,
             @PathVariable(required = false) MultipartFile cniUrl,
-            @PathVariable(required = false) MultipartFile docUrl, UpdateRestaurant form) {
+            @PathVariable(required = false) MultipartFile docUrl,
+            UpdateRestaurant form
+    ) {
         return restaurantService.updateRestaurant(logoUrl, cniUrl, docUrl, form);
     }
 
@@ -84,17 +94,22 @@ public class RestaurantController {
         return restaurantService.restaurantDetail(restoId);
     }
 
+    @GetMapping("/optional/erp/{restoId}")
+    public Object optionalDetail(@PathVariable UUID restoId) {
+        return restaurantService.optionalDetail(restoId);
+    }
+
     @PostMapping("/search")
-    public Object searResto(@Valid @RequestBody SearchRestoForm form, BindingResult result) {
-        return restaurantService.searResto(form, result);
+    public Object searResto(@Valid @RequestBody SearchRestoForm form) {
+        return restaurantService.searResto(form);
     }
 
     // opening hours
 
     @Secured({ "ROLE_USER", "ROLE_ADMIN" })
     @PostMapping("/add/horaire")
-    public Object addOpeningHour(@Valid @RequestBody AddOpeningForm form, BindingResult result) {
-        return restaurantService.addOpeningHours(form, result);
+    public Object addOpeningHour(@Valid @RequestBody AddOpeningForm form) {
+        return restaurantService.addOpeningHours(form);
     }
 
     @GetMapping("/check/opening/{restoId}")

@@ -1,17 +1,15 @@
 package com.lunionlab.turbo_restaurant.services;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lunionlab.turbo_restaurant.Enums.DayOfWeekEnum;
 import com.lunionlab.turbo_restaurant.Enums.DeletionEnum;
 import com.lunionlab.turbo_restaurant.Enums.StatusEnum;
+import com.lunionlab.turbo_restaurant.exception.ErreurException;
+import com.lunionlab.turbo_restaurant.exception.ObjetNonTrouveException;
 import com.lunionlab.turbo_restaurant.form.*;
 import com.lunionlab.turbo_restaurant.model.*;
 import com.lunionlab.turbo_restaurant.objetvaleur.TypeCommission;
 import com.lunionlab.turbo_restaurant.repository.*;
-import com.lunionlab.turbo_restaurant.response.CollectionResponse;
 import com.lunionlab.turbo_restaurant.response.OrderItemResponse;
-import com.lunionlab.turbo_restaurant.utilities.Report;
 import com.lunionlab.turbo_restaurant.utilities.Utility;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -23,8 +21,7 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -35,150 +32,157 @@ import java.util.*;
 @Service
 @Slf4j
 public class RestaurantService {
-    @Autowired
-    RestaurantRepository restaurantRepository;
 
-    @Autowired
-    GenericService genericService;
+    private final RestaurantRepository restaurantRepository;
+    private final BoissonRespository boissonRespository;
+    private final AccompagnementRepo accompagnementRepo;
+    private final OptionValeurRepo optionValeurRepo;
+    private final UserRepository userRepository;
+    private final PictureRestoRepository pictureRestoRepository;
+    private final TypeCuisineRestoRepository typeCuisineRestoRepository;
+    private final OpeningHourRepo openingHourRepo;
+    private final UserOrderRepo userOrderRepo;
+    private final PlatRepository platRepository;
 
-    @Autowired
-    RoleService roleService;
-
-    @Autowired
-    UserRepository userRepository;
-
-    @Autowired
-    PictureRestoRepository pictureRestoRepository;
-
-    @Autowired
-    TypeCuisineRestoRepository typeCuisineRestoRepository;
-
-    @Autowired
-    OpeningHourRepo openingHourRepo;
-
-    @Autowired
-    UserOrderRepo userOrderRepo;
-
-    @Autowired
-    PlatRepository platRepository;
+    private final GenericService genericService;
+    private final RoleService roleService;
 
     @Autowired
     PagedResourcesAssembler<UserOrderM> assembler;
 
-    @Autowired
-    BoissonRespository boissonRespository;
-
-    @Autowired
-    AccompagnementRepo accompagnementRepo;
-
-    @Autowired
-    OptionValeurRepo optionValeurRepo;
-
     @Value("${backend.server.address}")
     private String BACKEND;
 
-    public Object createRestaurant(MultipartFile logoUrl, MultipartFile cniUrl, MultipartFile docUrl,
-                                   @Valid CreateRestaurantForm form, BindingResult result) {
-        if (result.hasErrors()) {
-            log.error("mauvais format des données");
-            return ResponseEntity.badRequest().body(Report.getErrors(result));
+    public RestaurantService(
+            RestaurantRepository restaurantRepository,
+            BoissonRespository boissonRespository,
+            AccompagnementRepo accompagnementRepo,
+            OptionValeurRepo optionValeurRepo,
+            UserRepository userRepository,
+            PictureRestoRepository pictureRestoRepository,
+            TypeCuisineRestoRepository typeCuisineRestoRepository,
+            OpeningHourRepo openingHourRepo,
+            UserOrderRepo userOrderRepo,
+            PlatRepository platRepository,
+            GenericService genericService,
+            RoleService roleService
+    ) {
+        this.restaurantRepository = restaurantRepository;
+        this.boissonRespository = boissonRespository;
+        this.accompagnementRepo = accompagnementRepo;
+        this.optionValeurRepo = optionValeurRepo;
+        this.userRepository = userRepository;
+        this.pictureRestoRepository = pictureRestoRepository;
+        this.typeCuisineRestoRepository = typeCuisineRestoRepository;
+        this.openingHourRepo = openingHourRepo;
+        this.userOrderRepo = userOrderRepo;
+        this.platRepository = platRepository;
+        this.genericService = genericService;
+        this.roleService = roleService;
+    }
+
+    @Transactional
+    public Object createRestaurant(
+            MultipartFile logoUrl, MultipartFile cniUrl, MultipartFile docUrl,
+            @Valid CreateRestaurantForm form
+    ) {
+        String email = form.getEmail();
+        if (restaurantRepository.existsByEmail(email)) {
+            throw new ErreurException("L'email existe déjà !");
         }
-        boolean isExist = restaurantRepository.existsByNomEtablissementAndEmailAndDeleted(form.getNomEtablissement(),
-                form.getEmail(), DeletionEnum.NO);
+
+        boolean isExist = restaurantRepository
+                .existsByNomEtablissementAndEmailAndDeleted(form.getNomEtablissement(), email, DeletionEnum.NO);
+
         if (isExist) {
             log.error("le restaurant existe déjà");
-            return ResponseEntity.badRequest().body(Report.message("message", "le restaurant existe déjà"));
+            throw new ErreurException("Le restaurant existe déjà !");
         }
 
-        if (!Utility.checkEmail(form.getEmail())) {
+        if (!Utility.checkEmail(email)) {
             log.error("email invalid");
-            return ResponseEntity.badRequest().body(Report.message("message", "le mail est invalide"));
+            throw new ErreurException("L'email est invalide !");
         }
-
-        Map<String, String> errors = new HashMap<>();
 
         // verification de la nullité des fichiers
         if (logoUrl == null || logoUrl.isEmpty()) {
-            errors.put("logo", "vous devez soumettre une image");
-            return ResponseEntity.badRequest().body(errors);
+            throw new ErreurException("Vous devez soumettre un logo !");
         }
+
         if (cniUrl == null || cniUrl.isEmpty()) {
-            errors.put("cni", "vous devez soumettre un fichier pdf");
-            return ResponseEntity.badRequest().body(errors);
+            throw new ErreurException("Vous devez soumettre un fichier pdf pour le CNI !");
         }
+
         if (docUrl == null || docUrl.isEmpty()) {
-            errors.put("documentUrl", "vous devez soumettre un fichier pdf");
-            return ResponseEntity.badRequest().body(errors);
+            throw new ErreurException("Vous devez soumettre un fichier pdf pour le document !");
         }
 
         String logo = null;
         String cni = null;
         String document = null;
 
-        if (!logoUrl.isEmpty() && logoUrl != null) {
+        if (!logoUrl.isEmpty()) {
             String logExtension = genericService.getFileExtension(logoUrl.getOriginalFilename());
             if (!logExtension.equalsIgnoreCase("png") &&
                     !logExtension.equalsIgnoreCase("jpg") &&
                     !logExtension.equalsIgnoreCase("jpeg")
             ) {
                 log.error(logExtension);
-                return ResponseEntity.badRequest()
-                        .body(Report.message("logo", "le logo doit etre au format jpg, jpeg ou png"));
+                throw new ErreurException("Le logo doit être au format jpg, jpeg ou png !");
             }
             logo = genericService.generateFileName("logo") + "." + logExtension;
             File logFile = new File(logo);
             try {
                 logoUrl.transferTo(logFile.toPath());
-            } catch (IllegalStateException | IOException e) {
-                e.printStackTrace();
+            } catch (Exception e) {
+                throw new ErreurException("Erreur : " + e.getMessage());
             }
 
         }
 
-        if (!cniUrl.isEmpty() && cniUrl != null) {
+        if (!cniUrl.isEmpty()) {
             String cniExtension = genericService.getFileExtension(cniUrl.getOriginalFilename());
             if (!cniExtension.equalsIgnoreCase("pdf")) {
-                return ResponseEntity.badRequest().body(Report.message("cni", "la cni doit etre au format pdf"));
+                throw new ErreurException("La cni doit être au format pdf !");
             }
             cni = genericService.generateFileName("cni") + "." + cniExtension;
             File cniFile = new File(cni);
             try {
                 cniUrl.transferTo(cniFile.toPath());
-            } catch (IllegalStateException | IOException e) {
-                e.printStackTrace();
+            } catch (Exception e) {
+                throw new ErreurException("Erreur : " + e.getMessage());
             }
         }
 
-        if (!docUrl.isEmpty() && docUrl != null) {
+        if (!docUrl.isEmpty()) {
             String docExtension = genericService.getFileExtension(docUrl.getOriginalFilename());
             if (!docExtension.equalsIgnoreCase("pdf")) {
-                return ResponseEntity.badRequest()
-                        .body(Report.message("documentUrl", "le registre de commerce doit etre au format pdf"));
+                throw new ErreurException("Le registre de commerce doit être au format pdf !");
             }
+
             document = genericService.generateFileName("document") + "." + docExtension;
             File docFile = new File(document);
             try {
                 docUrl.transferTo(docFile.toPath());
-            } catch (IllegalStateException | IOException e) {
-                e.printStackTrace();
+            } catch (Exception e) {
+                throw new ErreurException("Erreur : " + e.getMessage());
             }
         }
 
         UserModel user = genericService.getAuthUser();
         if (user == null) {
             log.error("user not authenticated");
-            return ResponseEntity.badRequest()
-                    .body(Report.message("message", "nous ne pouvons pas donner suite à votre operation"));
+            throw new ErreurException("Nous ne pouvons pas donner suite à votre operation !");
         }
+
         if (user.getRestaurant() != null) {
             log.error("ce utilisateur a déjà un restaurant");
-            return ResponseEntity.badRequest().body(Report.getMessage("message",
-                    "vous n'êtes pas habilité à ajouter plusieurs restaurants", "code", "R0"));
+            throw new ErreurException("Vous n'êtes pas habilité à ajouter plusieurs restaurants !");
         }
         // save restaurant
         RestaurantModel restaurant = new RestaurantModel(
                 form.getNomEtablissement(), form.getDescription(),
-                form.getEmail(), form.getTelephone(), form.getCodePostal(),
+                email, form.getTelephone(), form.getCodePostal(),
                 form.getCommune(), form.getLocalisation(), form.getSiteWeb(),
                 logo, logo, Utility.dateFromString(form.getDateService()), document, cni
         );
@@ -197,14 +201,15 @@ public class RestaurantService {
         return ResponseEntity.ok(response);
     }
 
-    public Object updateRestaurant(MultipartFile logoUrl, MultipartFile cniUrl, MultipartFile docUrl,
-                                   UpdateRestaurant form) {
+    public Object updateRestaurant(
+            MultipartFile logoUrl, MultipartFile cniUrl,
+            MultipartFile docUrl, UpdateRestaurant form
+    ) {
         UserModel userAuth = genericService.getAuthUser();
         RestaurantModel restaurant = userAuth.getRestaurant();
         if (restaurant == null) {
             log.error("restaurant not found");
-            return ResponseEntity.badRequest()
-                    .body(Report.getMessage("message", "vous n'avez pas de restaurant", "code", "R0"));
+            throw new ErreurException("Vous n'avez pas de restaurant !");
         }
         if (logoUrl != null && !logoUrl.isEmpty()) {
             String logExtension = genericService.getFileExtension(logoUrl.getOriginalFilename());
@@ -213,9 +218,9 @@ public class RestaurantService {
                     !logExtension.equalsIgnoreCase("jpeg")
             ) {
                 log.error(logExtension);
-                return ResponseEntity.badRequest()
-                        .body(Report.message("logo", "le logo doit etre au format jpg, jpeg ou png"));
+                throw new ErreurException("Le logo doit etre au format jpg, jpeg ou png !");
             }
+
             String logo = genericService.generateFileName("logo");
             File logFile = new File(logo + "." + logExtension);
             try {
@@ -223,38 +228,39 @@ public class RestaurantService {
                 restaurant.setLogo(logo);
                 restaurant.setLogo_Url(logo);
             } catch (IllegalStateException | IOException e) {
-                e.printStackTrace();
+                throw new ErreurException(e.getMessage());
             }
         }
 
         if (cniUrl != null && !cniUrl.isEmpty()) {
             String cniExtension = genericService.getFileExtension(cniUrl.getOriginalFilename());
             if (!cniExtension.equalsIgnoreCase("pdf")) {
-                return ResponseEntity.badRequest().body(Report.message("cni", "la cni doit etre au format pdf"));
+                throw new ErreurException("La cni doit être au format pdf !");
             }
+
             String cni = genericService.generateFileName("cni") + "." + cniExtension;
             File cniFile = new File(cni);
             try {
                 cniUrl.transferTo(cniFile.toPath());
                 restaurant.setCni(cni);
             } catch (IllegalStateException | IOException e) {
-                e.printStackTrace();
+                throw new ErreurException(e.getMessage());
             }
         }
 
         if (docUrl != null && !docUrl.isEmpty()) {
             String docExtension = genericService.getFileExtension(docUrl.getOriginalFilename());
             if (!docExtension.equalsIgnoreCase("pdf")) {
-                return ResponseEntity.badRequest()
-                        .body(Report.message("documentUrl", "le registre de commerce doit etre au format pdf"));
+                throw new ErreurException("Le registre de commerce doit etre au format pdf !");
             }
+
             String document = genericService.generateFileName("document") + "." + docExtension;
             File docFile = new File(document);
             try {
                 docUrl.transferTo(docFile.toPath());
                 restaurant.setDocumentUrl(document);
             } catch (IllegalStateException | IOException e) {
-                e.printStackTrace();
+                throw new ErreurException(e.getMessage());
             }
         }
 
@@ -310,11 +316,10 @@ public class RestaurantService {
 
     public Object getUserAuthRestaurant() {
         UserModel user = genericService.getAuthUser();
-        List<TypeCuisineRestaurantModel> typecuisines = new ArrayList<>();
+        List<TypeCuisineRestaurantModel> typecuisines;
         if (user.getRestaurant() == null) {
             log.error("this user hasn't any restaurant");
-            return ResponseEntity.badRequest()
-                    .body(Report.message("message", "Cet utilisateur n'a pas encore ajouté son restaurant"));
+            throw new ErreurException("Cet utilisateur n'a pas encore ajouté son restaurant !");
         }
         typecuisines = typeCuisineRestoRepository.findByRestaurantAndDeleted(user.getRestaurant(), DeletionEnum.NO);
         Map<String, Object> response = new HashMap<>();
@@ -365,7 +370,7 @@ public class RestaurantService {
                 statusAllow, DeletionEnum.NO);
         if (restaurantOpt.isEmpty()) {
             log.error("this restaurant not found");
-            return Report.notFound("this restaurant not found");
+            throw new ObjetNonTrouveException("Cet restaurant n'existe pas !");
         }
         RestaurantModel restaurant = restaurantOpt.get();
         restaurant.setStatus(StatusEnum.RESTO_VALID_BY_AUTHSERVICE);
@@ -379,7 +384,7 @@ public class RestaurantService {
                 StatusEnum.RESTO_VALID_BY_AUTHSERVICE, DeletionEnum.NO);
         if (restaurantOpt.isEmpty()) {
             log.error("this restaurant not found");
-            return Report.notFound("this restaurant not found");
+            throw new ObjetNonTrouveException("Cet restaurant n'existe pas !");
         }
         RestaurantModel restaurant = restaurantOpt.get();
         restaurant.setStatus(StatusEnum.RESTO_VALID_BY_OPSMANAGER);
@@ -393,42 +398,40 @@ public class RestaurantService {
                 DeletionEnum.NO);
         if (restaurantOpt.isEmpty()) {
             log.error("this restaurant isn't found");
-            return ResponseEntity.badRequest().body("this restaurant isn't found");
+            throw new ObjetNonTrouveException("Cet restaurant n'existe pas !");
         }
         return ResponseEntity.ok(restaurantOpt.get());
     }
 
-    public Object searResto(@Valid SearchRestoForm form, BindingResult result) {
-        if (result.hasErrors()) {
-            log.error("mauvais format des données");
-            return ResponseEntity.badRequest().body(Report.getErrors(result));
-        }
+    public Object optionalDetail(UUID restoId) {
+        Optional<RestaurantModel> restaurantOpt = restaurantRepository
+                .findFirstByIdAndDeleted(restoId, DeletionEnum.NO);
+        return ResponseEntity.ok(restaurantOpt);
+    }
+
+    public Object searResto(@Valid SearchRestoForm form) {
         Optional<RestaurantModel> restaurantOpt = restaurantRepository
                 .findFirstByNomEtablissementContainingIgnoreCaseAndDeleted(form.getLibelle(), DeletionEnum.NO);
         if (restaurantOpt.isEmpty()) {
             log.error("datas not found");
-            return ResponseEntity.badRequest().body("Aucune donnée trouvée");
+            throw new ObjetNonTrouveException("Aucune donnée trouvée !");
         }
         return ResponseEntity.ok(restaurantOpt.get());
     }
 
     // init restaurant schedule
 
-    public Object addOpeningHours(@Valid AddOpeningForm form, BindingResult result) {
-        if (result.hasErrors()) {
-            log.error("mauvais format des données");
-            return ResponseEntity.badRequest().body(Report.getErrors(result));
-        }
+    public Object addOpeningHours(@Valid AddOpeningForm form) {
 
         if (!DayOfWeekEnum.DAYOFWEEK.contains(form.getDayOfWeek())) {
             log.error("day of week is invalide");
-            return ResponseEntity.badRequest().body("dayOfWeek is invalide");
+            throw new ObjetNonTrouveException("Le jour de la semaine " + form.getDayOfWeek() + " est invalide !");
         }
 
         RestaurantModel restaurantM = genericService.getAuthUser().getRestaurant();
         if (restaurantM == null) {
             log.error("this user haven't a restaurant");
-            return ResponseEntity.badRequest().body("Vous n'avez pas de restaurant");
+            throw new ErreurException("Vous n'avez pas de restaurant !");
         }
 
         Optional<OpeningHoursModel> openingHOpt = restaurantM.getOpeningHours().stream()
@@ -456,7 +459,7 @@ public class RestaurantService {
         RestaurantModel restaurantM = genericService.getAuthUser().getRestaurant();
         if (restaurantM == null) {
             log.error("this user haven't a restaurant");
-            return ResponseEntity.badRequest().body("Vous n'avez pas de restaurant");
+            throw new ErreurException("Vous n'avez pas de restaurant !");
         }
         return ResponseEntity.ok(openingHourRepo.findByRestaurantAndDeletedFalse(restaurantM));
     }
@@ -563,13 +566,13 @@ public class RestaurantService {
         RestaurantModel restaurant = genericService.getAuthUser().getRestaurant();
         if (restaurant == null) {
             log.error("this use hasn't a restaurant");
-            return ResponseEntity.badRequest().body("Vous n'avez pas de commande pour le moment");
+            throw new ErreurException("Vous n'avez pas de commande pour le moment !");
         }
         Page<UserOrderM> userOrderPage = userOrderRepo.findByRestaurantAndDeletedFalse(restaurant,
                 genericService.pagination(0));
         if (userOrderPage.getContent().isEmpty()) {
             log.error("any user order found");
-            return ResponseEntity.badRequest().body("Vous n'avez pas de commande pour le moment");
+            throw new ErreurException("Vous n'avez pas de commande pour le moment !");
         }
 
         PagedModel<EntityModel<UserOrderM>> userOrderResource = assembler.toModel(userOrderPage);
@@ -581,7 +584,7 @@ public class RestaurantService {
                 DeletionEnum.NO);
         if (restOpt.isEmpty()) {
             log.error("restaurant not found");
-            return ResponseEntity.badRequest().body("le restaurant specifié n'existe pas");
+            throw new ErreurException("Le restaurant specifié n'existe pas !");
         }
         RestaurantModel restaurantM = restOpt.get();
         if (restaurantM.getStatus().intValue() != StatusEnum.DEFAULT_DESABLE.intValue()) {
@@ -589,7 +592,7 @@ public class RestaurantService {
             restaurantM.setStatus(StatusEnum.DEFAULT_DESABLE);
         } else {
             log.info("ce restaurant a été rejecté");
-            return ResponseEntity.badRequest().body(Report.message("message", "ce restaurant a déjà été rejecté"));
+            throw new ErreurException("Ce restaurant a déjà été rejecté !");
         }
 
         Boolean isSended = genericService.sendMail("info@turbodeliveryapp.com", restaurantM.getEmail(),
@@ -598,8 +601,7 @@ public class RestaurantService {
                         "                                <div class=\"code\">" + form.getMotif() + "</div>"));
         if (!isSended) {
             log.error("email not sended");
-            return ResponseEntity.badRequest()
-                    .body(Report.message("message", "mail non distrué"));
+            throw new ErreurException("Mail non distribué !");
         }
         restaurantM = restaurantRepository.save(restaurantM);
         log.info("reject resto {}", restaurantM.getId());

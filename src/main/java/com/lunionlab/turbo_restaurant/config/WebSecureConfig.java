@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -14,7 +15,7 @@ import com.lunionlab.turbo_restaurant.services.AuthEntryPointService;
 import com.lunionlab.turbo_restaurant.services.AuthFilterService;
 
 @Configuration
-@EnableMethodSecurity(securedEnabled = true, prePostEnabled = true)
+@EnableMethodSecurity(securedEnabled = true)
 @EnableWebSecurity
 public class WebSecureConfig {
     @Autowired
@@ -26,13 +27,9 @@ public class WebSecureConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity security) throws Exception {
         security.cors(cor -> {
 
-        }).csrf(csrfProtect -> {
-            csrfProtect.disable();
-        });
+        }).csrf(AbstractHttpConfigurer::disable);
 
-        security.formLogin(form -> {
-            form.disable();
-        });
+        security.formLogin(AbstractHttpConfigurer::disable);
 
         security.authorizeHttpRequests(auth -> {
             auth.requestMatchers("/test/**", "/error", "/api/V1/turbo/resto/user/login",
@@ -42,7 +39,7 @@ public class WebSecureConfig {
                     "/api/V1/turbo/restaurant/not/validated/**", "/api/V1/turbo/restaurant/validated/authservice/**",
                     "/api/V1/turbo/restaurant/validated/opsmanager/**",
                     "/api/V1/turbo/restaurant/approved/authservice/**",
-                    "/api/V1/turbo/restaurant/approved/opsmanager/**",
+                    "/api/V1/turbo/restaurant/approved/opsmanager/**", "/api/V1/turbo/restaurant/optional/erp/**",
                     "/api/V1/turbo/restaurant/detail/erp/**", "/api/serve/file/**", "/api/V1/turbo/resto/plat/filter",
                     "/api/V1/turbo/restaurant/search", "/api/V1/turbo/resto/plat/search",
                     "/api/V1/turbo/resto/plat/detail/**", "/api/V1/turbo/resto/plat/all/price",

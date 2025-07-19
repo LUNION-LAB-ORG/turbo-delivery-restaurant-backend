@@ -1,72 +1,57 @@
 package com.lunionlab.turbo_restaurant.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
-
-import com.lunionlab.turbo_restaurant.form.ChangePasswordForm;
-import com.lunionlab.turbo_restaurant.form.LoginForm;
-import com.lunionlab.turbo_restaurant.form.NewPasswordForm;
-import com.lunionlab.turbo_restaurant.form.RegisterFirstStepForm;
-import com.lunionlab.turbo_restaurant.form.RegisterSecondStepForm;
-import com.lunionlab.turbo_restaurant.form.RegisterThirdStepForm;
-import com.lunionlab.turbo_restaurant.form.UpdateProfileForm;
+import com.lunionlab.turbo_restaurant.form.*;
 import com.lunionlab.turbo_restaurant.services.RoleService;
 import com.lunionlab.turbo_restaurant.services.UserService;
-
 import jakarta.validation.Valid;
-
-import java.util.UUID;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping(path = "api/V1/turbo/resto/user")
 public class UserController {
 
-    @Autowired
-    UserService userService;
+    private final UserService userService;
+    private final RoleService roleService;
 
-    @Autowired
-    RoleService roleService;
+    public UserController(UserService userService, RoleService roleService) {
+        this.userService = userService;
+        this.roleService = roleService;
+    }
 
     @PostMapping("/login")
-    public Object authentication(@Valid @RequestBody LoginForm form, BindingResult result) {
-        return userService.login(form, result);
+    public Object authentication(@Valid @RequestBody LoginForm form) {
+        return userService.login(form);
     }
 
     @PostMapping("/register/stepfirst")
-    public Object registerFirstStep(@Valid @RequestBody RegisterFirstStepForm form, BindingResult result) {
-        return userService.registerFirstStep(form, result);
+    public Object registerFirstStep(@Valid @RequestBody RegisterFirstStepForm form) {
+        return userService.registerFirstStep(form);
     }
 
     @PostMapping("/register/stepsecond")
-    public Object registerSecondStep(@Valid @RequestBody RegisterSecondStepForm form, BindingResult result) {
-        return userService.registerSecondeStep(form, result);
+    public Object registerSecondStep(@Valid @RequestBody RegisterSecondStepForm form) {
+        return userService.registerSecondeStep(form);
     }
 
     @PostMapping("/register/finalstep")
-    public Object registerThirdStep(@Valid @RequestBody RegisterThirdStepForm form, BindingResult result) {
-        return userService.registerThirdStep(form, result);
+    public Object registerThirdStep(@Valid @RequestBody RegisterThirdStepForm form) {
+        return userService.registerThirdStep(form);
     }
 
     @PostMapping("/change/password")
-    public Object changeMyPassword(@Valid @RequestBody ChangePasswordForm form, BindingResult result) {
-        return userService.changeMyPassword(form, result);
+    public Object changeMyPassword(@Valid @RequestBody ChangePasswordForm form) {
+        return userService.changeMyPassword(form);
     }
 
     @PostMapping("/forget/password")
-    public Object forgetPassword(@Valid @RequestBody RegisterFirstStepForm form, BindingResult result) {
-        return userService.forgetPassword(form, result);
+    public Object forgetPassword(@Valid @RequestBody RegisterFirstStepForm form) {
+        return userService.forgetPassword(form);
     }
 
     @PostMapping("/new/password")
-    public Object newPassword(@Valid @RequestBody NewPasswordForm form, BindingResult result) {
-        return userService.newPassword(form, result);
+    public Object newPassword(@Valid @RequestBody NewPasswordForm form) {
+        return userService.newPassword(form);
     }
 
     @GetMapping("/profile")

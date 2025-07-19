@@ -1,24 +1,12 @@
 package com.lunionlab.turbo_restaurant.services;
 
-import com.lunionlab.turbo_restaurant.model.RestaurantModel;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.multipart.MultipartFile;
-
 import com.lunionlab.turbo_restaurant.Enums.ChangePassword;
 import com.lunionlab.turbo_restaurant.Enums.DeletionEnum;
 import com.lunionlab.turbo_restaurant.Enums.JwtAudienceEnum;
 import com.lunionlab.turbo_restaurant.Enums.StatusEnum;
-import com.lunionlab.turbo_restaurant.form.ChangePasswordForm;
-import com.lunionlab.turbo_restaurant.form.LoginForm;
-import com.lunionlab.turbo_restaurant.form.NewPasswordForm;
-import com.lunionlab.turbo_restaurant.form.RegisterFirstStepForm;
-import com.lunionlab.turbo_restaurant.form.RegisterSecondStepForm;
-import com.lunionlab.turbo_restaurant.form.RegisterThirdStepForm;
-import com.lunionlab.turbo_restaurant.form.UpdateProfileForm;
+import com.lunionlab.turbo_restaurant.exception.ErreurException;
+import com.lunionlab.turbo_restaurant.exception.ObjetNonAuthoriseException;
+import com.lunionlab.turbo_restaurant.form.*;
 import com.lunionlab.turbo_restaurant.model.CodeOptModel;
 import com.lunionlab.turbo_restaurant.model.RoleModel;
 import com.lunionlab.turbo_restaurant.model.UserModel;
@@ -26,35 +14,29 @@ import com.lunionlab.turbo_restaurant.repository.CodeOptRepository;
 import com.lunionlab.turbo_restaurant.repository.UserRepository;
 import com.lunionlab.turbo_restaurant.utilities.Report;
 import com.lunionlab.turbo_restaurant.utilities.Utility;
-
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.*;
-// import java.util.ArrayList;
-// import java.util.List;
 import java.io.File;
-import java.time.temporal.*;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
 
 @Service
 @Slf4j
 public class UserService {
-    @Autowired
-    UserRepository userRepository;
 
-    @Autowired
-    JwtService jwtService;
+    private final UserRepository userRepository;
+    private final CodeOptRepository codeOptRepository;
 
-    @Autowired
-    GenericService genericService;
-
-    @Autowired
-    CodeOptRepository codeOptRepository;
-
-    @Autowired
-    UserPasswordService userPasswordService;
-    @Autowired
-    RoleService roleService;
+    private final JwtService jwtService;
+    private final GenericService genericService;
+    private final UserPasswordService userPasswordService;
+    private final RoleService roleService;
 
     @Value("${password.expired-delay}")
     private Integer PASSWORD_DELAY;
@@ -70,6 +52,22 @@ public class UserService {
     @Value("${front.base_url}")
     private String FRONT_BASEURL;
 
+    public UserService(
+            UserRepository userRepository,
+            CodeOptRepository codeOptRepository,
+            JwtService jwtService,
+            GenericService genericService,
+            UserPasswordService userPasswordService,
+            RoleService roleService
+    ) {
+        this.userRepository = userRepository;
+        this.codeOptRepository = codeOptRepository;
+        this.jwtService = jwtService;
+        this.genericService = genericService;
+        this.userPasswordService = userPasswordService;
+        this.roleService = roleService;
+    }
+
     public Object getUserByUsername(String username) {
         return userRepository.findFirstByUsernameAndDeleted(username, DeletionEnum.NO).orElse(null);
 
@@ -83,27 +81,20 @@ public class UserService {
         return userRepository.findFirstByEmailAndDeleted(email, DeletionEnum.NO).orElse(null);
     }
 
-    public Object login(@Valid LoginForm form, BindingResult result) {
-        if (result.hasErrors()) {
-            log.error("mauvais format des données");
-            return ResponseEntity.badRequest().body(Report.getErrors(result));
-        }
+    public Object login(@Valid LoginForm form) {
         UserModel user = this.getUserByUsernameAndStatus(form.getUsername(), StatusEnum.DEFAULT_ENABLE);
         if (user == null) {
             log.error("user not found");
-            return Report.unauthorize("login ou password incorrecte");
+            throw new BadCredentialsException("Login ou password incorrecte");
         }
+        /*
         if (user.getChangePassword() == null || user.getChangePassword() == ChangePassword.No) {
-            log.error("l'utilisateur doit changer son mot de passe");
-            Map<String, Object> output = Map.of("message", "Veuillez modifier votre mot de passe", "code", "LOG10",
-                    "user", user);
-            return Report.unauthorize(output);
+            throw new ObjetNonAuthoriseException("CHANGER_MOT_PASSE");
         }
+        */
         if (user.getStatus().intValue() == StatusEnum.DEFAULT_DESABLE.intValue()
                 && user.getChangePassword() == ChangePassword.YES) {
-            log.error("compte utilisateur desactivé");
-            return Report.unauthorize(Report.getMessage("message",
-                    "compte inactif. veuillez contacter l'administrateur", "code", "LOG11"));
+            throw new ErreurException("Compte inactif, veuillez contacter l'administrateur !");
         }
 
         Date now = new Date();
@@ -114,13 +105,11 @@ public class UserService {
                 user.setExpiredPassword(Utility.dateFromInteger(PASSWORD_DELAY, ChronoUnit.DAYS));
                 user = userRepository.save(user);
             }
-
+            /*
             if (user.getExpiredPassword().compareTo(now) < 0) {
-                log.error("mot de passe expiré");
-                return Report.unauthorize(Report.getMessage("message",
-                        "mot de passe expiré. prière créer un nouveau mot de passe", "code", "LOG12"));
+                throw new ObjetNonAuthoriseException("MOT_PASSE_EXPIRER");
             }
-
+            */
             // set attempt max connexion
             user.setAttempt(0);
             user = userRepository.save(user);
@@ -156,24 +145,25 @@ public class UserService {
                 log.error("tentative de connexion atteint");
                 user.setStatus(StatusEnum.DEFAULT_DESABLE);
                 user = userRepository.save(user);
-                return Report.unauthorize(Report.getMessage("message", "vous avez atteint votre tentative de connexion",
-                        "code", "LOG13"));
+                throw new ErreurException("Vous avez atteint votre tentative de connexion !");
             }
         }
 
-        return Report.unauthorize("username ou mot de passe incorrecte");
+        throw new BadCredentialsException("Login ou password incorrecte !");
     }
 
-    public Object registerFirstStep(@Valid RegisterFirstStepForm form, BindingResult result) {
-        if (result.hasErrors()) {
-            log.error("mauvais format de données");
-            return ResponseEntity.badRequest().body(Report.getErrors(result));
-        }
+    public Object registerFirstStep(@Valid RegisterFirstStepForm form) {
         String email = form.getEmail();
+
         if (!Utility.checkEmail(email)) {
             log.error("email invalide");
-            return ResponseEntity.badRequest().body(Report.getMessage("message", "email invalide", "code", "EM10"));
+            throw new ErreurException("Email invalide !");
         }
+
+        if (this.userRepository.existsByEmail(email)) {
+            throw new ErreurException("L'email existe déjà !");
+        }
+
         Optional<UserModel> userOpt = userRepository.findFirstByEmail(email);
         if (userOpt.isPresent()) {
             log.error("utilisateur déjè inscript");
@@ -187,15 +177,16 @@ public class UserService {
                             "                                <div class=\"code\">" + codeOpt + "</div>"));
             if (!hasSend) {
                 log.error("email not sended");
-                return ResponseEntity.badRequest()
-                        .body(Report.getMessage("message", "mail non distrué", "code", "EM12"));
+                throw new ErreurException("Impossible d'envoyer le code de confirmation, Veuillez contacter l'administrateur !");
             }
+
             CodeOptModel code = new CodeOptModel(codeOpt, Utility.dateFromInteger(CODE_DELAY, ChronoUnit.MINUTES),
                     userOpt.get());
             code = codeOptRepository.save(code);
             Map<String, Object> response = Map.of("codeOpt", code.getCode(), "user", userOpt.get());
             return ResponseEntity.ok(response);
         }
+
         String codeOpt = genericService.generateOptCode();
         boolean hasSend = genericService.sendMail("support@turbodeliveryapp.com", email,
                 "Code de confirmation",
@@ -205,9 +196,9 @@ public class UserService {
                         "                                <div class=\"code\">" + codeOpt + "</div>"));
         if (!hasSend) {
             log.error("email not sended");
-            return ResponseEntity.badRequest()
-                    .body(Report.getMessage("message", "mail non distrué", "code", "EM12"));
+            throw new ErreurException("Impossible d'envoyer le code de confirmation, Veuillez contacter l'administrateur !");
         }
+
         UserModel userModel = new UserModel(null, null, email, null, null);
         userModel = userRepository.save(userModel);
         CodeOptModel code = new CodeOptModel(codeOpt, Utility.dateFromInteger(CODE_DELAY, ChronoUnit.MINUTES),
@@ -218,40 +209,33 @@ public class UserService {
 
     }
 
-    public Object registerSecondeStep(@Valid RegisterSecondStepForm form, BindingResult result) {
-        if (result.hasErrors()) {
-            log.error("mauvais format des données");
-            return ResponseEntity.badRequest().body(Report.getErrors(result));
-        }
+    public Object registerSecondeStep(@Valid RegisterSecondStepForm form) {
         Date now = new Date();
         Optional<CodeOptModel> codeOpt = codeOptRepository.findFirstByCode(form.getCode());
         if (codeOpt.isEmpty()) {
-            log.error("code not foung");
-            return ResponseEntity.badRequest().body(Report.getMessage("message", "code invalide", "code", "OPT10"));
+            log.error("code not found");
+            throw new ErreurException("Code invalide !");
         }
+
         CodeOptModel codeModel = codeOpt.get();
         if (codeModel.getExpired().compareTo(now) < 0) {
             log.error("code expiré");
             codeOptRepository.delete(codeModel);
-            return ResponseEntity.badRequest().body(Report.getMessage("message", "code expiré", "code", "OPT11"));
+            throw new ErreurException("Code expiré !");
         }
 
         codeOptRepository.delete(codeModel);
 
-        return ResponseEntity.ok("code verification is succed");
+        return ResponseEntity.ok("code verification is succès !");
     }
 
-    public Object registerThirdStep(@Valid RegisterThirdStepForm form, BindingResult result) {
-        if (result.hasErrors()) {
-            log.error("mauvais format des données");
-            return ResponseEntity.badRequest().body(Report.getErrors(result));
-        }
-
+    public Object registerThirdStep(@Valid RegisterThirdStepForm form) {
         Optional<UserModel> userOpt = userRepository.findFirstByEmail(form.getEmail());
         if (userOpt.isEmpty()) {
             log.error("user not found");
-            return ResponseEntity.badRequest().body(Report.getMessage("message", "user not found", "code", "USER10"));
+            throw new ErreurException("Ce email n'existe pas !");
         }
+
         String password = Utility.generatePassword(PASSWORD_LENGTH);
         UserModel user = userOpt.get();
         user.setFirstName(form.getFirstName());
@@ -261,29 +245,23 @@ public class UserService {
         user.setPassword(Utility.hashPassword(password));
         user.setExpiredPassword(Utility.dateFromInteger(PASSWORD_DELAY, ChronoUnit.DAYS));
         user.setChangePassword(ChangePassword.No);
+        user.setStatus(StatusEnum.DEFAULT_ENABLE);
         user = userRepository.save(user);
         Map<String, Object> response = Map.of("password", password, "user", user);
         log.info("user info save successfull");
         return ResponseEntity.ok(response);
     }
 
-    public Object changeMyPassword(@Valid ChangePasswordForm form, BindingResult result) {
-        if (result.hasErrors()) {
-            log.error("mauvais format de données");
-            return ResponseEntity.badRequest().body(Report.getErrors(result));
-        }
-
+    public Object changeMyPassword(@Valid ChangePasswordForm form) {
         UserModel user = this.getUserByUsernameAndStatus(form.getUsername(), StatusEnum.DEFAULT_ENABLE);
         if (user == null) {
             log.error("user not found");
-            return ResponseEntity.badRequest()
-                    .body(Report.getMessage("message", "username incorrecte", "code", "CHP10"));
+            throw new ErreurException("Login incorrecte !");
         }
 
         if (!Utility.checkPassword(form.getOldPassword(), user.getPassword())) {
             log.error("old password isn't trusted");
-            return ResponseEntity.badRequest()
-                    .body(Report.getMessage("message", "ancien de mot de pass incorrecte", "code", "CHP11"));
+            throw new ErreurException("Ancien de mot de pass incorrecte !");
         }
 
         boolean isValid = Utility.passwordValidator(form.getNewPassword(), PASSWORD_LENGTH);
@@ -299,8 +277,7 @@ public class UserService {
         boolean isExist = userPasswordService.saveUserPassword(form.getNewPassword(), user);
         if (!isExist) {
             log.error("cet mot de passe existe deja");
-            return ResponseEntity.badRequest().body(
-                    Report.getMessage("message", "vous avez déjà utiliser ce mot de pass", "code", "CHP12"));
+            throw new ErreurException("vous avez déjà utilisé ce mot de passe !");
         }
 
         // update password
@@ -312,21 +289,17 @@ public class UserService {
         return ResponseEntity.ok(user);
     }
 
-    public Object forgetPassword(@Valid RegisterFirstStepForm form, BindingResult result) {
-        if (result.hasErrors()) {
-            log.error("mauvais format des données");
-            return ResponseEntity.badRequest().body(Report.getErrors(result));
-        }
+    public Object forgetPassword(@Valid RegisterFirstStepForm form) {
         if (!Utility.checkEmail(form.getEmail())) {
             log.error("email invalide");
-            return ResponseEntity.badRequest().body(Report.getMessage("message", "email invalide", "code", "EM10"));
+            throw new ErreurException("Email incorrecte !");
         }
 
         UserModel userModel = this.getUserByEmail(form.getEmail());
 
         if (userModel == null) {
             log.error("user not found");
-            return ResponseEntity.badRequest().body(Report.getMessage("message", "email not exists", "code", "EM13"));
+            throw new ErreurException("Email n'existe pas !");
         }
 
         String token = UUID.randomUUID().toString();
@@ -339,31 +312,26 @@ public class UserService {
                                 + "\" class=\"login-button\" style=\"color: white;\">cliquez ici</a>"));
         if (!hasSend) {
             log.error("email not sended");
-            return ResponseEntity.badRequest()
-                    .body(Report.getMessage("message", "mail non distrué", "code", "EM12"));
+            throw new ErreurException("mail non distribué !");
         }
         code = codeOptRepository.save(code);
         Map<String, Object> response = Map.of("link", link, "initBy", userModel);
         return ResponseEntity.ok(response);
     }
 
-    public Object newPassword(@Valid NewPasswordForm form, BindingResult result) {
-        if (result.hasErrors()) {
-            log.error("mauvais format des données");
-            return ResponseEntity.badRequest().body(Report.getErrors(result));
-        }
+    public Object newPassword(@Valid NewPasswordForm form) {
         Optional<CodeOptModel> codeOpt = codeOptRepository.findFirstByCode(form.getToken());
         Date now = new Date();
         if (codeOpt.isEmpty()) {
             log.error("token invalid");
-            return ResponseEntity.badRequest().body(Report.getMessage("message", "token invalide", "code", "OPT10"));
+            throw new ErreurException("Token invalide !");
         }
         CodeOptModel code = codeOpt.get();
         UserModel user = code.getUser();
         if (code.getExpired().compareTo(now) < 0) {
             log.error("token expired");
             codeOptRepository.delete(code);
-            return ResponseEntity.badRequest().body(Report.getMessage("message", "code expiré", "code", "OPT11"));
+            throw new ErreurException("Code expiré !");
         }
         if (!Utility.passwordValidator(form.getNewPassword(), PASSWORD_LENGTH)) {
             return ResponseEntity.badRequest().body(
@@ -376,8 +344,7 @@ public class UserService {
         boolean isExist = userPasswordService.saveUserPassword(form.getNewPassword(), user);
         if (!isExist) {
             log.error("cet mot de passe existe deja");
-            return ResponseEntity.badRequest().body(
-                    Report.getMessage("message", "vous avez déjà utiliser ce mot de pass", "code", "CHP12"));
+            throw new ErreurException("vous avez déjà utilisé ce mot de passe !");
         }
 
         // update password
@@ -408,7 +375,7 @@ public class UserService {
         if (form.getEmail() != null && !form.getEmail().isEmpty()) {
             if (!Utility.checkEmail(form.getEmail())) {
                 log.error("email not allow");
-                return ResponseEntity.badRequest().body("email invalide");
+                throw new ErreurException("Email invalide !");
             }
             userM.setEmail(form.getEmail());
         }
@@ -420,15 +387,14 @@ public class UserService {
             String extention = genericService.getFileExtension(avatar.getOriginalFilename());
             if (!extention.equalsIgnoreCase("png") && !extention.equalsIgnoreCase("jpg")) {
                 log.error("file extension not correct. accept png or jpg");
-                return ResponseEntity.badRequest().body("l'image doit être au format png ou jpg");
+                throw new ErreurException("L'image doit être au format png ou jpg !");
             }
             String fileName = genericService.generateFileName("avatar") + "." + extention;
             File file = new File(fileName);
-            Boolean fileIsSave = genericService.compressImage(avatar, file);
+            boolean fileIsSave = genericService.compressImage(avatar, file);
             if (!fileIsSave) {
                 log.error("file not saved");
-                return ResponseEntity.badRequest()
-                        .body(Report.message("message", "Une erreur est survenue lors du sauvegarde de l'image"));
+                throw new ErreurException("Une erreur est survenue lors du sauvegarde de l'image !");
             }
 
             userM.setAvatar(fileName);
