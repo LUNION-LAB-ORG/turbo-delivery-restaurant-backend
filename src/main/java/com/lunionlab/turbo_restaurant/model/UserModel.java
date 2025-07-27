@@ -1,5 +1,6 @@
 package com.lunionlab.turbo_restaurant.model;
 
+import com.lunionlab.turbo_restaurant.objetvaleur.TypeCommission;
 import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;

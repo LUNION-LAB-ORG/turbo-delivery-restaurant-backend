@@ -18,6 +18,7 @@ public class PlatModel extends BaseModel {
     private String libelle;
     private String description;
     private Boolean disponible = AvailableEnum.YES;
+    private String cookTime;
     private Long price;
     private String imageUrl;
     @ManyToOne

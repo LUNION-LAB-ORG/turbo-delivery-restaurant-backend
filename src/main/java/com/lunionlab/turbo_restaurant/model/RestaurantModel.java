@@ -1,9 +1,14 @@
 package com.lunionlab.turbo_restaurant.model;
 
+import java.util.ArrayList;
+import com.lunionlab.turbo_restaurant.objetvaleur.TypeCommission;
 import java.util.Date;
+import java.util.List;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.lunionlab.turbo_restaurant.Enums.ClosedEnums;
+
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -21,12 +26,26 @@ public class RestaurantModel extends BaseModel {
     private String codePostal;
     private String commune;
     private String localisation;
+    @Enumerated(EnumType.STRING)
+    private TypeCommission typeCommission;
+    private double commission;
     private String siteWeb;
     private String logo;
     private String logo_Url;
     private Date dateService;
     private String documentUrl;
     private String cni;
+    private Double longitude;
+    private Double latitude;
+    private String idLocation;
+    private Boolean isOpen = ClosedEnums.YES;
+
+    @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<PictureRestaurantModel> pictures = new ArrayList<PictureRestaurantModel>();
+    @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<OpeningHoursModel> openingHours = new ArrayList<OpeningHoursModel>();
 
     public RestaurantModel(String nomEtablissement, String description, String email, String telephone,
             String codePostal, String commune, String localisation, String siteWeb, String logo, String logo_Url,

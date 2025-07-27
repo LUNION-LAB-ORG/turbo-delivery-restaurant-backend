@@ -7,6 +7,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class RegisterSecondStepForm {
-    @NotEmpty
+
+    @NotEmpty(message = "Le code est obligatoire !")
     private String code;
 }

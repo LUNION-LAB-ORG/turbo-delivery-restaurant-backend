@@ -2,39 +2,20 @@ package com.lunionlab.turbo_restaurant.form;
 
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
+@Setter
 public class RegisterThirdStepForm {
-    @NotEmpty
+    @NotEmpty(message = "L'email est obligatoire !")
     private String email;
-    @NotEmpty
+    @NotEmpty(message = "Le nom est obligatoire !")
     private String firstName;
-    @NotEmpty
+    @NotEmpty(message = "Le prénom est obligatoire !")
     private String lastName;
-    @NotEmpty
+    @NotEmpty(message = "Le téléphone est obligatoire !")
     private String telephone;
-
-    @NotEmpty
+    @NotEmpty(message = "Le login est obligatoire !")
     private String username;
-
-    public void setEmail(String email) {
-        this.email = email.trim();
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
-    public void setTelephone(String telephone) {
-        this.telephone = telephone;
-    }
-
-    public void setUsername(String username) {
-        this.username = username.toUpperCase();
-    }
 
 }
