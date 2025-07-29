@@ -201,6 +201,7 @@ public class RestaurantService {
         return ResponseEntity.ok(response);
     }
 
+    @Transactional
     public Object updateRestaurant(
             MultipartFile logoUrl, MultipartFile cniUrl,
             MultipartFile docUrl, UpdateRestaurant form

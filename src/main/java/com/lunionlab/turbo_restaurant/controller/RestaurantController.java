@@ -48,7 +48,7 @@ public class RestaurantController {
             @PathVariable(required = false) MultipartFile logoUrl,
             @PathVariable(required = false) MultipartFile cniUrl,
             @PathVariable(required = false) MultipartFile docUrl,
-            UpdateRestaurant form
+            @RequestBody UpdateRestaurant form
     ) {
         return restaurantService.updateRestaurant(logoUrl, cniUrl, docUrl, form);
     }

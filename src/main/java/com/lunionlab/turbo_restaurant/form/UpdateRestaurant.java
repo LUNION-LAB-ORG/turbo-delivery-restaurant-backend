@@ -53,12 +53,12 @@ public class UpdateRestaurant {
         this.dateService = dateService;
     }
 
-    public void setLatitude(String latitude) {
-        this.latitude = Double.parseDouble(latitude);
+    public void setLatitude(Double latitude) {
+        this.latitude = latitude;
     }
 
-    public void setLongitude(String longitude) {
-        this.longitude = Double.parseDouble(longitude);
+    public void setLongitude(Double longitude) {
+        this.longitude = longitude;
     }
 
     public void setIdLocation(String idLocation) {
