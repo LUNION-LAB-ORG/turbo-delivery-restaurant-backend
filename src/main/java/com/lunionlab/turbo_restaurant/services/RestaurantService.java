@@ -295,10 +295,6 @@ public class RestaurantService {
             restaurant.setSiteWeb(form.getSiteWeb());
         }
 
-        if (form.getTelephone() != null && !form.getTelephone().isEmpty()) {
-            restaurant.setTelephone(form.getTelephone());
-        }
-
         if (form.getLatitude() != null) {
             restaurant.setLatitude(form.getLatitude());
         }

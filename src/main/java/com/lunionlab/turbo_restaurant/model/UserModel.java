@@ -1,15 +1,10 @@
 package com.lunionlab.turbo_restaurant.model;
 
-import com.lunionlab.turbo_restaurant.objetvaleur.TypeCommission;
 import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -28,6 +23,8 @@ public class UserModel extends BaseModel {
     private String avatar;
     private String avatarUrl;
     private Integer attempt;
+    @Column(name = "apikey", unique = true, nullable = false, length = 255)
+    private String apiKey;
     @Temporal(TemporalType.TIMESTAMP)
     private Date expiredPassword;
     private Boolean changePassword;

@@ -3,7 +3,8 @@ spring:
     name: turbo-restaurant
   datasource:
     #url: jdbc:postgresql://localhost:5432/turbo-resto
-    url: jdbc:postgresql://147.79.101.226:5432/turbo-resto
+#    url: jdbc:postgresql://147.79.101.226:5432/turbo-resto
+    url: jdbc:postgresql://147.79.101.226:5432/turborestotest
     #username: andersonkouadio
     username: turbo
     #password: Leloup01@

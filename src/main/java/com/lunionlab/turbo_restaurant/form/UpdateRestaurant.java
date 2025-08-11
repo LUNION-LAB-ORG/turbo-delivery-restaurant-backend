@@ -7,7 +7,6 @@ public class UpdateRestaurant {
     private String nomEtablissement;
     private String description;
     private String email;
-    private String telephone;
     private String codePostal;
     private String commune;
     private String localisation;
@@ -27,10 +26,6 @@ public class UpdateRestaurant {
 
     public void setEmail(String email) {
         this.email = email.trim();
-    }
-
-    public void setTelephone(String telephone) {
-        this.telephone = telephone;
     }
 
     public void setCodePostal(String codePostal) {
