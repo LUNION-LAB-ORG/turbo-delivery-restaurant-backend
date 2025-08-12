@@ -10,6 +10,7 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
 import java.time.temporal.TemporalUnit;
+import java.util.Base64;
 import java.util.Date;
 import java.util.Locale;
 import java.util.regex.*;
@@ -17,6 +18,10 @@ import java.util.regex.*;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 
 public class Utility {
+
+
+    private static final SecureRandom secureRandom = new SecureRandom();
+    private static final Base64.Encoder base64Encoder = Base64.getUrlEncoder();
 
     public static Date dateFromInteger(Integer number, TemporalUnit unit) {
         Date now = new Date();
@@ -144,5 +149,11 @@ public class Utility {
         String code = "CMD" + resto + String.valueOf(totalAmount);
         code += new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
         return code;
+    }
+
+    public static String genererNouveauApiKey() {
+        byte[] randomBytes = new byte[24];
+        secureRandom.nextBytes(randomBytes);
+        return base64Encoder.encodeToString(randomBytes);
     }
 }

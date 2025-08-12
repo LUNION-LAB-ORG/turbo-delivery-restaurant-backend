@@ -160,9 +160,9 @@ public class UserService {
             throw new ErreurException("Email invalide !");
         }
 
-        if (this.userRepository.existsByEmail(email)) {
-            throw new ErreurException("L'email existe déjà !");
-        }
+            if (this.userRepository.existsByEmail(email)) {
+                throw new ErreurException("L'email existe déjà !");
+            }
 
         Optional<UserModel> userOpt = userRepository.findFirstByEmail(email);
         if (userOpt.isPresent()) {
@@ -237,6 +237,7 @@ public class UserService {
         }
 
         String password = Utility.generatePassword(PASSWORD_LENGTH);
+        String apikey = Utility.genererNouveauApiKey();
         UserModel user = userOpt.get();
         user.setFirstName(form.getFirstName());
         user.setLastName(form.getLastName());
@@ -246,6 +247,7 @@ public class UserService {
         user.setExpiredPassword(Utility.dateFromInteger(PASSWORD_DELAY, ChronoUnit.DAYS));
         user.setChangePassword(ChangePassword.No);
         user.setStatus(StatusEnum.DEFAULT_ENABLE);
+        user.setApiKey(apikey);
         user = userRepository.save(user);
         Map<String, Object> response = Map.of("password", password, "user", user);
         log.info("user info save successfull");

@@ -2,21 +2,33 @@ spring:
   application:
     name: turbo-restaurant
   datasource:
-    #url: jdbc:postgresql://localhost:5432/turbo-resto
-#    url: jdbc:postgresql://147.79.101.226:5432/turbo-resto
     url: jdbc:postgresql://147.79.101.226:5432/turborestotest
-    #username: andersonkouadio
     username: turbo
-    #password: Leloup01@
     password: turbo
     driverClassName: org.postgresql.Driver
+    # 🚨 Important : Spécifiez le type de source de données pour utiliser HikariCP.
+    type: com.zaxxer.hikari.HikariDataSource
+    hikari:
+      # Taille maximale du pool de connexions (nombre maximum de connexions actives)
+      maximum-pool-size: 20
+      # Délai d'attente maximum pour obtenir une connexion du pool (en millisecondes)
+      connection-timeout: 30000
+      # Temps maximum pendant lequel une connexion peut rester inactive dans le pool (en millisecondes)
+      idle-timeout: 600000
+      # Durée de vie maximale d'une connexion (en millisecondes)
+      max-lifetime: 1800000
+      # Requête de test de validité de la connexion
+      connection-test-query: SELECT 1
   jpa:
     show-sql: true
     hibernate:
       ddl-auto: update
     properties:
       hibernate:
-        formatsql: true
+        format_sql: true
+        # 🚨 Important : Vous devriez configurer le dialecte Hibernate manuellement
+        # pour éviter l'erreur "Unable to determine Dialect".
+        dialect: org.hibernate.dialect.PostgreSQLDialect
   servlet:
     multipart:
       max-file-size: 100MB
