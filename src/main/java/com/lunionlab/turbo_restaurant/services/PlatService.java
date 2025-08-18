@@ -141,6 +141,47 @@ public class PlatService {
         return ResponseEntity.ok(optionPlatModel);
     }
 
+
+    public Object addOrUpdateOptionPlat(@Valid AddOptionPlatForm form, BindingResult result) {
+        if (result.hasErrors()) {
+            log.error("mauvais format des données");
+            return ResponseEntity.badRequest().body(Report.getErrors(result));
+        }
+    
+        Optional<PlatModel> platOpt = platRepository.findFirstByIdAndDeletedAndDisponibleTrue(form.getPlatId(), DeletionEnum.NO);
+    
+        if (platOpt.isEmpty()) {
+            log.error("plat not found");
+            return ResponseEntity.badRequest().body(Report.message("message", "plat not found"));
+        }
+    
+        // Vérifier si une option existe déjà
+        Optional<OptionPlatModel> optionPlatOpt = optionPlatRepo.findFirstByLibelleAndPlatAndDeleted(form.getLibelle(), platOpt.get(), DeletionEnum.NO);
+    
+        OptionPlatModel optionPlatModel;
+        if (optionPlatOpt.isPresent()) {
+            // ✅ Mise à jour de l’option existante
+            optionPlatModel = optionPlatOpt.get();
+            optionPlatModel.setIsRequired(form.getIsRequired());
+            optionPlatModel.setLibelle(form.getLibelle());
+            log.info("Mise à jour de l'option existante: {}", form.getLibelle());
+        } else {
+            // ✅ Création d'une nouvelle option
+            optionPlatModel = new OptionPlatModel(
+                    form.getLibelle(),
+                    form.getIsRequired(),
+                    form.getMaxSeleteted(),
+                    platOpt.get()
+            );
+            log.info("Création d'une nouvelle option: {}", form.getLibelle());
+        }
+    
+        optionPlatModel = optionPlatRepo.save(optionPlatModel);
+    
+        return ResponseEntity.ok(optionPlatModel);
+    }
+
+    
     public Object ListOptionPlat() {
         List<OptionPlatModel> optionPlatModel = optionPlatRepo.findAllByDeleted(DeletionEnum.NO);
         return ResponseEntity.ok(optionPlatModel);

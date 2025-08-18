@@ -2,41 +2,42 @@ spring:
   application:
     name: turbo-restaurant
   datasource:
-    #url: jdbc:postgresql://localhost:5432/turboresto
-    url: jdbc:postgresql://147.79.101.226:5432/turborestotest
-    #username: andersonkouadio
+    url: jdbc:postgresql://147.79.101.226:5432/turbo-resto
     username: turbo
-    #password: Leloup01@
     password: turbo
     driverClassName: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      idle-timeout: 300000         # 5 minutes
+      max-lifetime: 1800000        # 30 minutes (doit être < au timeout serveur)
+      connection-timeout: 60000    # 60 secondes pour obtenir une connexion
+      validation-timeout: 10000    # 10 secondes pour valider la connexion
+      keepalive-time: 300000       # ping toutes les 5 minutes
   jpa:
     show-sql: true
     hibernate:
       ddl-auto: update
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
     properties:
       hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
         formatsql: true
   servlet:
     multipart:
       max-file-size: 100MB
       max-request-size: 100MB
 
-# jwt token expiration time in hours
 jwt:
   time-exp: 24
 
 password:
-  # nombre de tentative de connexion
   max-tentative: 3
-  # delais d'expiration du mot de passe en jour
   expired-delay: 30
-  # longueur du mot de passe
   length: 8
 
 code-opt:
-  # longueur du code opt
   length: 4
-  # delai d'expiration du code en minute
   delay: 5
 
 doc:
