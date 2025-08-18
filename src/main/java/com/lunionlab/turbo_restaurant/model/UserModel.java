@@ -23,7 +23,7 @@ public class UserModel extends BaseModel {
     private String avatar;
     private String avatarUrl;
     private Integer attempt;
-    @Column(name = "apikey", unique = true, nullable = false, length = 255)
+    @Column(name = "apikey", unique = true, length = 255)
     private String apiKey;
     @Temporal(TemporalType.TIMESTAMP)
     private Date expiredPassword;

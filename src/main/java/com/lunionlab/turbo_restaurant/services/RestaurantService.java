@@ -179,6 +179,8 @@ public class RestaurantService {
             log.error("ce utilisateur a déjà un restaurant");
             throw new ErreurException("Vous n'êtes pas habilité à ajouter plusieurs restaurants !");
         }
+
+        String apiKeyResto = Utility.genererNouveauApiKeyRestaurant();
         // save restaurant
         RestaurantModel restaurant = new RestaurantModel(
                 form.getNomEtablissement(), form.getDescription(),
@@ -189,6 +191,7 @@ public class RestaurantService {
         restaurant.setLatitude(form.getLatitude());
         restaurant.setLongitude(form.getLongitude());
         restaurant.setIdLocation(form.getIdLocation());
+        restaurant.setApiKeyResto(apiKeyResto);
         restaurant = restaurantRepository.save(restaurant);
 
         user.setRole(roleService.getAdmin());

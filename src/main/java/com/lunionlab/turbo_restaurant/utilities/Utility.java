@@ -151,7 +151,13 @@ public class Utility {
         return code;
     }
 
-    public static String genererNouveauApiKey() {
+    public static String genererNouveauApiKeyUtilisateur() {
+        byte[] randomBytes = new byte[24];
+        secureRandom.nextBytes(randomBytes);
+        return base64Encoder.encodeToString(randomBytes);
+    }
+
+    public static String genererNouveauApiKeyRestaurant() {
         byte[] randomBytes = new byte[24];
         secureRandom.nextBytes(randomBytes);
         return base64Encoder.encodeToString(randomBytes);

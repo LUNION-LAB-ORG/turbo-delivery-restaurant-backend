@@ -1,24 +1,20 @@
 spring:
   application:
     name: turbo-restaurant
+
   datasource:
-    url: jdbc:postgresql://147.79.101.226:5432/turborestotest
+    url: jdbc:postgresql://147.79.101.226:5432/turbo-resto
     username: turbo
     password: turbo
-    driverClassName: org.postgresql.Driver
-    # 🚨 Important : Spécifiez le type de source de données pour utiliser HikariCP.
+    driver-class-name: org.postgresql.Driver
     type: com.zaxxer.hikari.HikariDataSource
     hikari:
-      # Taille maximale du pool de connexions (nombre maximum de connexions actives)
       maximum-pool-size: 20
-      # Délai d'attente maximum pour obtenir une connexion du pool (en millisecondes)
       connection-timeout: 30000
-      # Temps maximum pendant lequel une connexion peut rester inactive dans le pool (en millisecondes)
       idle-timeout: 600000
-      # Durée de vie maximale d'une connexion (en millisecondes)
       max-lifetime: 1800000
-      # Requête de test de validité de la connexion
       connection-test-query: SELECT 1
+
   jpa:
     show-sql: true
     hibernate:
@@ -26,30 +22,29 @@ spring:
     properties:
       hibernate:
         format_sql: true
-        # 🚨 Important : Vous devriez configurer le dialecte Hibernate manuellement
-        # pour éviter l'erreur "Unable to determine Dialect".
-        dialect: org.hibernate.dialect.PostgreSQLDialect
+  database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    baseline-version: 1
+
   servlet:
     multipart:
       max-file-size: 100MB
       max-request-size: 100MB
 
-# jwt token expiration time in hours
 jwt:
   time-exp: 24
 
 password:
-  # nombre de tentative de connexion
   max-tentative: 3
-  # delais d'expiration du mot de passe en jour
   expired-delay: 30
-  # longueur du mot de passe
   length: 8
 
 code-opt:
-  # longueur du code opt
   length: 4
-  # delai d'expiration du code en minute
   delay: 5
 
 doc:
@@ -60,6 +55,7 @@ front:
 
 picture:
   max: 5
+
 paginate:
   size: 20
 

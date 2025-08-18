@@ -237,7 +237,7 @@ public class UserService {
         }
 
         String password = Utility.generatePassword(PASSWORD_LENGTH);
-        String apikey = Utility.genererNouveauApiKey();
+        String apikey = Utility.genererNouveauApiKeyUtilisateur();
         UserModel user = userOpt.get();
         user.setFirstName(form.getFirstName());
         user.setLastName(form.getLastName());

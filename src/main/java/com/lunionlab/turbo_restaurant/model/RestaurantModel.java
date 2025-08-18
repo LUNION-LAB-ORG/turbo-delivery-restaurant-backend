@@ -33,6 +33,8 @@ public class RestaurantModel extends BaseModel {
     private String logo;
     private String logo_Url;
     private Date dateService;
+    @Column(name = "apiKeyResto", unique = true, length = 255)
+    private String apiKeyResto;
     private String documentUrl;
     private String cni;
     private Double longitude;
