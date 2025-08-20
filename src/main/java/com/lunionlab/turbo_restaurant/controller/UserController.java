@@ -68,4 +68,14 @@ public class UserController {
     public Object updateProfile(@PathVariable MultipartFile avatar, @Valid UpdateProfileForm form) {
         return userService.updateProfile(avatar, form);
     }
+
+    @GetMapping("/recuperer-restaurant-Utilisateur/par-apikey")
+    public Object recupererApikeyRestaurant(@RequestParam String apiKey) {
+        return userService.recupererApikeyRestaurant(apiKey);
+    }
+
+    @GetMapping("/recuperer-utilisateur/par-apikey")
+    public Object recupererUtilisateurParApikey(@RequestParam String apiKey) {
+        return userService.recupererUtilisateurParApikey(apiKey);
+    }
 }

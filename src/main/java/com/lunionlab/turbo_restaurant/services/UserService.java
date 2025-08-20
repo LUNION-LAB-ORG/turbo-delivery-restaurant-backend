@@ -8,9 +8,11 @@ import com.lunionlab.turbo_restaurant.exception.ErreurException;
 import com.lunionlab.turbo_restaurant.exception.ObjetNonAuthoriseException;
 import com.lunionlab.turbo_restaurant.form.*;
 import com.lunionlab.turbo_restaurant.model.CodeOptModel;
+import com.lunionlab.turbo_restaurant.model.RestaurantModel;
 import com.lunionlab.turbo_restaurant.model.RoleModel;
 import com.lunionlab.turbo_restaurant.model.UserModel;
 import com.lunionlab.turbo_restaurant.repository.CodeOptRepository;
+import com.lunionlab.turbo_restaurant.repository.RestaurantRepository;
 import com.lunionlab.turbo_restaurant.repository.UserRepository;
 import com.lunionlab.turbo_restaurant.utilities.Report;
 import com.lunionlab.turbo_restaurant.utilities.Utility;
@@ -31,6 +33,7 @@ import java.util.*;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final RestaurantRepository restaurantRepository;
     private final CodeOptRepository codeOptRepository;
 
     private final JwtService jwtService;
@@ -54,6 +57,7 @@ public class UserService {
 
     public UserService(
             UserRepository userRepository,
+            RestaurantRepository restaurantRepository,
             CodeOptRepository codeOptRepository,
             JwtService jwtService,
             GenericService genericService,
@@ -61,6 +65,7 @@ public class UserService {
             RoleService roleService
     ) {
         this.userRepository = userRepository;
+        this.restaurantRepository = restaurantRepository;
         this.codeOptRepository = codeOptRepository;
         this.jwtService = jwtService;
         this.genericService = genericService;
@@ -398,9 +403,16 @@ public class UserService {
                 log.error("file not saved");
                 throw new ErreurException("Une erreur est survenue lors du sauvegarde de l'image !");
             }
+            String apikey = Utility.genererNouveauApiKeyUtilisateur();
 
             userM.setAvatar(fileName);
             userM.setAvatarUrl(fileName);
+        }
+
+        if (userM.getApiKey() == null || userM.getApiKey().isEmpty()) {
+            String newApiKey = Utility.genererNouveauApiKeyUtilisateur();
+            userM.setApiKey(newApiKey);
+            log.info("Nouvelle clé API générée pour l'utilisateur {}", userM.getId());
         }
 
         userM = userRepository.save(userM);
@@ -413,4 +425,24 @@ public class UserService {
         return ResponseEntity.ok(users);
     }
 
+    public Object recupererApikeyRestaurant(String apiKey) {
+        Optional<UserModel> user = userRepository.findByApiKeyAndDeleted(apiKey, DeletionEnum.NO);
+        if (user.isPresent()) {
+            RestaurantModel restaurant = user.get().getRestaurant();
+            if (restaurant != null /* && restaurant.getDeleted() == Boolean.FALSE : si tu ajoutes ce champ */) {
+                return restaurant;
+            } else {
+                return "Pas de restaurant associé ou restaurant supprimé pour cet utilisateur";
+            }
+        }
+        return "Utilisateur non trouvé";
+    }
+
+    public Object recupererUtilisateurParApikey(String apikey) {
+        Optional<UserModel>  user = userRepository.findByApiKeyAndDeleted(apikey, DeletionEnum.NO);
+        if (user.isPresent()) {
+            return user;
+        }
+        return ResponseEntity.notFound();
+    }
 }
