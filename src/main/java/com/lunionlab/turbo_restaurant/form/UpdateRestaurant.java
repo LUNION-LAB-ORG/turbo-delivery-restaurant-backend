@@ -7,7 +7,6 @@ public class UpdateRestaurant {
     private String nomEtablissement;
     private String description;
     private String email;
-    private String telephone;
     private String codePostal;
     private String commune;
     private String localisation;
@@ -27,10 +26,6 @@ public class UpdateRestaurant {
 
     public void setEmail(String email) {
         this.email = email.trim();
-    }
-
-    public void setTelephone(String telephone) {
-        this.telephone = telephone;
     }
 
     public void setCodePostal(String codePostal) {
@@ -53,12 +48,12 @@ public class UpdateRestaurant {
         this.dateService = dateService;
     }
 
-    public void setLatitude(String latitude) {
-        this.latitude = Double.parseDouble(latitude);
+    public void setLatitude(Double latitude) {
+        this.latitude = latitude;
     }
 
-    public void setLongitude(String longitude) {
-        this.longitude = Double.parseDouble(longitude);
+    public void setLongitude(Double longitude) {
+        this.longitude = longitude;
     }
 
     public void setIdLocation(String idLocation) {

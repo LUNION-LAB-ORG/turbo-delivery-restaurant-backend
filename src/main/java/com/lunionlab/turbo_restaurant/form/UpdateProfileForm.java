@@ -13,5 +13,6 @@ public class UpdateProfileForm {
     private String telephone;
     private String email;
     private UUID role;
+    private String apiKey;
 
 }

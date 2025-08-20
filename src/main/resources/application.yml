@@ -1,11 +1,13 @@
 spring:
   application:
     name: turbo-restaurant
+
   datasource:
     url: jdbc:postgresql://147.79.101.226:5432/turbo-resto
     username: turbo
     password: turbo
     driverClassName: org.postgresql.Driver
+    type: com.zaxxer.hikari.HikariDataSource
     hikari:
       maximum-pool-size: 20
       minimum-idle: 5
@@ -14,6 +16,7 @@ spring:
       connection-timeout: 60000    # 60 secondes pour obtenir une connexion
       validation-timeout: 10000    # 10 secondes pour valider la connexion
       keepalive-time: 300000       # ping toutes les 5 minutes
+
   jpa:
     show-sql: true
     hibernate:
@@ -23,6 +26,13 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         formatsql: true
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    baseline-version: 1
+
   servlet:
     multipart:
       max-file-size: 100MB
@@ -48,6 +58,7 @@ front:
 
 picture:
   max: 5
+
 paginate:
   size: 20
 

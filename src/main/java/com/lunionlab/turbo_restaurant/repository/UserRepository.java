@@ -20,4 +20,7 @@ public interface UserRepository extends JpaRepository<UserModel, UUID> {
     Optional<UserModel> findFirstByEmailAndDeleted(String email, Boolean deleted);
 
     List<UserModel> findAllByRestaurantIdAndDeletedFalse(UUID restoId);
+
+    Optional<UserModel> findByApiKeyAndDeleted(String apiKey, Boolean deleted);
+
 }
