@@ -18,5 +18,7 @@ public interface OptionPlatRepo extends JpaRepository<OptionPlatModel, UUID> {
 
     Optional<OptionPlatModel> findFirstByIdAndDeleted(UUID id, Boolean deleted);
 
+    Optional<OptionPlatModel> findByLibelleAndPlatAndDeleted(String libelle, PlatModel plat, Boolean deleted);
+
     Optional<OptionPlatModel> findFirstByLibelleAndPlatAndDeleted(String libelle, PlatModel plat, Boolean deleted);
 }

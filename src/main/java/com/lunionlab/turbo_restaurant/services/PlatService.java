@@ -127,17 +127,23 @@ public class PlatService {
             log.error("plat not found");
             return ResponseEntity.badRequest().body(Report.message("message", "plat not found"));
         }
-        Boolean isExist = optionPlatRepo.existsByLibelleAndPlatAndDeleted(form.getLibelle(), platOpt.get(),
-                DeletionEnum.YES);
-        if (isExist) {
-            log.error("cette option n'existe déjà");
-            return ResponseEntity.badRequest().body(Report.message("message", "cette option existe déjà"));
+
+        OptionPlatModel optionPlatModel;
+        Optional<OptionPlatModel> optionOpt = optionPlatRepo.findByLibelleAndPlatAndDeleted(form.getLibelle(), platOpt.get(), DeletionEnum.NO);
+        if (optionOpt.isPresent()) {    
+            // On récupère l’instance existante
+            optionPlatModel = optionOpt.get();   
+
+            // Mise à jour des champs
+            optionPlatModel.setLibelle(form.getLibelle());
+            optionPlatModel.setIsRequired(form.getIsRequired());
+            optionPlatModel.setMaxSelection(form.getMaxSeleteted());
+        } else {
+            // Création d’une nouvelle option
+            optionPlatModel = new OptionPlatModel(form.getLibelle(), form.getIsRequired(), form.getMaxSeleteted(), platOpt.get());
         }
-
-        OptionPlatModel optionPlatModel = new OptionPlatModel(form.getLibelle(), form.getIsRequired(),
-                form.getMaxSeleteted(), platOpt.get());
+        // Sauvegarde (update ou insert selon le cas)
         optionPlatModel = optionPlatRepo.save(optionPlatModel);
-
         return ResponseEntity.ok(optionPlatModel);
     }
 
