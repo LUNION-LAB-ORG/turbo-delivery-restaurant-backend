@@ -128,9 +128,9 @@ public class PlatService {
             return ResponseEntity.badRequest().body(Report.message("message", "plat not found"));
         }
         Boolean isExist = optionPlatRepo.existsByLibelleAndPlatAndDeleted(form.getLibelle(), platOpt.get(),
-                DeletionEnum.NO);
+                DeletionEnum.YES);
         if (isExist) {
-            log.error("cette option existe déjà");
+            log.error("cette option n'existe déjà");
             return ResponseEntity.badRequest().body(Report.message("message", "cette option existe déjà"));
         }
 
