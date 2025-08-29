@@ -11,6 +11,7 @@ import org.springframework.validation.BindingResult;
 
 import com.lunionlab.turbo_restaurant.Enums.DeletionEnum;
 import com.lunionlab.turbo_restaurant.Enums.StatusEnum;
+import com.lunionlab.turbo_restaurant.dto.BoissonDTO;
 import com.lunionlab.turbo_restaurant.form.CreateBoissonForm;
 import com.lunionlab.turbo_restaurant.form.UpdateBoissonForm;
 import com.lunionlab.turbo_restaurant.model.BoissonModel;
@@ -81,7 +82,6 @@ public class BoissonService {
         if (restaurant == null) {
             log.error("restaurant not found");
             return ResponseEntity.badRequest().body(Report.notFound("restaurant not found"));
-
         }
         List<BoissonModel> boissons = boissonRespository.findByRestaurantAndDeletedFalse(restaurant);
         return ResponseEntity.ok(boissons);
@@ -105,6 +105,24 @@ public class BoissonService {
         return ResponseEntity.ok(boissonPlatModels);
     }
 
+    public Object getBoissonsRestaurant(UUID restaurantId) {
+        RestaurantModel restaurant = genericService.getAuthUser().getRestaurant();
+        if (restaurant == null) {
+            log.error("restaurant not found");
+            return ResponseEntity.badRequest().body(Report.notFound("restaurant not found"));
+        }
+        
+        List<BoissonDTO> boissons = boissonPlatRepository.findByRestaurantAndDeleted(restaurant, DeletionEnum.NO)
+            .stream()
+                .map(bp -> {
+                    BoissonModel b = bp.getBoissonModel();
+                    return new BoissonDTO(b.getLibelle(), b.getPrice(), b.getVolume());
+                })
+            .toList();
+
+        return ResponseEntity.ok(boissons);
+    }
+
     public Object updateBoisson(UUID boissonId, UpdateBoissonForm form) {
         Optional<BoissonModel> boissoOptional = boissonRespository.findFirstByIdAndDeleted(boissonId, DeletionEnum.NO);
         if (boissoOptional.isEmpty()) {
@@ -121,6 +139,19 @@ public class BoissonService {
         if (form.getVolume() != null) {
             boisson.setVolume(form.getVolume());
         }
+
+        boisson = boissonRespository.save(boisson);
+        return ResponseEntity.ok(boisson);
+    }
+
+    public Object deleteBoisson(UUID boissonId) {
+        Optional<BoissonModel> boissoOptional = boissonRespository.findFirstByIdAndDeleted(boissonId, DeletionEnum.NO);
+        if (boissoOptional.isEmpty()) {
+            log.error("this boisson not found");
+            return ResponseEntity.badRequest().body(Report.message("message", "this boisson not found"));
+        }
+        BoissonModel boisson = boissoOptional.get();
+        boisson.setDeleted(DeletionEnum.YES);
 
         boisson = boissonRespository.save(boisson);
         return ResponseEntity.ok(boisson);

@@ -37,6 +37,12 @@ public class BoissonController {
     }
 
     @Secured({ "ROLE_USER", "ROLE_ADMIN" })
+    @GetMapping("/get/{restaurantid}")
+    public Object getBoissonsRestaurant(@PathVariable UUID restaurantId) {
+        return boissonService.getBoissonsRestaurant(restaurantId);
+    }
+
+    @Secured({ "ROLE_USER", "ROLE_ADMIN" })
     @GetMapping("/get/plat/{platId}")
     public Object getAllBoissonForPlat(@PathVariable UUID platId) {
         return boissonService.getAllBoissonForPlat(platId);
@@ -59,9 +65,14 @@ public class BoissonController {
         return boissonService.drinkInfo(boissonId);
     }
 
+    @Secured({ "ROLE_USER", "ROLE_ADMIN" })
+    @GetMapping("/delete/{boissonId}")
+    public Object deleteBoisson(@PathVariable UUID boissonId) {
+        return boissonService.deleteBoisson(boissonId);
+    }
+
     @GetMapping("/get/by/resto/{restoId}")
     public Object getBoissonByResto(@PathVariable UUID restoId) {
         return boissonService.getRestoDrink(restoId);
     }
-
 }
