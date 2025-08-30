@@ -42,11 +42,11 @@ public class BoissonController {
         return boissonService.getBoissonsRestaurant(restaurantId);
     }
 
-    @Secured({ "ROLE_USER", "ROLE_ADMIN" })
-    @GetMapping("/get/plat/{platId}")
-    public Object getAllBoissonForPlat(@PathVariable UUID platId) {
-        return boissonService.getAllBoissonForPlat(platId);
-    }
+    // @Secured({ "ROLE_USER", "ROLE_ADMIN" })
+    // @GetMapping("/get/plat/{platId}")
+    // public Object getAllBoissonForPlat(@PathVariable UUID platId) {
+    //     return boissonService.getAllBoissonForPlat(platId);
+    // }
 
     @Secured({ "ROLE_USER", "ROLE_ADMIN" })
     @PostMapping("/update/{boissonId}")

@@ -15,10 +15,7 @@ import com.lunionlab.turbo_restaurant.dto.BoissonDTO;
 import com.lunionlab.turbo_restaurant.form.CreateBoissonForm;
 import com.lunionlab.turbo_restaurant.form.UpdateBoissonForm;
 import com.lunionlab.turbo_restaurant.model.BoissonModel;
-import com.lunionlab.turbo_restaurant.model.BoissonPlatModel;
-import com.lunionlab.turbo_restaurant.model.PlatModel;
 import com.lunionlab.turbo_restaurant.model.RestaurantModel;
-import com.lunionlab.turbo_restaurant.repository.BoissonPlatRepository;
 import com.lunionlab.turbo_restaurant.repository.BoissonRespository;
 import com.lunionlab.turbo_restaurant.repository.PlatRepository;
 import com.lunionlab.turbo_restaurant.repository.RestaurantRepository;
@@ -35,7 +32,7 @@ public class BoissonService {
     @Autowired
     PlatRepository platRepository;
     @Autowired
-    BoissonPlatRepository boissonPlatRepository;
+    BoissonRespository boissonRepository;
     @Autowired
     RestaurantRepository restaurantRepository;
 
@@ -87,23 +84,23 @@ public class BoissonService {
         return ResponseEntity.ok(boissons);
     }
 
-    public Object getAllBoissonForPlat(UUID platId) {
-        RestaurantModel restaurant = genericService.getAuthUser().getRestaurant();
-        if (restaurant == null) {
-            log.error("restaurant not found");
-            return ResponseEntity.badRequest().body(Report.notFound("restaurant not found"));
-        }
-        Optional<PlatModel> plat = platRepository.findFirstByIdAndRestaurantAndDeletedAndDisponibleTrue(platId,
-                restaurant,
-                DeletionEnum.NO);
-        if (plat.isEmpty()) {
-            log.error("plat not found");
-            return ResponseEntity.badRequest().body(Report.message("message", "plat not found"));
-        }
-        List<BoissonPlatModel> boissonPlatModels = boissonPlatRepository.findByPlatAndDeleted(plat.get(),
-                DeletionEnum.NO);
-        return ResponseEntity.ok(boissonPlatModels);
-    }
+    // public Object getAllBoissonForPlat(UUID platId) {
+    //     RestaurantModel restaurant = genericService.getAuthUser().getRestaurant();
+    //     if (restaurant == null) {
+    //         log.error("restaurant not found");
+    //         return ResponseEntity.badRequest().body(Report.notFound("restaurant not found"));
+    //     }
+    //     Optional<PlatModel> plat = platRepository.findFirstByIdAndRestaurantAndDeletedAndDisponibleTrue(platId,
+    //             restaurant,
+    //             DeletionEnum.NO);
+    //     if (plat.isEmpty()) {
+    //         log.error("plat not found");
+    //         return ResponseEntity.badRequest().body(Report.message("message", "plat not found"));
+    //     }
+    //     List<BoissonPlatModel> boissonPlatModels = boissonRepository.findByPlatAndDeleted(plat.get(),
+    //             DeletionEnum.NO);
+    //     return ResponseEntity.ok(boissonPlatModels);
+    // }
 
     public Object getBoissonsRestaurant(UUID restaurantId) {
         RestaurantModel restaurant = genericService.getAuthUser().getRestaurant();
@@ -112,12 +109,9 @@ public class BoissonService {
             return ResponseEntity.badRequest().body(Report.notFound("restaurant not found"));
         }
         
-        List<BoissonDTO> boissons = boissonPlatRepository.findByRestaurantAndDeleted(restaurant, DeletionEnum.NO)
+        List<BoissonDTO> boissons = boissonRepository.findByRestaurantAndDeletedFalse(restaurant)
             .stream()
-                .map(bp -> {
-                    BoissonModel b = bp.getBoissonModel();
-                    return new BoissonDTO(b.getLibelle(), b.getPrice(), b.getVolume());
-                })
+            .map(bp -> new BoissonDTO(bp.getLibelle(), bp.getPrice(), bp.getVolume()))
             .toList();
 
         return ResponseEntity.ok(boissons);

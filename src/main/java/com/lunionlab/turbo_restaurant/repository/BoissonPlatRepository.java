@@ -9,11 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 // import com.lunionlab.turbo_restaurant.model.BoissonModel;
 import com.lunionlab.turbo_restaurant.model.BoissonPlatModel;
 import com.lunionlab.turbo_restaurant.model.PlatModel;
-import com.lunionlab.turbo_restaurant.model.RestaurantModel;
 
 public interface BoissonPlatRepository extends JpaRepository<BoissonPlatModel, UUID> {
-
     List<BoissonPlatModel> findByPlatAndDeleted(PlatModel plat, Boolean deleted);
-
-    List<BoissonPlatModel> findByRestaurantAndDeleted(RestaurantModel restaurant, Boolean deleted);
 }
