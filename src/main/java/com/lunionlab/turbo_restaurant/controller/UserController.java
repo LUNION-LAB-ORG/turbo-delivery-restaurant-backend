@@ -70,7 +70,7 @@ public class UserController {
         return userService.updateProfile(avatar, form);
     }
 
-    @Secured({ "ROLE_USER", "ROLE_ADMIN" })
+//    @Secured({ "ROLE_USER", "ROLE_ADMIN" })
     @GetMapping("/recuperer-restaurant-Utilisateur/par-apikey")
     public Object recupererApikeyRestaurant(@RequestParam String apiKey) {
         return userService.recupererApikeyRestaurant(apiKey);
