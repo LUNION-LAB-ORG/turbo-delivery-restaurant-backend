@@ -24,8 +24,8 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     properties:
       hibernate:
+        format_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
-        formatsql: true
 
   flyway:
     enabled: true
@@ -69,3 +69,15 @@ erp:
 backend:
   server:
     address: http://localhost:8080/api
+
+# Optionnel : configuration Redis si utilisé par l'application
+redis:
+  host: localhost
+  port: 6379
+  timeout: 60000
+  lettuce:
+    pool:
+      max-active: 10
+      max-idle: 5
+      min-idle: 1
+      max-wait: 10000
