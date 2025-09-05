@@ -15,7 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @Slf4j
 public class ServeFileService {
-    @Value("${doc.root}")
+    @Value("${doc.root}")  
     private String PATH_ROOT;
 
     public Object getFile(String folder, String fileName) {

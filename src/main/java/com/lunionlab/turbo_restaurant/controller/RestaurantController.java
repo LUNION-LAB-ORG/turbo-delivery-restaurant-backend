@@ -32,7 +32,7 @@ public class RestaurantController {
     }
 
     @Secured("ROLE_USER")
-    @PostMapping("/create")
+    @PostMapping("/create")  
     public Object createRestaurant(
             @PathVariable MultipartFile logoUrl,
             @PathVariable MultipartFile cniUrl,

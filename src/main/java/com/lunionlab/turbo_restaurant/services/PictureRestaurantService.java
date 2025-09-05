@@ -52,7 +52,10 @@ public class PictureRestaurantService {
 
         for (MultipartFile picture : pictures) {
             String pictureExtension = genericService.getFileExtension(picture.getOriginalFilename());
-            if (!pictureExtension.equalsIgnoreCase("png") && !pictureExtension.equalsIgnoreCase("jpg")) {
+            if (!pictureExtension.equalsIgnoreCase("png") 
+                && !pictureExtension.equalsIgnoreCase("jpg")
+                && !pictureExtension.equalsIgnoreCase("jpeg")
+            ) {
                 response.add(Map.of("error",
                         "l'image " + picture.getOriginalFilename() + " doit être au format jpg ou png"));
                 continue;

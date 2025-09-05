@@ -50,7 +50,7 @@ public class RestaurantService {
     @Autowired
     PagedResourcesAssembler<UserOrderM> assembler;
 
-    @Value("${backend.server.address}")
+    @Value("${backend.server.address}") 
     private String BACKEND;
 
     public RestaurantService(
@@ -646,7 +646,8 @@ public class RestaurantService {
 
     private void notifierErp(String nomEtablissement) {
         String message = "Un nouveau restaurant du nom de " + nomEtablissement + " vient d'être créé !";
-        String endpoint = BACKEND + "/erp/notification/notifier/erp";
+        // String endpoint = BACKEND + "/erp/notification/notifier/erp";
+        String endpoint = "https://backend-prod.turbodeliveryapp.com/api/erp/notification/notifier/erp";
         genericService.httpPost(endpoint, message);
     }
 }

@@ -16,8 +16,6 @@ public class ServeFileController {
 
     @GetMapping("/{folder}/{fileUrl}")
     public Object getFile(@PathVariable String folder, @PathVariable String fileUrl) {
-        return serveFileService.getFile(folder, fileUrl);
-
+        return serveFileService.getFile(folder, fileUrl);  
     }
-
 }
