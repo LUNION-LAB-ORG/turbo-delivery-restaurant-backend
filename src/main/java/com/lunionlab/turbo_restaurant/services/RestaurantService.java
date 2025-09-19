@@ -650,4 +650,15 @@ public class RestaurantService {
         String endpoint = "https://backend-prod.turbodeliveryapp.com/api/erp/notification/notifier/erp";
         genericService.httpPost(endpoint, message);
     }
+
+    public ResponseEntity<List<RestaurantModel>> getRestaurantsByTypeCommission(TypeCommission typeCommission) {
+        List<RestaurantModel> restaurants = restaurantRepository.findAllByTypeCommissionAndDeletedFalse(typeCommission);
+        return ResponseEntity.ok(restaurants);
+    }
+
+    public ResponseEntity<Page<RestaurantModel>> getRestaurantsByTypeCommission(TypeCommission typeCommission, int page, int size) {
+        Pageable pageable = genericService.pagination(page, size);
+        Page<RestaurantModel> restaurants = restaurantRepository.findAllByTypeCommissionAndDeletedFalse(typeCommission, pageable);
+        return ResponseEntity.ok(restaurants);
+    }
 }

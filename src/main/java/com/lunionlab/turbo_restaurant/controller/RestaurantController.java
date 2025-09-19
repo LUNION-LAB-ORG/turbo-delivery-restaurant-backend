@@ -6,7 +6,6 @@ import com.lunionlab.turbo_restaurant.form.*;
 import com.lunionlab.turbo_restaurant.services.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -148,5 +147,29 @@ public class RestaurantController {
     @GetMapping("/{restoId}/users")
     public Object usersRestaurant(@PathVariable UUID restoId) {
         return userService.usersRestaurant(restoId);
+    }
+
+    @GetMapping("/commission/fixe")
+    public Object getRestaurantsFixe() {
+        return restaurantService.getRestaurantsByTypeCommission(TypeCommission.FIXE);
+    }
+
+    @GetMapping("/commission/pourcentage")
+    public Object getRestaurantsPourcentage() {
+        return restaurantService.getRestaurantsByTypeCommission(TypeCommission.POURCENTAGE);
+    }
+
+    @GetMapping("/commission/fixe/pagination")
+    public Object getRestaurantsFixePage(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return restaurantService.getRestaurantsByTypeCommission(TypeCommission.FIXE, page, size);
+    }
+
+    @GetMapping("/commission/pourcentage/pagination")
+    public Object getRestaurantsPourcentagePage(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return restaurantService.getRestaurantsByTypeCommission(TypeCommission.POURCENTAGE, page, size);
     }
 }
