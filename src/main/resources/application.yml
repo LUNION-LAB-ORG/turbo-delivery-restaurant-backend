@@ -1,3 +1,6 @@
+server:
+  port: 8082
+
 spring:
   application:
     name: turbo-restaurant
@@ -65,7 +68,7 @@ erp:
 
 backend:
   server:
-    address: http://localhost:8080/api
+    address: http://localhost:8082/api
 
 # Optionnel : configuration Redis si utilisé par l'application
 redis:
@@ -78,3 +81,4 @@ redis:
       max-idle: 5
       min-idle: 1
       max-wait: 10000
+

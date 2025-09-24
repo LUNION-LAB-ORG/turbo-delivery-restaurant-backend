@@ -5,15 +5,13 @@ import com.lunionlab.turbo_restaurant.Enums.DeletionEnum;
 import com.lunionlab.turbo_restaurant.Enums.JwtAudienceEnum;
 import com.lunionlab.turbo_restaurant.Enums.StatusEnum;
 import com.lunionlab.turbo_restaurant.exception.ErreurException;
-import com.lunionlab.turbo_restaurant.exception.ObjetNonAuthoriseException;
 import com.lunionlab.turbo_restaurant.form.*;
-import com.lunionlab.turbo_restaurant.model.CodeOptModel;
-import com.lunionlab.turbo_restaurant.model.RestaurantModel;
-import com.lunionlab.turbo_restaurant.model.RoleModel;
-import com.lunionlab.turbo_restaurant.model.UserModel;
+import com.lunionlab.turbo_restaurant.model.*;
 import com.lunionlab.turbo_restaurant.repository.CodeOptRepository;
+import com.lunionlab.turbo_restaurant.repository.NotificationsWebhookRepository;
 import com.lunionlab.turbo_restaurant.repository.RestaurantRepository;
 import com.lunionlab.turbo_restaurant.repository.UserRepository;
+import com.lunionlab.turbo_restaurant.response.NotificationWebhookResponse;
 import com.lunionlab.turbo_restaurant.utilities.Report;
 import com.lunionlab.turbo_restaurant.utilities.Utility;
 import jakarta.validation.Valid;
@@ -35,7 +33,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final RestaurantRepository restaurantRepository;
     private final CodeOptRepository codeOptRepository;
-
+    private final NotificationsWebhookRepository notificationsWebhookRepository;
     private final JwtService jwtService;
     private final GenericService genericService;
     private final UserPasswordService userPasswordService;
@@ -62,7 +60,8 @@ public class UserService {
             JwtService jwtService,
             GenericService genericService,
             UserPasswordService userPasswordService,
-            RoleService roleService
+            RoleService roleService,
+            NotificationsWebhookRepository notificationsWebhookRepository
     ) {
         this.userRepository = userRepository;
         this.restaurantRepository = restaurantRepository;
@@ -71,6 +70,7 @@ public class UserService {
         this.genericService = genericService;
         this.userPasswordService = userPasswordService;
         this.roleService = roleService;
+       this.notificationsWebhookRepository = notificationsWebhookRepository;
     }
 
     public Object getUserByUsername(String username) {
@@ -445,4 +445,28 @@ public class UserService {
         }
         return ResponseEntity.notFound();
     }
+
+    public List<NotificationWebhookResponse> recupererNotificationsWebhooksParApiKeyRestaurant(String apiKey) {
+        Optional<UserModel> user = userRepository.findByApiKeyAndDeleted(apiKey, DeletionEnum.NO);
+
+        if (user.isEmpty()) {
+            throw new RuntimeException("Utilisateur non trouvé");
+        }
+
+        RestaurantModel restaurant = user.get().getRestaurant();
+        if (restaurant == null) {
+            throw new RuntimeException("Pas de restaurant associé pour cet utilisateur");
+        }
+
+        List<NotificationsWebhookModel> webhooks = notificationsWebhookRepository.findByRestaurantAndDeleted(restaurant, DeletionEnum.NO);
+
+        return webhooks.stream().map(w -> {
+            NotificationWebhookResponse dto = new NotificationWebhookResponse();
+            dto.setUrl(w.getUrl());
+            dto.setDescription(w.getDescription());
+            dto.setAlias(w.getAlias());
+            return dto;
+        }).toList();
+    }
+
 }

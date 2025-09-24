@@ -3,6 +3,7 @@ package com.lunionlab.turbo_restaurant.controller;
 import com.lunionlab.turbo_restaurant.dto.NotificationsWebhookDto;
 import com.lunionlab.turbo_restaurant.model.NotificationsWebhookModel;
 import com.lunionlab.turbo_restaurant.services.NotificationsWebhookService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
@@ -24,7 +25,7 @@ public class NotificationsWebhookController {
     }
 
     @PostMapping("/enregistrer")
-    public ResponseEntity<NotificationsWebhookModel> enregistrer(@RequestBody NotificationsWebhookDto dto) {
+    public ResponseEntity<NotificationsWebhookModel> enregistrer(@Valid @RequestBody NotificationsWebhookDto dto) {
         return ResponseEntity.ok(notificationsWebhookService.enregistrer(dto));
     }
 

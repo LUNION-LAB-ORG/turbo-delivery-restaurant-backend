@@ -38,7 +38,7 @@ public class WebSecureConfig {
                     "/api/V1/turbo/resto/user/forget/password", "/api/V1/turbo/resto/user/new/password",
                     "/api/V1/turbo/resto/user/recuperer-restaurant-Utilisateur/par-apikey","/api/V1/turbo/resto/user/recuperer-utilisateur/par-apikey",
                     "/api/V1/turbo/restaurant/not/validated/**", "/api/V1/turbo/restaurant/validated/authservice/**",
-                    "/api/V1/turbo/restaurant/validated/opsmanager/**",
+                    "/api/V1/turbo/restaurant/validated/opsmanager/**","/api/V1/turbo/resto/user/recuperer-notificationWebhookDuRestaurant/par-apikey",
                     "/api/V1/turbo/restaurant/approved/authservice/**",
                     "/api/V1/turbo/restaurant/approved/opsmanager/**", "/api/V1/turbo/restaurant/optional/erp/**",
                     "/api/V1/turbo/restaurant/detail/erp/**", "/api/serve/file/**", "/api/V1/turbo/resto/plat/filter",

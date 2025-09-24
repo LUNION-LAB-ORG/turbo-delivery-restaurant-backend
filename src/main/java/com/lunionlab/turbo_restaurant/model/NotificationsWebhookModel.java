@@ -23,4 +23,6 @@ public class NotificationsWebhookModel extends BaseModel {
 
     @ManyToOne
     private RestaurantModel restaurant;
+
+    private String alias;
 }

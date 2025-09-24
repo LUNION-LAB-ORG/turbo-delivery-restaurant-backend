@@ -19,9 +19,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -643,10 +646,33 @@ public class RestaurantService {
         this.restaurantRepository.save(resto);
     }
 
-
     private void notifierErp(String nomEtablissement) {
         String message = "Un nouveau restaurant du nom de " + nomEtablissement + " vient d'être créé !";
         String endpoint = BACKEND + "/erp/notification/notifier/erp";
         genericService.httpPost(endpoint, message);
+    }
+
+    public ResponseEntity<String> notifierErps(String nomEtablissement) {
+        String message = "Un nouveau restaurant du nom de " + nomEtablissement + " vient d'être créé !";
+        String endpoint = BACKEND + "/erp/notification/notifier/erp";
+        try {
+            ResponseEntity<Object> response = genericService.httpPost(endpoint, message);
+            if (response.getStatusCode().is2xxSuccessful()) {
+                // Convertir le body Object en String pour le message de retour
+                String body = response.getBody() != null ? response.getBody().toString() : "";
+                return ResponseEntity.ok("Notification envoyée avec succès : " + body);
+            } else {
+                String body = response.getBody() != null ? response.getBody().toString() : "";
+                return ResponseEntity.status(response.getStatusCode())
+                        .body("Erreur lors de l'envoi de la notification : " + body);
+            }
+        } catch (HttpClientErrorException | HttpServerErrorException ex) {
+            // Gestion spécifique des erreurs HTTP client et serveur
+            return ResponseEntity.status(ex.getStatusCode())
+                    .body("Erreur HTTP lors de l'envoi de la notification : " + ex.getResponseBodyAsString());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Exception lors de l'envoi de la notification : " + e.getMessage());
+        }
     }
 }

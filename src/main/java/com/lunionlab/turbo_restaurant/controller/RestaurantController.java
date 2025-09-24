@@ -7,12 +7,7 @@ import com.lunionlab.turbo_restaurant.services.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.lunionlab.turbo_restaurant.services.RestaurantService;
@@ -148,5 +143,12 @@ public class RestaurantController {
     @GetMapping("/{restoId}/users")
     public Object usersRestaurant(@PathVariable UUID restoId) {
         return userService.usersRestaurant(restoId);
+    }
+
+    @Secured({ "ROLE_USER", "ROLE_ADMIN" })
+    @PostMapping("/notification/notifier/erp")
+    public ResponseEntity<String> notifierErp(@RequestParam String nomEtablissement) {
+        restaurantService.notifierErps(nomEtablissement);
+        return ResponseEntity.ok("Notification envoyée pour : " + nomEtablissement);
     }
 }

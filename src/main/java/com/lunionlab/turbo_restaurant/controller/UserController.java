@@ -1,12 +1,17 @@
 package com.lunionlab.turbo_restaurant.controller;
 
 import com.lunionlab.turbo_restaurant.form.*;
+import com.lunionlab.turbo_restaurant.response.NotificationWebhookResponse;
+import com.lunionlab.turbo_restaurant.services.NotificationsWebhookService;
 import com.lunionlab.turbo_restaurant.services.RoleService;
 import com.lunionlab.turbo_restaurant.services.UserService;
 import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @RestController
 @RequestMapping(path = "api/V1/turbo/resto/user")
@@ -14,10 +19,12 @@ public class UserController {
 
     private final UserService userService;
     private final RoleService roleService;
+    private final NotificationsWebhookService notificationsWebhookService;
 
-    public UserController(UserService userService, RoleService roleService) {
+    public UserController(UserService userService, RoleService roleService, NotificationsWebhookService notificationsWebhookService) {
         this.userService = userService;
         this.roleService = roleService;
+        this.notificationsWebhookService = notificationsWebhookService;
     }
 
     @PostMapping("/login")
@@ -79,5 +86,13 @@ public class UserController {
     @GetMapping("/recuperer-utilisateur/par-apikey")
     public Object recupererUtilisateurParApikey(@RequestParam String apiKey) {
         return userService.recupererUtilisateurParApikey(apiKey);
+    }
+
+    @GetMapping("/recuperer-notificationWebhookDuRestaurant/par-apikey")
+    public ResponseEntity<List<NotificationWebhookResponse>> getWebhooksParApiKey(
+            @RequestParam String apiKey) {
+        return ResponseEntity.ok(
+                userService.recupererNotificationsWebhooksParApiKeyRestaurant(apiKey)
+        );
     }
 }

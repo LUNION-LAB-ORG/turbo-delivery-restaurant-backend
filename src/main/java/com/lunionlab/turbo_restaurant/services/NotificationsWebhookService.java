@@ -1,5 +1,6 @@
 package com.lunionlab.turbo_restaurant.services;
 
+import com.lunionlab.turbo_restaurant.Enums.AliasEnumWebhook;
 import com.lunionlab.turbo_restaurant.Enums.DeletionEnum;
 import com.lunionlab.turbo_restaurant.Enums.StatusEnum;
 import com.lunionlab.turbo_restaurant.dto.NotificationsWebhookDto;
@@ -41,8 +42,8 @@ public class NotificationsWebhookService {
         webhook.setUrl(dto.url());
         webhook.setDescription(dto.description());
         webhook.setRestaurant(restaurant);
+        webhook.setAlias(AliasEnumWebhook.DELIVERY_CREATED);
         webhook = webhookRepository.save(webhook);
-        log.info("Webhook créé pour restaurant {}", restaurant.getId());
         return webhook;
     }
 
@@ -54,8 +55,8 @@ public class NotificationsWebhookService {
         webhook.setUrl(dto.url());
         webhook.setDescription(dto.description());
         webhook.setRestaurant(restaurant);
+        webhook.setAlias(AliasEnumWebhook.DELIVERY_CREATED);
         webhook = webhookRepository.save(webhook);
-        log.info("Webhook {} mis à jour", id);
         return webhook;
     }
 
@@ -72,7 +73,6 @@ public class NotificationsWebhookService {
         List<Integer> statusAllow = List.of(StatusEnum.DEFAULT_DESABLE, StatusEnum.DEFAULT_ENABLE);
         Optional<RestaurantModel> restaurantOpt = restaurantRepository.findFirstByIdAndStatusInAndDeleted(restoId, statusAllow, DeletionEnum.NO);
         if (restaurantOpt.isEmpty()) {
-            log.error("Restaurant introuvable pour ID {}", restoId);
             throw new ObjetNonTrouveException("Cet restaurant n'existe pas !");
         }
         return restaurantOpt.get();
