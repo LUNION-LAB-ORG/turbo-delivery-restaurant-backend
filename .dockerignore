@@ -1,0 +1,14 @@
+target/
+uploads/
+.mvn/
+.git/
+.gitignore
+
+.gitattributes
+error.log
+ivory-coast-latest.osm.pbf
+
+README.md
+*.iml
+.idea/
+.vscode/
