@@ -16,7 +16,7 @@ public class CollectionController {
     @Autowired
     CollectionService collectionService;
 
-    @Secured({ "ROLE_CUSTOMER", "ROLE_ADMIN" })
+    @Secured({ "ROLE_CUSTOMER", "ROLE_ADMIN", "ROLE_USER" })
     @GetMapping("/get")
     public Object geCollection() {
         return collectionService.getCollections();

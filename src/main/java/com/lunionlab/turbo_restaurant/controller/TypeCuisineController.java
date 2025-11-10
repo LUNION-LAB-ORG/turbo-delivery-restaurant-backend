@@ -14,7 +14,7 @@ public class TypeCuisineController {
     @Autowired
     TypeCuisineService typeCuisineService;
 
-    @Secured({ "ROLE_CUSTOMER", "ROLE_ADMIN" })
+    @Secured({ "ROLE_CUSTOMER", "ROLE_ADMIN", "ROLE_USER" })
     @GetMapping("/liste")
     public Object getTypeCuisine() {
         return typeCuisineService.getTypeCuisine();

@@ -43,7 +43,7 @@ public class RestaurantController {
         return restaurantService.createRestaurant(logoUrl, cniUrl, docUrl, form);
     }
 
-    @Secured({ "ROLE_CUSTOMER", "ROLE_ADMIN" })
+    @Secured({ "ROLE_CUSTOMER", "ROLE_ADMIN", "ROLE_USER" })
     @PostMapping("/update")
     public Object updateRestaurant(
             @PathVariable(required = false) MultipartFile logoUrl,
@@ -54,7 +54,7 @@ public class RestaurantController {
         return restaurantService.updateRestaurant(logoUrl, cniUrl, docUrl, form);
     }
 
-    @Secured({ "ROLE_CUSTOMER", "ROLE_ADMIN" })
+    @Secured({ "ROLE_CUSTOMER", "ROLE_ADMIN", "ROLE_USER" })
     @GetMapping("/info")
     public Object getUserRestaurant() {
         return restaurantService.getUserAuthRestaurant();
@@ -107,7 +107,7 @@ public class RestaurantController {
 
     // opening hours
 
-    @Secured({ "ROLE_CUSTOMER", "ROLE_ADMIN" })
+    @Secured({ "ROLE_CUSTOMER", "ROLE_ADMIN", "ROLE_USER" })
     @PostMapping("/add/horaire")
     public Object addOpeningHour(@Valid @RequestBody AddOpeningForm form) {
         return restaurantService.addOpeningHours(form);
@@ -118,7 +118,7 @@ public class RestaurantController {
         return restaurantService.restoIsOpen(restoId);
     }
 
-    @Secured({ "ROLE_CUSTOMER", "ROLE_ADMIN" })
+    @Secured({ "ROLE_CUSTOMER", "ROLE_ADMIN", "ROLE_USER" })
     @GetMapping("/get/hours")
     public Object getOpeningHours() {
         return restaurantService.getOpeningHours();
@@ -130,7 +130,7 @@ public class RestaurantController {
         return restaurantService.saveUserOrder(form);
     }
 
-    @Secured({ "ROLE_CUSTOMER", "ROLE_ADMIN" })
+    @Secured({ "ROLE_CUSTOMER", "ROLE_ADMIN", "ROLE_USER" })
     @GetMapping("/get/user/orders")
     public ResponseEntity<?> getUserOrders() {
         return restaurantService.getUserOrders();

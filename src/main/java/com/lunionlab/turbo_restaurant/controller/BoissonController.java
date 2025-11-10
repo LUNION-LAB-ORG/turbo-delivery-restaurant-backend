@@ -24,31 +24,31 @@ public class BoissonController {
     @Autowired
     BoissonService boissonService;
 
-    @Secured({ "ROLE_CUSTOMER", "ROLE_ADMIN" })
+    @Secured({ "ROLE_CUSTOMER", "ROLE_ADMIN", "ROLE_USER" })
     @PostMapping("/create")
     public Object createBoisson(@Valid @RequestBody CreateBoissonForm form, BindingResult result) {
         return boissonService.createBoisson(form, result);
     }
 
-    @Secured({ "ROLE_CUSTOMER", "ROLE_ADMIN" })
+    @Secured({ "ROLE_CUSTOMER", "ROLE_ADMIN", "ROLE_USER" })
     @GetMapping("/get")
     public Object getBoissons() {
         return boissonService.getBoissons();
     }
 
-    @Secured({ "ROLE_CUSTOMER", "ROLE_ADMIN" })
+    @Secured({ "ROLE_CUSTOMER", "ROLE_ADMIN", "ROLE_USER" })
     @GetMapping("/get/{restaurantid}")
     public Object getBoissonsRestaurant(@PathVariable UUID restaurantId) {
         return boissonService.getBoissonsRestaurant(restaurantId);
     }
 
-    // @Secured({ "ROLE_CUSTOMER", "ROLE_ADMIN" })
+    // @Secured({ "ROLE_CUSTOMER", "ROLE_ADMIN", "ROLE_USER" })
     // @GetMapping("/get/plat/{platId}")
     // public Object getAllBoissonForPlat(@PathVariable UUID platId) {
     //     return boissonService.getAllBoissonForPlat(platId);
     // }
 
-    @Secured({ "ROLE_CUSTOMER", "ROLE_ADMIN" })
+    @Secured({ "ROLE_CUSTOMER", "ROLE_ADMIN", "ROLE_USER" })
     @PostMapping("/update/{boissonId}")
     public Object updateBoisson(@PathVariable UUID boissonId, @RequestBody UpdateBoissonForm form) {
         return boissonService.updateBoisson(boissonId, form);
@@ -59,13 +59,13 @@ public class BoissonController {
         return boissonService.drinkInfo(boissonId);
     }
 
-    @Secured({ "ROLE_CUSTOMER", "ROLE_ADMIN" })
+    @Secured({ "ROLE_CUSTOMER", "ROLE_ADMIN", "ROLE_USER" })
     @GetMapping("/info/{boissonId}")
     public Object getBoissonInfo(@PathVariable UUID boissonId) {
         return boissonService.drinkInfo(boissonId);
     }
 
-    @Secured({ "ROLE_CUSTOMER", "ROLE_ADMIN" })
+    @Secured({ "ROLE_CUSTOMER", "ROLE_ADMIN", "ROLE_USER" })
     @GetMapping("/delete/{boissonId}")
     public Object deleteBoisson(@PathVariable UUID boissonId) {
         return boissonService.deleteBoisson(boissonId);
