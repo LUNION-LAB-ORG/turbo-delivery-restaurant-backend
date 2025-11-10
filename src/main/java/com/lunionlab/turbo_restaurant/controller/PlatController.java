@@ -32,26 +32,26 @@ public class PlatController {
     @Autowired
     PlatService platService;
 
-    @Secured({ "ROLE_USER", "ROLE_ADMIN" })
+    @Secured({ "ROLE_CUSTOMER", "ROLE_ADMIN" })
     @PostMapping("/add")
     public Object addPlat(@PathVariable MultipartFile imageUrl, @Valid AddPlatForm form,
             BindingResult result) {
         return platService.addPlat(imageUrl, form, result);
     }
 
-    @Secured({ "ROLE_USER", "ROLE_ADMIN" })
+    @Secured({ "ROLE_CUSTOMER", "ROLE_ADMIN" })
     @PostMapping("/add/option/plat")
     public Object addOptionPlat(@Valid @RequestBody AddOptionPlatForm form, BindingResult result) {
         return platService.addOptionPlat(form, result);
     }
 
-    @Secured({ "ROLE_USER", "ROLE_ADMIN" })
+    @Secured({ "ROLE_CUSTOMER", "ROLE_ADMIN" })
     @GetMapping("/list/option")
     public Object ListOptionPlat() {
         return platService.ListOptionPlat();
     }
 
-    @Secured({ "ROLE_USER", "ROLE_ADMIN" })
+    @Secured({ "ROLE_CUSTOMER", "ROLE_ADMIN" })
     @PostMapping("/add/option/value")
     public Object addOptionValeur(@Valid @RequestBody AddOptionValeurForm form, BindingResult result) {
         return platService.addOptionValeur(form, result);
@@ -92,7 +92,7 @@ public class PlatController {
         return platService.getAllRestoCollection(restoId);
     }
 
-    @Secured("ROLE_USER")
+    @Secured("ROLE_CUSTOMER")
     @GetMapping("/collection/{collectionId}")
     public Object getPlatByCollection(@PathVariable UUID collectionId) {
         return platService.getPlatByCollection(collectionId);
@@ -103,7 +103,7 @@ public class PlatController {
         return platService.platgeted();
     }
 
-    @Secured({ "ROLE_USER", "ROLE_ADMIN" })
+    @Secured({ "ROLE_CUSTOMER", "ROLE_ADMIN" })
     @GetMapping("/info/{platId}")
     public Object platInfo(@PathVariable UUID platId) {
         return platService.customerCheckExistingPlat(platId);

@@ -17,7 +17,7 @@ public class PictureRestoController {
     @Autowired
     PictureRestaurantService pictureRestaurantService;
 
-    @Secured({ "ROLE_USER", "ROLE_ADMIN" })
+    @Secured({ "ROLE_CUSTOMER", "ROLE_ADMIN" })
     @PostMapping("/upload")
     public Object addRestoPicture(@RequestParam("pictures") MultipartFile[] pictures) {
         return pictureRestaurantService.addRestoPicture(pictures);

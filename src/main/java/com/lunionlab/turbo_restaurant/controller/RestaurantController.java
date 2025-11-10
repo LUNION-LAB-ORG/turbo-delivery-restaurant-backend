@@ -3,6 +3,7 @@ package com.lunionlab.turbo_restaurant.controller;
 import java.util.UUID;
 
 import com.lunionlab.turbo_restaurant.form.*;
+import com.lunionlab.turbo_restaurant.objetvaleur.TypeCommission;
 import com.lunionlab.turbo_restaurant.services.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -30,7 +32,7 @@ public class RestaurantController {
         this.userService = userService;
     }
 
-    @Secured("ROLE_USER")
+    @Secured("ROLE_CUSTOMER")
     @PostMapping("/create")  
     public Object createRestaurant(
             @PathVariable MultipartFile logoUrl,
@@ -41,7 +43,7 @@ public class RestaurantController {
         return restaurantService.createRestaurant(logoUrl, cniUrl, docUrl, form);
     }
 
-    @Secured({ "ROLE_USER", "ROLE_ADMIN" })
+    @Secured({ "ROLE_CUSTOMER", "ROLE_ADMIN" })
     @PostMapping("/update")
     public Object updateRestaurant(
             @PathVariable(required = false) MultipartFile logoUrl,
@@ -52,7 +54,7 @@ public class RestaurantController {
         return restaurantService.updateRestaurant(logoUrl, cniUrl, docUrl, form);
     }
 
-    @Secured({ "ROLE_USER", "ROLE_ADMIN" })
+    @Secured({ "ROLE_CUSTOMER", "ROLE_ADMIN" })
     @GetMapping("/info")
     public Object getUserRestaurant() {
         return restaurantService.getUserAuthRestaurant();
@@ -105,7 +107,7 @@ public class RestaurantController {
 
     // opening hours
 
-    @Secured({ "ROLE_USER", "ROLE_ADMIN" })
+    @Secured({ "ROLE_CUSTOMER", "ROLE_ADMIN" })
     @PostMapping("/add/horaire")
     public Object addOpeningHour(@Valid @RequestBody AddOpeningForm form) {
         return restaurantService.addOpeningHours(form);
@@ -116,7 +118,7 @@ public class RestaurantController {
         return restaurantService.restoIsOpen(restoId);
     }
 
-    @Secured({ "ROLE_USER", "ROLE_ADMIN" })
+    @Secured({ "ROLE_CUSTOMER", "ROLE_ADMIN" })
     @GetMapping("/get/hours")
     public Object getOpeningHours() {
         return restaurantService.getOpeningHours();
@@ -128,7 +130,7 @@ public class RestaurantController {
         return restaurantService.saveUserOrder(form);
     }
 
-    @Secured({ "ROLE_USER", "ROLE_ADMIN" })
+    @Secured({ "ROLE_CUSTOMER", "ROLE_ADMIN" })
     @GetMapping("/get/user/orders")
     public ResponseEntity<?> getUserOrders() {
         return restaurantService.getUserOrders();

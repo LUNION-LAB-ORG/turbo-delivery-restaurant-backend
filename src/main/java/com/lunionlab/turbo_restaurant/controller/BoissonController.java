@@ -24,31 +24,31 @@ public class BoissonController {
     @Autowired
     BoissonService boissonService;
 
-    @Secured({ "ROLE_USER", "ROLE_ADMIN" })
+    @Secured({ "ROLE_CUSTOMER", "ROLE_ADMIN" })
     @PostMapping("/create")
     public Object createBoisson(@Valid @RequestBody CreateBoissonForm form, BindingResult result) {
         return boissonService.createBoisson(form, result);
     }
 
-    @Secured({ "ROLE_USER", "ROLE_ADMIN" })
+    @Secured({ "ROLE_CUSTOMER", "ROLE_ADMIN" })
     @GetMapping("/get")
     public Object getBoissons() {
         return boissonService.getBoissons();
     }
 
-    @Secured({ "ROLE_USER", "ROLE_ADMIN" })
+    @Secured({ "ROLE_CUSTOMER", "ROLE_ADMIN" })
     @GetMapping("/get/{restaurantid}")
     public Object getBoissonsRestaurant(@PathVariable UUID restaurantId) {
         return boissonService.getBoissonsRestaurant(restaurantId);
     }
 
-    // @Secured({ "ROLE_USER", "ROLE_ADMIN" })
+    // @Secured({ "ROLE_CUSTOMER", "ROLE_ADMIN" })
     // @GetMapping("/get/plat/{platId}")
     // public Object getAllBoissonForPlat(@PathVariable UUID platId) {
     //     return boissonService.getAllBoissonForPlat(platId);
     // }
 
-    @Secured({ "ROLE_USER", "ROLE_ADMIN" })
+    @Secured({ "ROLE_CUSTOMER", "ROLE_ADMIN" })
     @PostMapping("/update/{boissonId}")
     public Object updateBoisson(@PathVariable UUID boissonId, @RequestBody UpdateBoissonForm form) {
         return boissonService.updateBoisson(boissonId, form);
@@ -59,13 +59,13 @@ public class BoissonController {
         return boissonService.drinkInfo(boissonId);
     }
 
-    @Secured({ "ROLE_USER", "ROLE_ADMIN" })
+    @Secured({ "ROLE_CUSTOMER", "ROLE_ADMIN" })
     @GetMapping("/info/{boissonId}")
     public Object getBoissonInfo(@PathVariable UUID boissonId) {
         return boissonService.drinkInfo(boissonId);
     }
 
-    @Secured({ "ROLE_USER", "ROLE_ADMIN" })
+    @Secured({ "ROLE_CUSTOMER", "ROLE_ADMIN" })
     @GetMapping("/delete/{boissonId}")
     public Object deleteBoisson(@PathVariable UUID boissonId) {
         return boissonService.deleteBoisson(boissonId);

@@ -19,7 +19,7 @@ public class TypeCuisineRestoController {
     @Autowired
     TypeCuisineRestaurantService typeCuisineRestaurantService;
 
-    @Secured({ "ROLE_USER", "ROLE_ADMIN" })
+    @Secured({ "ROLE_CUSTOMER", "ROLE_ADMIN" })
     @PostMapping("/assign")
     public Object assigneTypeCuisineToResto(@Valid @RequestBody AssignTypeCuisineRestoForm form, BindingResult result) {
         return typeCuisineRestaurantService.assigneTypeCuisineToResto(form, result);

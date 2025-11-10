@@ -254,6 +254,10 @@ public class GenericService {
         return PageRequest.of(page, PAGE_SIZE);
     }
 
+    public PageRequest pagination(Integer page, Integer size) {
+        return PageRequest.of(page, size);
+    }
+
     public ResponseEntity<String> httpGet(String uri) throws HttpClientErrorException {
         RestTemplate httpClient = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();

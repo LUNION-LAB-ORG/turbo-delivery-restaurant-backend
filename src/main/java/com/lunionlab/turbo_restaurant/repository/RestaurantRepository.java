@@ -1,6 +1,8 @@
 package com.lunionlab.turbo_restaurant.repository;
 
 import com.lunionlab.turbo_restaurant.model.RestaurantModel;
+import com.lunionlab.turbo_restaurant.objetvaleur.TypeCommission;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

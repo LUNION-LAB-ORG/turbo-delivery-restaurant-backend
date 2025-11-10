@@ -25,25 +25,25 @@ public class AccompagnementController {
     @Autowired
     AccompagnementService accompagnementService;
 
-    @Secured({ "ROLE_USER", "ROLE_ADMIN" })
+    @Secured({ "ROLE_CUSTOMER", "ROLE_ADMIN" })
     @PostMapping("/create")
     public Object createAccompagnement(@Valid @RequestBody CreateAccompagnementForm form, BindingResult result) {
         return accompagnementService.createAccompagnement(form, result);
     }
 
-    @Secured({ "ROLE_USER", "ROLE_ADMIN" })
+    @Secured({ "ROLE_CUSTOMER", "ROLE_ADMIN" })
     @GetMapping("/list/{platId}")
     public Object getAccompagnementForPlat(@PathVariable UUID platId) {
         return accompagnementService.getAccompagnementForPlat(platId);
     }
 
-    @Secured({ "ROLE_USER", "ROLE_ADMIN" })
+    @Secured({ "ROLE_CUSTOMER", "ROLE_ADMIN" })
     @GetMapping("/info/{accompagnementId}")
     public Object detailAccompagnement(@PathVariable UUID accompagnementId) {
         return accompagnementService.detailAccompagnement(accompagnementId);
     }
 
-    @Secured({ "ROLE_USER", "ROLE_ADMIN" })
+    @Secured({ "ROLE_CUSTOMER", "ROLE_ADMIN" })
     @PostMapping("/update/{accompagnementId}")
     public Object updateAccompagnement(@PathVariable UUID accompagnementId,
             @RequestBody UpdateAccompagnementForm form) {
