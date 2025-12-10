@@ -17,6 +17,7 @@ import com.lunionlab.turbo_restaurant.form.AddOptionValeurForm;
 import com.lunionlab.turbo_restaurant.form.AddPlatForm;
 import com.lunionlab.turbo_restaurant.form.SearchPlatForm;
 import com.lunionlab.turbo_restaurant.form.SearchPlatRestoForm;
+import com.lunionlab.turbo_restaurant.mappers.PlatWithoutRestaurantAndCollectionMapper;
 import com.lunionlab.turbo_restaurant.model.AccompagnementModel;
 import com.lunionlab.turbo_restaurant.model.CollectionModel;
 import com.lunionlab.turbo_restaurant.model.OptionPlatModel;
@@ -414,36 +415,45 @@ public class PlatService {
         Optional<CollectionModel> collectionOpt = collectionRepository.findFirstByIdAndDeleted(collectionId,
                 DeletionEnum.NO);
         if (collectionOpt.isEmpty()) {
-            log.error("collection not found");
-            return ResponseEntity.badRequest().body("le type de plat spécifié est introuvable");
+            return ResponseEntity.badRequest().body("Collection Introuvable");
         }
+
         RestaurantModel restaurantM = genericService.getAuthUser().getRestaurant();
         if (restaurantM == null) {
-            log.error("this user has not restaurant");
-            return ResponseEntity.badRequest().body("le type de plat spécifié est introuvable");
+            return ResponseEntity.badRequest().body("Restaurant Introuvable");
         }
-        List<PlatModel> plats = platRepository.findByCollectionAndRestaurantAndDeletedFalse(collectionOpt.get(),
-                restaurantM);
-        log.info("get plat from collection");
-        return ResponseEntity.ok(plats);
+
+        List<PlatModel> plats = platRepository.findByCollectionAndRestaurantAndDeletedFalse(collectionOpt.get(), restaurantM);
+        
+        return ResponseEntity.ok(PlatWithoutRestaurantAndCollectionMapper.toDtoList(plats));
     }
 
     public Object platgeted() {
         RestaurantModel restaurantM = genericService.getAuthUser().getRestaurant();
         if (restaurantM == null) {
-            log.error("restaurant not found");
             return ResponseEntity.badRequest().body("Vous n'avez pas de restaurant");
         }
         List<PlatByCollectionResponse> platByCollectionResponses = new ArrayList<>();
         List<CollectionModel> collectionModels = platRepository
                 .findCollectionHasPlat(genericService.getAuthUser().getRestaurant());
+
         for (CollectionModel collectionModel : collectionModels) {
+
             PlatByCollectionResponse platByCollectionResponse = new PlatByCollectionResponse();
+        
             long totalPlat = platRepository.countByCollectionAndDeletedFalse(collectionModel);
+            List<PlatModel> plats = platRepository.findByCollectionAndDeletedFalse(collectionModel);
+        
             platByCollectionResponse.setTotalPlat(totalPlat);
             platByCollectionResponse.setCollectionModel(collectionModel);
+        
+            // Mapping entités → DTO
+            platByCollectionResponse.setPlats(
+                PlatWithoutRestaurantAndCollectionMapper.toDtoList(plats)
+            );
+        
             platByCollectionResponses.add(platByCollectionResponse);
-        }
+        }                
 
         return ResponseEntity.ok(platByCollectionResponses);
     }

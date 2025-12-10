@@ -23,6 +23,8 @@ public interface PlatRepository extends JpaRepository<PlatModel, UUID> {
                         CollectionModel collection, Long priceStart, Long priceEnd,
                         Boolean deleted);
 
+        List<PlatModel> findByCollectionAndDeletedFalse(CollectionModel collection);
+
         List<PlatModel> findByRestaurantAndPriceGreaterThanEqualAndPriceLessThanEqualAndDeletedAndDisponibleTrue(
                         RestaurantModel resto, Long priceStart, Long priceEnd, Boolean deleted);
 

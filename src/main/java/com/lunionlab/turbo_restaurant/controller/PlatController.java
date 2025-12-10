@@ -92,7 +92,7 @@ public class PlatController {
         return platService.getAllRestoCollection(restoId);
     }
 
-    @Secured("ROLE_CUSTOMER")
+    @Secured({ "ROLE_CUSTOMER", "ROLE_ADMIN", "ROLE_USER" })
     @GetMapping("/collection/{collectionId}")
     public Object getPlatByCollection(@PathVariable UUID collectionId) {
         return platService.getPlatByCollection(collectionId);

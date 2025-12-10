@@ -566,13 +566,12 @@ public class RestaurantService {
     public ResponseEntity<?> getUserOrders() {
         RestaurantModel restaurant = genericService.getAuthUser().getRestaurant();
         if (restaurant == null) {
-            log.error("this use hasn't a restaurant");
             throw new ErreurException("Vous n'avez pas de commande pour le moment !");
         }
+
         Page<UserOrderM> userOrderPage = userOrderRepo.findByRestaurantAndDeletedFalse(restaurant,
                 genericService.pagination(0));
         if (userOrderPage.getContent().isEmpty()) {
-            log.error("any user order found");
             throw new ErreurException("Vous n'avez pas de commande pour le moment !");
         }
 
@@ -584,15 +583,12 @@ public class RestaurantService {
         Optional<RestaurantModel> restOpt = restaurantRepository.findFirstByIdAndDeleted(form.getRestoId(),
                 DeletionEnum.NO);
         if (restOpt.isEmpty()) {
-            log.error("restaurant not found");
             throw new ErreurException("Le restaurant specifié n'existe pas !");
         }
         RestaurantModel restaurantM = restOpt.get();
         if (restaurantM.getStatus().intValue() != StatusEnum.DEFAULT_DESABLE.intValue()) {
-            log.info("reject restaurant");
             restaurantM.setStatus(StatusEnum.DEFAULT_DESABLE);
         } else {
-            log.info("ce restaurant a été rejecté");
             throw new ErreurException("Ce restaurant a déjà été rejecté !");
         }
 
@@ -601,13 +597,10 @@ public class RestaurantService {
                         + //
                         "                                <div class=\"code\">" + form.getMotif() + "</div>"));
         if (!isSended) {
-            log.error("email not sended");
             throw new ErreurException("Mail non distribué !");
         }
         restaurantM = restaurantRepository.save(restaurantM);
-        log.info("reject resto {}", restaurantM.getId());
         return ResponseEntity.ok(restaurantM);
-
     }
 
     public Boolean isOpen(RestaurantModel restaurant) {
@@ -615,22 +608,22 @@ public class RestaurantService {
         Optional<OpeningHoursModel> openingOpt = openingHourRepo.findFirstByDayOfWeekAndRestaurantAndDeletedFalse(
                 Utility.getDayOfWeekFrench(),
                 restaurant);
+                
         if (openingOpt.isEmpty()) {
-            log.error("opening hours not found");
             return false;
         }
+        
         LocalTime openingTime = openingOpt.get().getOpeningTime();
         LocalTime closingTime = openingOpt.get().getClosingTime();
         Boolean isOpened;
+
         if (closingTime.isBefore(openingTime)) {
             // if closing time is before opening time, the restaurant is open if the current
             isOpened = now.compareTo(openingTime) >= 0 || now.compareTo(closingTime) <= 0;
         } else {
             // if closing time is after opening time, the restaurant is open if the current
             isOpened = now.compareTo(openingTime) >= 0 && now.compareTo(closingTime) <= 0;
-
         }
-        log.info("Restaurant with ID {} is currently {}", restaurant.getId(), isOpened ? "open" : "closed");
         return isOpened;
     }
 
