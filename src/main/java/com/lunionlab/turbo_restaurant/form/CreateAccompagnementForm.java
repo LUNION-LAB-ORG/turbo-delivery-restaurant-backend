@@ -14,6 +14,6 @@ public class CreateAccompagnementForm {
     private String libelle;
     @NotNull
     private Long price;
-    @NotNull
+    // @NotNull
     private UUID platId;
 }
