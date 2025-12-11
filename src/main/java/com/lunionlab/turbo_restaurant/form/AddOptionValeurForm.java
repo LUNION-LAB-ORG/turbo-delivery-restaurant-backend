@@ -13,6 +13,7 @@ public class AddOptionValeurForm {
     private String valeur;
     @NotNull
     private Long prixSup;
-    @NotNull
+
+    // @NotNull
     private UUID optionId;
 }

@@ -46,16 +46,16 @@ public class PlatController {
     }
 
     @Secured({ "ROLE_CUSTOMER", "ROLE_ADMIN", "ROLE_USER" })
-    @GetMapping("/list/option")
-    public Object ListOptionPlat() {
-        return platService.ListOptionPlat();
-    }
-
-    @Secured({ "ROLE_CUSTOMER", "ROLE_ADMIN", "ROLE_USER" })
     @PostMapping("/add/option/value")
     public Object addOptionValeur(@Valid @RequestBody AddOptionValeurForm form, BindingResult result) {
         return platService.addOptionValeur(form, result);
     }
+
+    @Secured({ "ROLE_CUSTOMER", "ROLE_ADMIN", "ROLE_USER" })
+    @GetMapping("/list/option")
+    public Object ListOptionPlat() {
+        return platService.ListOptionPlat();
+    }    
 
     @PostMapping("/filter")
     public Object searchPlat(@Valid @RequestBody SearchPlatForm form, BindingResult result) {

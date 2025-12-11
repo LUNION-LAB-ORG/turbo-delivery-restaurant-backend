@@ -73,59 +73,180 @@ public class PlatService {
     @Autowired
     BoissonPlatRepository boissonPlatRepository;
 
+    // public Object addPlat(MultipartFile imageUrl, @Valid AddPlatForm form, BindingResult result) {
+    //     if (result.hasErrors()) {
+    //         log.error("mauvais format des données");
+    //         return ResponseEntity.badRequest().body(Report.getErrors(result));
+    //     }
+
+    //     if (imageUrl == null || imageUrl.isEmpty()) {
+    //         log.error("imageUrl is required");
+    //         return ResponseEntity.badRequest().body(Report.message("message", "Veuillez soumettre l'image du plat"));
+    //     }
+    //     String imageName = null;
+    //     if (!imageUrl.isEmpty() && imageUrl != null) {
+    //         long maxImageSize = 2 * 1024 * 1024; // 5MB en bytes
+    //         // Vérifier la taille de l'image
+    //         if (imageUrl.getSize() > maxImageSize) {
+    //               log.error("Taille d'image trop importante: {} bytes", imageUrl.getSize());
+    //               return ResponseEntity.badRequest()
+    //                   .body(Report.message("message", "L'image du plat ne doit pas dépasser 2MB"));
+    //         }
+        
+    //         imageName = genericService.generateFileName("plat_image") + "." + genericService.getFileExtension(imageUrl.getOriginalFilename());
+    //         File imageFile = new File(imageName);
+    //         // compress and save image
+    //         genericService.compressImage(imageUrl, imageFile);
+    //     }
+    //     RestaurantModel restaurantModel = genericService.getAuthUser().getRestaurant();
+    //     if (restaurantModel == null) {
+    //         log.error("this user has not restaurant");
+    //         return ResponseEntity.badRequest().body(Report.message("message", "restaurant not found"));
+    //     }
+    //     Optional<CollectionModel> collectionOpt = collectionRepository.findFirstByIdAndDeleted(form.getCollectionId(),
+    //             DeletionEnum.NO);
+    //     if (collectionOpt.isEmpty()) {
+    //         log.error("collection selected not found");
+    //         return ResponseEntity.badRequest().body(Report.message("message", "this collection selected not found"));
+    //     }
+    //     PlatModel platModel = new PlatModel(form.getLibelle(), form.getDescription(), form.getPrice(), imageName,
+    //             restaurantModel, collectionOpt.get());
+    //     platModel.setCookTime(form.getCookTime());
+    //     platModel = platRepository.save(platModel);
+
+    //     return ResponseEntity.ok(platModel);
+    // }
+
     public Object addPlat(MultipartFile imageUrl, @Valid AddPlatForm form, BindingResult result) {
+
+        // 1. Validation basique
         if (result.hasErrors()) {
             log.error("mauvais format des données");
             return ResponseEntity.badRequest().body(Report.getErrors(result));
         }
-
+    
+        // 2. Vérification de l'image
         if (imageUrl == null || imageUrl.isEmpty()) {
             log.error("imageUrl is required");
-            return ResponseEntity.badRequest().body(Report.message("message", "Veuillez soumettre l'image du plat"));
+            return ResponseEntity.badRequest().body(
+                    Report.message("message", "Veuillez soumettre l'image du plat")
+            );
         }
+    
         String imageName = null;
-        if (!imageUrl.isEmpty() && imageUrl != null) {
-            long maxImageSize = 2 * 1024 * 1024; // 5MB en bytes
-            // Vérifier la taille de l'image
+    
+        if (!imageUrl.isEmpty()) {
+            long maxImageSize = 2 * 1024 * 1024; // 2MB
+    
             if (imageUrl.getSize() > maxImageSize) {
-                  log.error("Taille d'image trop importante: {} bytes", imageUrl.getSize());
-                  return ResponseEntity.badRequest()
-                      .body(Report.message("message", "L'image du plat ne doit pas dépasser 2MB"));
+                log.error("image size too large: {} bytes", imageUrl.getSize());
+                return ResponseEntity.badRequest()
+                        .body(Report.message("message", "L'image du plat ne doit pas dépasser 2MB"));
             }
-        
-            imageName = genericService.generateFileName("plat_image") + "." + genericService.getFileExtension(imageUrl.getOriginalFilename());
+    
+            imageName = genericService.generateFileName("plat_image") + "."
+                    + genericService.getFileExtension(imageUrl.getOriginalFilename());
+    
             File imageFile = new File(imageName);
-            // compress and save image
             genericService.compressImage(imageUrl, imageFile);
         }
-        RestaurantModel restaurantModel = genericService.getAuthUser().getRestaurant();
-        if (restaurantModel == null) {
-            log.error("this user has not restaurant");
-            return ResponseEntity.badRequest().body(Report.message("message", "restaurant not found"));
+    
+        // 3. Récupération restaurant de l'utilisateur connecté
+        RestaurantModel restaurant = genericService.getAuthUser().getRestaurant();
+        if (restaurant == null) {
+            log.error("User does not have a restaurant");
+            return ResponseEntity.badRequest().body(Report.message("message", "Restaurant introuvable"));
         }
-        Optional<CollectionModel> collectionOpt = collectionRepository.findFirstByIdAndDeleted(form.getCollectionId(),
-                DeletionEnum.NO);
+    
+        // 4. Vérification collection
+        Optional<CollectionModel> collectionOpt =
+                collectionRepository.findFirstByIdAndDeleted(form.getCollectionId(), DeletionEnum.NO);
+    
         if (collectionOpt.isEmpty()) {
-            log.error("collection selected not found");
-            return ResponseEntity.badRequest().body(Report.message("message", "this collection selected not found"));
+            log.error("Collection not found");
+            return ResponseEntity.badRequest().body(
+                    Report.message("message", "La collection spécifiée est introuvable"));
         }
-        PlatModel platModel = new PlatModel(form.getLibelle(), form.getDescription(), form.getPrice(), imageName,
-                restaurantModel, collectionOpt.get());
+    
+        // 5. Création du plat
+        PlatModel platModel = new PlatModel(
+                form.getLibelle(),
+                form.getDescription(),
+                form.getPrice(),
+                imageName,
+                restaurant,
+                collectionOpt.get()
+        );
+    
         platModel.setCookTime(form.getCookTime());
         platModel = platRepository.save(platModel);
-
-        return ResponseEntity.ok(platModel);
+    
+        // 6. Traitement des options (si existantes)
+        if (form.getOptions() != null && !form.getOptions().isEmpty()) {
+    
+            for (AddOptionPlatForm optForm : form.getOptions()) {
+    
+                OptionPlatModel option = new OptionPlatModel(
+                        optForm.getLibelle(),
+                        optForm.getIsRequired(),
+                        optForm.getMaxSeleteted(),
+                        platModel
+                );
+    
+                option = optionPlatRepo.save(option);
+    
+                // 7. Ajout des valeurs de l’option
+                if (optForm.getValeurs() != null && !optForm.getValeurs().isEmpty()) {
+                    for (AddOptionValeurForm valForm : optForm.getValeurs()) {
+                        OptionValeurModel valeur = new OptionValeurModel(
+                                valForm.getValeur(),
+                                valForm.getPrixSup(),
+                                option
+                        );
+                        optionValeurRepo.save(valeur);
+                    }
+                }
+            }
+        }
+    
+        // 8. Traitement des accompagnements
+        if (form.getAccompagnements() != null && !form.getAccompagnements().isEmpty()) {
+    
+            for (var accForm : form.getAccompagnements()) {
+    
+                AccompagnementModel accompagnement = new AccompagnementModel(
+                        accForm.getLibelle(),
+                        accForm.getPrice(),
+                        platModel
+                );
+    
+                accompagnementRepo.save(accompagnement);
+            }
+        }
+    
+        // 9. Construction de la réponse finale (plat + options + accompagnements)
+        List<AccompagnementModel> accompagnements =
+                accompagnementRepo.findByPlatModelAndDeleted(platModel, DeletionEnum.NO);
+    
+        List<OptionPlatModel> options =
+                optionPlatRepo.findByPlatAndDeletedFalse(platModel);
+    
+        CustomerPlatResponse response = new CustomerPlatResponse(
+                platModel,
+                accompagnements,
+                options
+        );
+    
+        return ResponseEntity.ok(response);
     }
 
     public Object addOptionPlat(@Valid AddOptionPlatForm form, BindingResult result) {
         if (result.hasErrors()) {
-            log.error("mauvais format des données");
             return ResponseEntity.badRequest().body(Report.getErrors(result));
         }
         Optional<PlatModel> platOpt = platRepository.findFirstByIdAndDeletedAndDisponibleTrue(form.getPlatId(),
                 DeletionEnum.NO);
         if (platOpt.isEmpty()) {
-            log.error("plat not found");
             return ResponseEntity.badRequest().body(Report.message("message", "plat not found"));
         }
 
@@ -180,7 +301,6 @@ public class PlatService {
                     form.getMaxSeleteted(),
                     platOpt.get()
             );
-            log.info("Création d'une nouvelle option: {}", form.getLibelle());
         }
     
         optionPlatModel = optionPlatRepo.save(optionPlatModel);

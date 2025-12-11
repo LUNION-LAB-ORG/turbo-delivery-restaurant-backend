@@ -1,9 +1,12 @@
 package com.lunionlab.turbo_restaurant.form;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -15,6 +18,11 @@ public class AddOptionPlatForm {
     private Boolean isRequired;
     @NotNull
     private Integer maxSeleteted;
-    @NotNull
+    
+    // @NotNull
     private UUID platId;
+
+    // Liste des valeurs de l’option
+    @Valid
+    private List<AddOptionValeurForm> valeurs;
 }
