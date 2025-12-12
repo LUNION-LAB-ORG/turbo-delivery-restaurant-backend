@@ -12,7 +12,7 @@ import java.util.UUID;
 
 @Getter
 @Setter
-public class AddPlatForm {
+public class AddPlatForm {  
     @NotEmpty
     private String libelle;
     @NotEmpty

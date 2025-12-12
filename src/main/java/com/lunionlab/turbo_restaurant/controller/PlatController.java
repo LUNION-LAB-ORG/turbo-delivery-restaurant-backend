@@ -10,7 +10,9 @@ import org.springframework.security.access.annotation.Secured;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -19,6 +21,7 @@ import com.lunionlab.turbo_restaurant.form.AddOptionValeurForm;
 import com.lunionlab.turbo_restaurant.form.AddPlatForm;
 import com.lunionlab.turbo_restaurant.form.SearchPlatForm;
 import com.lunionlab.turbo_restaurant.form.SearchPlatRestoForm;
+import com.lunionlab.turbo_restaurant.form.UpdatePlatForm;
 import com.lunionlab.turbo_restaurant.model.PlatModel;
 import com.lunionlab.turbo_restaurant.services.PlatService;
 
@@ -37,6 +40,17 @@ public class PlatController {
     public Object addPlat(@PathVariable MultipartFile imageUrl, @Valid AddPlatForm form,
             BindingResult result) {
         return platService.addPlat(imageUrl, form, result);
+    }
+
+    @Secured({ "ROLE_CUSTOMER", "ROLE_ADMIN", "ROLE_USER" })
+    @PutMapping("/update/{platId}")
+    public Object updatePlat(
+            @PathVariable UUID platId,
+            @RequestPart(value = "imageUrl", required = false) MultipartFile imageUrl,
+            @Valid UpdatePlatForm form,
+            BindingResult result) {
+
+        return platService.updatePlat(platId, imageUrl, form, result);
     }
 
     @Secured({ "ROLE_CUSTOMER", "ROLE_ADMIN", "ROLE_USER" })
