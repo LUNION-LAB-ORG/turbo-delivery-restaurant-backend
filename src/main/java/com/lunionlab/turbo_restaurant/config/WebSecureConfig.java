@@ -32,26 +32,51 @@ public class WebSecureConfig {
         security.formLogin(AbstractHttpConfigurer::disable);
 
         security.authorizeHttpRequests(auth -> {
-            auth.requestMatchers("/test/**", "/error", "/api/V1/turbo/resto/user/login",
-                    "/api/V1/turbo/resto/user/register/stepfirst", "/api/V1/turbo/resto/user/register/stepsecond",
-                    "/api/V1/turbo/resto/user/register/finalstep", "/api/V1/turbo/resto/user/change/password",
-                    "/api/V1/turbo/resto/user/forget/password", "/api/V1/turbo/resto/user/new/password",
-                    "/api/V1/turbo/resto/user/recuperer-restaurant-Utilisateur/par-apikey","/api/V1/turbo/resto/user/recuperer-utilisateur/par-apikey",
-                    "/api/V1/turbo/restaurant/not/validated/**", "/api/V1/turbo/restaurant/validated/authservice/**",
-                    "/api/V1/turbo/restaurant/validated/opsmanager/**",
-                    "/api/V1/turbo/restaurant/approved/authservice/**",
-                    "/api/V1/turbo/restaurant/approved/opsmanager/**", "/api/V1/turbo/restaurant/optional/erp/**",
-                    "/api/V1/turbo/restaurant/detail/erp/**", "/api/serve/file/**", "/api/V1/turbo/resto/plat/filter",
-                    "/api/V1/turbo/restaurant/search", "/api/V1/turbo/resto/plat/search",
-                    "/api/V1/turbo/resto/plat/detail/**", "/api/V1/turbo/resto/plat/all/price",
-                    "/api/V1/turbo/restaurant/check/opening/**", "/api/V1/turbo/restaurant/save/order",
-                    "/api/V1/turbo/resto/plat/get/all", "/api/V1/turbo/resto/plat/get/by/**",
-                    "/api/V1/turbo/resto/plat/get/collection/by/**", "/api/V1/turbo/restaurant/reject",
-                    "/api/V1/turbo/resto/plat/get/by/collection/**", "/api/V1/turbo/resto/boisson/get/**",
-                    "/api/V1/turbo/resto/boisson/get/by/resto/**", "/api/turbo/resto/collection/get/by/customer",
-                    "api/V1/turbo/restaurant/{restoId}/users", "api/V1/turbo/restaurant/update-commission" 
-                )
-                .permitAll().anyRequest().authenticated();
+            auth.requestMatchers(
+                // ===== Swagger / OpenAPI =====
+                "/v3/api-docs/**",
+                "/swagger-ui/**",
+                "/swagger-ui.html",
+            
+                // ===== Endpoints publics existants =====
+                "/test/**",
+                "/error",
+                "/api/V1/turbo/resto/user/login",
+                "/api/V1/turbo/resto/user/register/stepfirst",
+                "/api/V1/turbo/resto/user/register/stepsecond",
+                "/api/V1/turbo/resto/user/register/finalstep",
+                "/api/V1/turbo/resto/user/change/password",
+                "/api/V1/turbo/resto/user/forget/password",
+                "/api/V1/turbo/resto/user/new/password",
+                "/api/V1/turbo/resto/user/recuperer-restaurant-Utilisateur/par-apikey",
+                "/api/V1/turbo/resto/user/recuperer-utilisateur/par-apikey",
+                "/api/V1/turbo/restaurant/not/validated/**",
+                "/api/V1/turbo/restaurant/validated/authservice/**",
+                "/api/V1/turbo/restaurant/validated/opsmanager/**",
+                "/api/V1/turbo/restaurant/approved/authservice/**",
+                "/api/V1/turbo/restaurant/approved/opsmanager/**",
+                "/api/V1/turbo/restaurant/optional/erp/**",
+                "/api/V1/turbo/restaurant/detail/erp/**",
+                "/api/serve/file/**",
+                "/api/V1/turbo/resto/plat/filter",
+                "/api/V1/turbo/restaurant/search",
+                "/api/V1/turbo/resto/plat/search",
+                "/api/V1/turbo/resto/plat/detail/**",
+                "/api/V1/turbo/resto/plat/all/price",
+                "/api/V1/turbo/restaurant/check/opening/**",
+                "/api/V1/turbo/restaurant/save/order",
+                "/api/V1/turbo/resto/plat/get/all",
+                "/api/V1/turbo/resto/plat/get/by/**",
+                "/api/V1/turbo/resto/plat/get/collection/by/**",
+                "/api/V1/turbo/restaurant/reject",
+                "/api/V1/turbo/resto/plat/get/by/collection/**",
+                "/api/V1/turbo/resto/boisson/get/**",
+                "/api/V1/turbo/resto/boisson/get/by/resto/**",
+                "/api/turbo/resto/collection/get/by/customer",
+                "/api/V1/turbo/restaurant/{restoId}/users",
+                "/api/V1/turbo/restaurant/update-commission"
+            ).permitAll()
+            .anyRequest().authenticated();
         });
 
         security.exceptionHandling(exception -> {
