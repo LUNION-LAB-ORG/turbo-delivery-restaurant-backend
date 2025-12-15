@@ -12,6 +12,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.lunionlab.turbo_restaurant.Enums.DeletionEnum;
 import com.lunionlab.turbo_restaurant.Enums.StatusEnum;
+import com.lunionlab.turbo_restaurant.dto.PlatSearchDto;
+import com.lunionlab.turbo_restaurant.dto.RestaurantSearchDto;
 import com.lunionlab.turbo_restaurant.form.AddOptionPlatForm;
 import com.lunionlab.turbo_restaurant.form.AddOptionValeurForm;
 import com.lunionlab.turbo_restaurant.form.AddPlatForm;
@@ -34,7 +36,13 @@ import com.lunionlab.turbo_restaurant.repository.PlatRepository;
 import com.lunionlab.turbo_restaurant.repository.RestaurantRepository;
 import com.lunionlab.turbo_restaurant.response.CustomerPlatResponse;
 import com.lunionlab.turbo_restaurant.response.PlatByCollectionResponse;
+import com.lunionlab.turbo_restaurant.response.SearchGlobalResponse;
 import com.lunionlab.turbo_restaurant.utilities.Report;
+
+import java.util.stream.Stream;
+import java.util.Arrays;
+import java.util.Objects;
+import java.util.List;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -42,7 +50,6 @@ import java.io.File;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.ArrayList;
-import java.util.List;
 
 @Service
 @Slf4j
@@ -596,7 +603,6 @@ public class PlatService {
     public Object customerCheckExistingPlat(UUID platId) {
         Optional<PlatModel> platOpt = platRepository.findFirstByIdAndDeletedAndDisponibleTrue(platId, DeletionEnum.NO);
         if (platOpt.isEmpty()) {
-            log.error("plat not found");
             return ResponseEntity.badRequest().body("plat Id " + platId + " est trouvable");
         }
         // get accompagnements lier au plat
@@ -718,4 +724,52 @@ public class PlatService {
         List<PlatModel> plats = platRepository.findByCollectionAndDeletedFalseAndDisponibleTrue(collectionOpt.get());
         return ResponseEntity.ok(plats);
     }
+
+    public SearchGlobalResponse globalSearch(String query) {
+        List<PlatModel> plats = platRepository
+                .searchByNameOrDescription(query.toLowerCase());
+
+        List<RestaurantModel> restaurants = restaurantRepository
+                .searchByName(query.toLowerCase());
+
+        List<PlatSearchDto> platDtos = plats.stream()
+                .map(p -> new PlatSearchDto(
+                        p.getId(),
+                        p.getLibelle(),
+                        p.getPrice(),
+                        p.getImageUrl(),
+                        p.getRestaurant().getId(),
+                        p.getRestaurant().getNomEtablissement()
+                ))
+                .toList();
+
+        List<RestaurantSearchDto> restoDtos = restaurants.stream()
+                .map(r -> new RestaurantSearchDto(
+                    r.getId(),
+                    r.getNomEtablissement(),
+                    r.getLogo()
+                ))
+                .toList();
+
+        SearchGlobalResponse response = new SearchGlobalResponse();
+        response.setQuery(query);
+        response.setTags(extractTags(plats));
+        response.setRestaurants(restoDtos);
+        response.setPlats(platDtos);
+        response.setCount(platDtos.size());
+
+        return response;
+    }
+
+    private List<String> extractTags(List<PlatModel> plats) {
+        return plats.stream()
+                .flatMap(p -> Stream.of(p.getLibelle(), p.getDescription()))
+                .filter(Objects::nonNull)
+                .flatMap(text -> Arrays.stream(text.split("\\s+")))
+                .map(String::toLowerCase)
+                .filter(word -> word.length() > 3)
+                .distinct()
+                .limit(10)
+                .toList();
+    }    
 }

@@ -4,6 +4,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.lunionlab.turbo_restaurant.model.CollectionModel;
 import com.lunionlab.turbo_restaurant.model.PlatModel;
@@ -65,4 +66,12 @@ public interface PlatRepository extends JpaRepository<PlatModel, UUID> {
         List<PlatModel> findByCollectionAndPriceGreaterThanEqualAndPriceLessThanEqualAndDeletedAndDisponibleTrueAndRestaurant(
                         CollectionModel collectionModel, Long priceStart, Long priceEnd, Boolean nO,
                         RestaurantModel restaurantModel);
+
+        @Query("""
+        SELECT p FROM PlatModel p
+        WHERE LOWER(p.libelle) LIKE %:query%
+                OR LOWER(p.description) LIKE %:query%
+        """)
+        List<PlatModel> searchByNameOrDescription(@Param("query") String query);
+                            
 }

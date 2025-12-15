@@ -6,6 +6,8 @@ import com.lunionlab.turbo_restaurant.objetvaleur.TypeCommission;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -50,4 +52,10 @@ public interface RestaurantRepository extends JpaRepository<RestaurantModel, UUI
 
     // Avec pagination
     Page<RestaurantModel> findAllByTypeCommissionAndDeletedFalse(TypeCommission typeCommission, Pageable pageable);
+
+    @Query("""
+        SELECT r FROM RestaurantModel r
+        WHERE LOWER(r.nomEtablissement) LIKE %:query%
+    """)
+    List<RestaurantModel> searchByName(@Param("query") String query);
 }

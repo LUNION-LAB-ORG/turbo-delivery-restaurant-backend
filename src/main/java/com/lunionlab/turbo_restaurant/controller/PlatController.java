@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -23,6 +24,7 @@ import com.lunionlab.turbo_restaurant.form.SearchPlatForm;
 import com.lunionlab.turbo_restaurant.form.SearchPlatRestoForm;
 import com.lunionlab.turbo_restaurant.form.UpdatePlatForm;
 import com.lunionlab.turbo_restaurant.model.PlatModel;
+import com.lunionlab.turbo_restaurant.response.SearchGlobalResponse;
 import com.lunionlab.turbo_restaurant.services.PlatService;
 
 import jakarta.validation.Valid;
@@ -75,6 +77,13 @@ public class PlatController {
     public Object searchPlat(@Valid @RequestBody SearchPlatForm form, BindingResult result) {
         return platService.searchPlat(form, result);
     }
+
+    @GetMapping("/search")
+    public ResponseEntity<SearchGlobalResponse> globalSearch(
+            @RequestParam("query") String query) {
+        return ResponseEntity.ok(platService.globalSearch(query));
+    }
+
 
     @PostMapping("/search")
     public Object searchPlatInResto(@RequestBody SearchPlatRestoForm form) {
