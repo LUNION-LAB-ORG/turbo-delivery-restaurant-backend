@@ -89,7 +89,6 @@ public class UserService {
     public Object login(@Valid LoginForm form) {
         UserModel user = this.getUserByUsernameAndStatus(form.getUsername(), StatusEnum.DEFAULT_ENABLE);
         if (user == null) {
-            log.error("user not found");
             throw new BadCredentialsException("Login ou password incorrecte");
         }
         /*
@@ -130,15 +129,6 @@ public class UserService {
                 response.put("is_New", false);
             }
 
-            // List<Integer> status = new ArrayList<>();
-            // status.add(StatusEnum.RESTO_VALID_BY_AUTHSERVICE);
-            // status.add(StatusEnum.RESTO_VALID_BY_OPSMANAGER);
-
-            // if (user.getRestaurant() != null
-            // && !status.contains(user.getStatus())) {
-            // response.put("is_New", true);
-            // }
-
             return ResponseEntity.ok(response);
         }
 
@@ -147,7 +137,6 @@ public class UserService {
             user.setAttempt(attempt);
             user = userRepository.save(user);
             if (user.getAttempt().intValue() >= MAX_ATTEMPT_CONNEXION.intValue()) {
-                log.error("tentative de connexion atteint");
                 user.setStatus(StatusEnum.DEFAULT_DESABLE);
                 user = userRepository.save(user);
                 throw new ErreurException("Vous avez atteint votre tentative de connexion !");
@@ -161,7 +150,6 @@ public class UserService {
         String email = form.getEmail();
 
         if (!Utility.checkEmail(email)) {
-            log.error("email invalide");
             throw new ErreurException("Email invalide !");
         }
 
@@ -171,7 +159,6 @@ public class UserService {
 
         Optional<UserModel> userOpt = userRepository.findFirstByEmail(email);
         if (userOpt.isPresent()) {
-            log.error("utilisateur déjè inscript");
 
             String codeOpt = genericService.generateOptCode();
             boolean hasSend = genericService.sendMail("support@turbodeliveryapp.com", email,
@@ -200,7 +187,6 @@ public class UserService {
                         + //
                         "                                <div class=\"code\">" + codeOpt + "</div>"));
         if (!hasSend) {
-            log.error("email not sended");
             throw new ErreurException("Impossible d'envoyer le code de confirmation, Veuillez contacter l'administrateur !");
         }
 
@@ -218,13 +204,11 @@ public class UserService {
         Date now = new Date();
         Optional<CodeOptModel> codeOpt = codeOptRepository.findFirstByCode(form.getCode());
         if (codeOpt.isEmpty()) {
-            log.error("code not found");
             throw new ErreurException("Code invalide !");
         }
 
         CodeOptModel codeModel = codeOpt.get();
         if (codeModel.getExpired().compareTo(now) < 0) {
-            log.error("code expiré");
             codeOptRepository.delete(codeModel);
             throw new ErreurException("Code expiré !");
         }
@@ -237,7 +221,6 @@ public class UserService {
     public Object registerThirdStep(@Valid RegisterThirdStepForm form) {
         Optional<UserModel> userOpt = userRepository.findFirstByEmail(form.getEmail());
         if (userOpt.isEmpty()) {
-            log.error("user not found");
             throw new ErreurException("Ce email n'existe pas !");
         }
 
@@ -255,19 +238,16 @@ public class UserService {
         user.setApiKey(apikey);
         user = userRepository.save(user);
         Map<String, Object> response = Map.of("password", password, "user", user);
-        log.info("user info save successfull");
         return ResponseEntity.ok(response);
     }
 
     public Object changeMyPassword(@Valid ChangePasswordForm form) {
         UserModel user = this.getUserByUsernameAndStatus(form.getUsername(), StatusEnum.DEFAULT_ENABLE);
         if (user == null) {
-            log.error("user not found");
             throw new ErreurException("Login incorrecte !");
         }
 
         if (!Utility.checkPassword(form.getOldPassword(), user.getPassword())) {
-            log.error("old password isn't trusted");
             throw new ErreurException("Ancien de mot de pass incorrecte !");
         }
 
@@ -283,7 +263,6 @@ public class UserService {
 
         boolean isExist = userPasswordService.saveUserPassword(form.getNewPassword(), user);
         if (!isExist) {
-            log.error("cet mot de passe existe deja");
             throw new ErreurException("vous avez déjà utilisé ce mot de passe !");
         }
 
@@ -298,14 +277,12 @@ public class UserService {
 
     public Object forgetPassword(@Valid RegisterFirstStepForm form) {
         if (!Utility.checkEmail(form.getEmail())) {
-            log.error("email invalide");
             throw new ErreurException("Email incorrecte !");
         }
 
         UserModel userModel = this.getUserByEmail(form.getEmail());
 
         if (userModel == null) {
-            log.error("user not found");
             throw new ErreurException("Email n'existe pas !");
         }
 
@@ -318,7 +295,6 @@ public class UserService {
                                 "<a href=\"" + link
                                 + "\" class=\"login-button\" style=\"color: white;\">cliquez ici</a>"));
         if (!hasSend) {
-            log.error("email not sended");
             throw new ErreurException("mail non distribué !");
         }
         code = codeOptRepository.save(code);
@@ -330,13 +306,11 @@ public class UserService {
         Optional<CodeOptModel> codeOpt = codeOptRepository.findFirstByCode(form.getToken());
         Date now = new Date();
         if (codeOpt.isEmpty()) {
-            log.error("token invalid");
             throw new ErreurException("Token invalide !");
         }
         CodeOptModel code = codeOpt.get();
         UserModel user = code.getUser();
         if (code.getExpired().compareTo(now) < 0) {
-            log.error("token expired");
             codeOptRepository.delete(code);
             throw new ErreurException("Code expiré !");
         }
@@ -350,7 +324,6 @@ public class UserService {
 
         boolean isExist = userPasswordService.saveUserPassword(form.getNewPassword(), user);
         if (!isExist) {
-            log.error("cet mot de passe existe deja");
             throw new ErreurException("vous avez déjà utilisé ce mot de passe !");
         }
 
@@ -381,7 +354,6 @@ public class UserService {
         }
         if (form.getEmail() != null && !form.getEmail().isEmpty()) {
             if (!Utility.checkEmail(form.getEmail())) {
-                log.error("email not allow");
                 throw new ErreurException("Email invalide !");
             }
             userM.setEmail(form.getEmail());
@@ -393,14 +365,12 @@ public class UserService {
         if (avatar != null && !avatar.isEmpty()) {
             String extention = genericService.getFileExtension(avatar.getOriginalFilename());
             if (!extention.equalsIgnoreCase("png") && !extention.equalsIgnoreCase("jpg")) {
-                log.error("file extension not correct. accept png or jpg");
                 throw new ErreurException("L'image doit être au format png ou jpg !");
             }
             String fileName = genericService.generateFileName("avatar") + "." + extention;
             File file = new File(fileName);
             boolean fileIsSave = genericService.compressImage(avatar, file);
             if (!fileIsSave) {
-                log.error("file not saved");
                 throw new ErreurException("Une erreur est survenue lors du sauvegarde de l'image !");
             }
             String apikey = Utility.genererNouveauApiKeyUtilisateur();
@@ -412,11 +382,9 @@ public class UserService {
         if (userM.getApiKey() == null || userM.getApiKey().isEmpty()) {
             String newApiKey = Utility.genererNouveauApiKeyUtilisateur();
             userM.setApiKey(newApiKey);
-            log.info("Nouvelle clé API générée pour l'utilisateur {}", userM.getId());
         }
 
         userM = userRepository.save(userM);
-        log.info("update user {}", userM.getId());
         return ResponseEntity.ok(userM);
     }
 

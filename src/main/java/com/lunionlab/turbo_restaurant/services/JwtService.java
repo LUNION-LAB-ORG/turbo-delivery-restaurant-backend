@@ -20,7 +20,8 @@ public class JwtService {
     @Value("${jwt.time-exp}")
     private Integer TIME_EXP;
 
-    private String secret = "turbo@restaurant@2024";
+    @Value("${jwt.secret}")
+    private String secret;
 
     public String generateToken(String username, String audience) {
         Date dateExp = Utility.dateFromInteger(TIME_EXP * 60, ChronoUnit.MINUTES);

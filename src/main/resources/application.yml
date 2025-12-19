@@ -40,7 +40,8 @@ spring:
 
 jwt:
   time-exp: 24
-
+  secret: TurboRestaurantJwtSecretKey2024SecureAndLong
+  
 password:
   max-tentative: 3
   expired-delay: 30
