@@ -35,5 +35,4 @@ public class PlatModel extends BaseModel {
         this.restaurant = restaurant;
         this.collection = collection;
     }
-
 }

@@ -12,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.lunionlab.turbo_restaurant.Enums.DeletionEnum;
 import com.lunionlab.turbo_restaurant.Enums.StatusEnum;
+import com.lunionlab.turbo_restaurant.dto.CollectionSearchDto;
 import com.lunionlab.turbo_restaurant.dto.PlatSearchDto;
 import com.lunionlab.turbo_restaurant.dto.RestaurantSearchDto;
 import com.lunionlab.turbo_restaurant.form.AddOptionPlatForm;
@@ -718,7 +719,6 @@ public class PlatService {
         Optional<CollectionModel> collectionOpt = collectionRepository.findFirstByIdAndDeleted(collectionId,
                 DeletionEnum.NO);
         if (collectionOpt.isEmpty()) {
-            log.error("collection not found");
             return ResponseEntity.badRequest().body("le type de plat spécifié est introuvable");
         }
         List<PlatModel> plats = platRepository.findByCollectionAndDeletedFalseAndDisponibleTrue(collectionOpt.get());
@@ -732,6 +732,9 @@ public class PlatService {
         List<RestaurantModel> restaurants = restaurantRepository
                 .searchByName(query.toLowerCase());
 
+        List<CollectionModel> collections = collectionRepository
+            .searchByLibelleOrDescription(query.toLowerCase());
+
         List<PlatSearchDto> platDtos = plats.stream()
                 .map(p -> new PlatSearchDto(
                         p.getId(),
@@ -740,6 +743,16 @@ public class PlatService {
                         p.getImageUrl(),
                         p.getRestaurant().getId(),
                         p.getRestaurant().getNomEtablissement()
+                ))
+                .toList();
+
+        List<CollectionSearchDto> collectionDtos = collections.stream()
+                .map(p -> new CollectionSearchDto(
+                    p.getId(),
+                    p.getLibelle(),
+                    p.getDescription(),
+                    p.getPicture(),
+                    p.getPictureUrl()
                 ))
                 .toList();
 
@@ -753,23 +766,11 @@ public class PlatService {
 
         SearchGlobalResponse response = new SearchGlobalResponse();
         response.setQuery(query);
-        response.setTags(extractTags(plats));
+        response.setTags(collectionDtos);
         response.setRestaurants(restoDtos);
         response.setPlats(platDtos);
         response.setCount(platDtos.size());
 
         return response;
-    }
-
-    private List<String> extractTags(List<PlatModel> plats) {
-        return plats.stream()
-                .flatMap(p -> Stream.of(p.getLibelle(), p.getDescription()))
-                .filter(Objects::nonNull)
-                .flatMap(text -> Arrays.stream(text.split("\\s+")))
-                .map(String::toLowerCase)
-                .filter(word -> word.length() > 3)
-                .distinct()
-                .limit(10)
-                .toList();
-    }    
+    } 
 }
