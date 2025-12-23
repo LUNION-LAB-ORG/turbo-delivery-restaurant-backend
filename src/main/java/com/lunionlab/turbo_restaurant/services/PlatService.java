@@ -1,7 +1,12 @@
 package com.lunionlab.turbo_restaurant.services;
 
+import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.stream.Stream;
+import java.util.stream.Collectors;
+
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -778,49 +783,49 @@ public class PlatService {
     } 
 
     public Map<String, Object> globalSuggestionSearch(String query) {
-        List<PlatModel> plats = platRepository
-                .searchByNameOrDescription(query.toLowerCase());
-    
-        List<RestaurantModel> restaurants = restaurantRepository
-                .searchByName(query.toLowerCase());
-    
-        List<CollectionModel> collections = collectionRepository
-                .searchByLibelleOrDescription(query.toLowerCase());
+
+        List<PlatModel> plats = platRepository.searchByNameOrDescription(query.toLowerCase());
+        List<RestaurantModel> restaurants = restaurantRepository.searchByName(query.toLowerCase());
+        List<CollectionModel> collections = collectionRepository.searchByLibelleOrDescription(query.toLowerCase());
     
         // Mapping plats
         List<Map<String, Object>> platSuggestions = plats.stream()
-                .map(p -> Map.of(
-                        "id", p.getId(),
-                        "name", p.getLibelle(),
-                        "type", "PLAT"
-                ))
-                .toList();
+                .map(p -> {
+                    Map<String, Object> m = new HashMap<>();
+                    m.put("id", p.getId());
+                    m.put("name", p.getLibelle());
+                    m.put("type", "PLAT");
+                    return m;
+                })
+                .collect(Collectors.toList());
     
         // Mapping collections
         List<Map<String, Object>> collectionSuggestions = collections.stream()
-                .map(c -> Map.of(
-                        "id", c.getId(),
-                        "name", c.getLibelle(),
-                        "type", "COLLECTION"
-                ))
-                .toList();
+                .map(c -> {
+                    Map<String, Object> m = new HashMap<>();
+                    m.put("id", c.getId());
+                    m.put("name", c.getLibelle());
+                    m.put("type", "COLLECTION");
+                    return m;
+                })
+                .collect(Collectors.toList());
     
         // Mapping restaurants
         List<Map<String, Object>> restaurantSuggestions = restaurants.stream()
-                .map(r -> Map.of(
-                        "id", r.getId(),
-                        "name", r.getNomEtablissement(),
-                        "type", "RESTAURANT"
-                ))
-                .toList();
+                .map(r -> {
+                    Map<String, Object> m = new HashMap<>();
+                    m.put("id", r.getId());
+                    m.put("name", r.getNomEtablissement());
+                    m.put("type", "RESTAURANT");
+                    return m;
+                })
+                .collect(Collectors.toList());
     
-        // Fusionner toutes les suggestions
-        List<Map<String, Object>> allSuggestions = Stream.of(
-            platSuggestions, collectionSuggestions, restaurantSuggestions
-        )
-        .flatMap(List::stream)
-        .collect(Collectors.toList());
-    
+        // Fusionner toutes les suggestions dans une ArrayList typée correctement
+        List<Map<String, Object>> allSuggestions = new ArrayList<>();
+        allSuggestions.addAll(platSuggestions);
+        allSuggestions.addAll(collectionSuggestions);
+        allSuggestions.addAll(restaurantSuggestions);
     
         // Construire la réponse finale
         Map<String, Object> response = new HashMap<>();

@@ -5,6 +5,11 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import java.nio.charset.StandardCharsets;   // pour StandardCharsets.UTF_8
+import java.security.Key;                   // pour Key
+import io.jsonwebtoken.security.Keys;      // pour Keys
+
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -35,7 +40,12 @@ public class JwtService {
         infos.put("audience", "");
         infos.put("identifier", "");
         try {
-            Claims claims = Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
+            Key key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+            Claims claims = Jwts.parserBuilder()
+                                .setSigningKey(key)
+                                .build()
+                                .parseClaimsJws(token)
+                                .getBody();
             infos.put("audience", claims.getAudience());
             infos.put("identifier", claims.getSubject());
             return infos;
