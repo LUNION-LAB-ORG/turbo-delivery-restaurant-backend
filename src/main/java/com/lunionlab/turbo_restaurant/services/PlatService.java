@@ -1,5 +1,8 @@
 package com.lunionlab.turbo_restaurant.services;
 
+import java.util.Map;
+import java.util.HashMap;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.web.PagedResourcesAssembler;
@@ -813,11 +816,11 @@ public class PlatService {
     
         // Fusionner toutes les suggestions
         List<Map<String, Object>> allSuggestions = Stream.of(
-                platSuggestions,
-                collectionSuggestions,
-                restaurantSuggestions
-        ).flatMap(List::stream)
-         .toList();
+            platSuggestions, collectionSuggestions, restaurantSuggestions
+        )
+        .flatMap(List::stream)
+        .collect(Collectors.toList());
+    
     
         // Construire la réponse finale
         Map<String, Object> response = new HashMap<>();
