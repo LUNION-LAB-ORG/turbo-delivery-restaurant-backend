@@ -773,4 +773,56 @@ public class PlatService {
 
         return response;
     } 
+
+    public Map<String, Object> globalSuggestionSearch(String query) {
+        List<PlatModel> plats = platRepository
+                .searchByNameOrDescription(query.toLowerCase());
+    
+        List<RestaurantModel> restaurants = restaurantRepository
+                .searchByName(query.toLowerCase());
+    
+        List<CollectionModel> collections = collectionRepository
+                .searchByLibelleOrDescription(query.toLowerCase());
+    
+        // Mapping plats
+        List<Map<String, Object>> platSuggestions = plats.stream()
+                .map(p -> Map.of(
+                        "id", p.getId(),
+                        "name", p.getLibelle(),
+                        "type", "PLAT"
+                ))
+                .toList();
+    
+        // Mapping collections
+        List<Map<String, Object>> collectionSuggestions = collections.stream()
+                .map(c -> Map.of(
+                        "id", c.getId(),
+                        "name", c.getLibelle(),
+                        "type", "COLLECTION"
+                ))
+                .toList();
+    
+        // Mapping restaurants
+        List<Map<String, Object>> restaurantSuggestions = restaurants.stream()
+                .map(r -> Map.of(
+                        "id", r.getId(),
+                        "name", r.getNomEtablissement(),
+                        "type", "RESTAURANT"
+                ))
+                .toList();
+    
+        // Fusionner toutes les suggestions
+        List<Map<String, Object>> allSuggestions = Stream.of(
+                platSuggestions,
+                collectionSuggestions,
+                restaurantSuggestions
+        ).flatMap(List::stream)
+         .toList();
+    
+        // Construire la réponse finale
+        Map<String, Object> response = new HashMap<>();
+        response.put("suggestions", allSuggestions);
+    
+        return response;
+    }
 }

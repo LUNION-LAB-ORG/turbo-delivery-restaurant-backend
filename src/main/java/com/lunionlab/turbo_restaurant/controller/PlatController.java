@@ -84,6 +84,13 @@ public class PlatController {
         return ResponseEntity.ok(platService.globalSearch(query));
     }
 
+    @GetMapping("/search/suggestions")
+    public ResponseEntity<Map<String, Object>> globalSuggestionSearch(
+            @RequestParam("query") String query) {
+
+        Map<String, Object> response = platService.globalSuggestionSearch(query);
+        return ResponseEntity.ok(response);
+    }
 
     @PostMapping("/search")
     public Object searchPlatInResto(@RequestBody SearchPlatRestoForm form) {
