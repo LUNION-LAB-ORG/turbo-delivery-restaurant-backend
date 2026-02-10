@@ -6,10 +6,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import com.lunionlab.turbo_restaurant.Enums.DeletionEnum;
-import com.lunionlab.turbo_restaurant.Enums.TypeCuisineEnum;
-import com.lunionlab.turbo_restaurant.model.TypeCuisineModel;
-import com.lunionlab.turbo_restaurant.repository.TypeCuisineRepository;
+import com.lunionlab.turbo_restaurant.entities.TypeCuisineModel;
+import com.lunionlab.turbo_restaurant.enums.DeletionEnum;
+import com.lunionlab.turbo_restaurant.enums.TypeCuisineEnum;
+import com.lunionlab.turbo_restaurant.repositories.TypeCuisineRepository;
 
 @Service
 public class TypeCuisineService {

@@ -14,10 +14,10 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.lunionlab.turbo_restaurant.Enums.DeletionEnum;
-import com.lunionlab.turbo_restaurant.model.UserModel;
-import com.lunionlab.turbo_restaurant.repository.CodeOptRepository;
-import com.lunionlab.turbo_restaurant.repository.UserRepository;
+import com.lunionlab.turbo_restaurant.entities.UserModel;
+import com.lunionlab.turbo_restaurant.enums.DeletionEnum;
+import com.lunionlab.turbo_restaurant.repositories.CodeOptRepository;
+import com.lunionlab.turbo_restaurant.repositories.UserRepository;
 import com.resend.Resend;
 import com.resend.services.emails.model.CreateEmailOptions;
 import com.resend.services.emails.model.CreateEmailResponse;

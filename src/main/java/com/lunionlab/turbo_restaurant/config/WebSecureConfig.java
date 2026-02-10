@@ -51,6 +51,10 @@ public class WebSecureConfig {
                 "/api/V1/turbo/resto/user/recuperer-restaurant-Utilisateur/par-apikey",
                 "/api/V1/turbo/resto/user/recuperer-utilisateur/par-apikey",
                 "/api/V1/turbo/restaurant/not/validated/**",
+                
+                "/api/V1/turbo/restaurant/pagination",
+                "/api/V1/turbo/restaurant/*/detail",
+
                 "/api/V1/turbo/restaurant/validated/authservice/**",
                 "/api/V1/turbo/restaurant/validated/opsmanager/**",
                 "/api/V1/turbo/restaurant/approved/authservice/**",

@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.ArrayList;
-import java.util.stream.Stream;
 import java.util.stream.Collectors;
 
 
@@ -18,50 +17,44 @@ import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.lunionlab.turbo_restaurant.Enums.DeletionEnum;
-import com.lunionlab.turbo_restaurant.Enums.StatusEnum;
 import com.lunionlab.turbo_restaurant.dto.CollectionSearchDto;
 import com.lunionlab.turbo_restaurant.dto.PlatSearchDto;
 import com.lunionlab.turbo_restaurant.dto.RestaurantSearchDto;
-import com.lunionlab.turbo_restaurant.form.AddOptionPlatForm;
-import com.lunionlab.turbo_restaurant.form.AddOptionValeurForm;
-import com.lunionlab.turbo_restaurant.form.AddPlatForm;
-import com.lunionlab.turbo_restaurant.form.SearchPlatForm;
-import com.lunionlab.turbo_restaurant.form.SearchPlatRestoForm;
-import com.lunionlab.turbo_restaurant.form.UpdatePlatForm;
+import com.lunionlab.turbo_restaurant.entities.AccompagnementModel;
+import com.lunionlab.turbo_restaurant.entities.CollectionModel;
+import com.lunionlab.turbo_restaurant.entities.OptionPlatModel;
+import com.lunionlab.turbo_restaurant.entities.OptionValeurModel;
+import com.lunionlab.turbo_restaurant.entities.PlatModel;
+import com.lunionlab.turbo_restaurant.entities.RestaurantModel;
+import com.lunionlab.turbo_restaurant.enums.DeletionEnum;
+import com.lunionlab.turbo_restaurant.enums.StatusEnum;
+import com.lunionlab.turbo_restaurant.forms.AddOptionPlatForm;
+import com.lunionlab.turbo_restaurant.forms.AddOptionValeurForm;
+import com.lunionlab.turbo_restaurant.forms.AddPlatForm;
+import com.lunionlab.turbo_restaurant.forms.SearchPlatForm;
+import com.lunionlab.turbo_restaurant.forms.SearchPlatRestoForm;
+import com.lunionlab.turbo_restaurant.forms.UpdatePlatForm;
 import com.lunionlab.turbo_restaurant.mappers.PlatWithoutRestaurantAndCollectionMapper;
-import com.lunionlab.turbo_restaurant.model.AccompagnementModel;
-import com.lunionlab.turbo_restaurant.model.CollectionModel;
-import com.lunionlab.turbo_restaurant.model.OptionPlatModel;
-import com.lunionlab.turbo_restaurant.model.OptionValeurModel;
-import com.lunionlab.turbo_restaurant.model.PlatModel;
-import com.lunionlab.turbo_restaurant.model.RestaurantModel;
-import com.lunionlab.turbo_restaurant.repository.AccompagnementRepo;
-import com.lunionlab.turbo_restaurant.repository.BoissonPlatRepository;
-import com.lunionlab.turbo_restaurant.repository.CollectionRepository;
-import com.lunionlab.turbo_restaurant.repository.OptionPlatRepo;
-import com.lunionlab.turbo_restaurant.repository.OptionValeurRepo;
-import com.lunionlab.turbo_restaurant.repository.PlatRepository;
-import com.lunionlab.turbo_restaurant.repository.RestaurantRepository;
-import com.lunionlab.turbo_restaurant.response.CustomerPlatResponse;
-import com.lunionlab.turbo_restaurant.response.PlatByCollectionResponse;
-import com.lunionlab.turbo_restaurant.response.SearchGlobalResponse;
+import com.lunionlab.turbo_restaurant.repositories.AccompagnementRepo;
+import com.lunionlab.turbo_restaurant.repositories.BoissonPlatRepository;
+import com.lunionlab.turbo_restaurant.repositories.CollectionRepository;
+import com.lunionlab.turbo_restaurant.repositories.OptionPlatRepo;
+import com.lunionlab.turbo_restaurant.repositories.OptionValeurRepo;
+import com.lunionlab.turbo_restaurant.repositories.PlatRepository;
+import com.lunionlab.turbo_restaurant.repositories.RestaurantRepository;
+import com.lunionlab.turbo_restaurant.responses.CustomerPlatResponse;
+import com.lunionlab.turbo_restaurant.responses.PlatByCollectionResponse;
+import com.lunionlab.turbo_restaurant.responses.SearchGlobalResponse;
 import com.lunionlab.turbo_restaurant.utilities.Report;
-
-import java.util.stream.Stream;
-import java.util.Arrays;
-import java.util.Objects;
-import java.util.List;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import java.io.File;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.ArrayList;
 
-@Service
 @Slf4j
+@Service
 public class PlatService {
     @Autowired
     PlatRepository platRepository;

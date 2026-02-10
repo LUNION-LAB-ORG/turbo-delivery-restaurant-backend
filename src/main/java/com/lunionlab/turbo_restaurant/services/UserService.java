@@ -1,19 +1,17 @@
 package com.lunionlab.turbo_restaurant.services;
 
-import com.lunionlab.turbo_restaurant.Enums.ChangePassword;
-import com.lunionlab.turbo_restaurant.Enums.DeletionEnum;
-import com.lunionlab.turbo_restaurant.Enums.JwtAudienceEnum;
-import com.lunionlab.turbo_restaurant.Enums.StatusEnum;
-import com.lunionlab.turbo_restaurant.exception.ErreurException;
-import com.lunionlab.turbo_restaurant.exception.ObjetNonAuthoriseException;
-import com.lunionlab.turbo_restaurant.form.*;
-import com.lunionlab.turbo_restaurant.model.CodeOptModel;
-import com.lunionlab.turbo_restaurant.model.RestaurantModel;
-import com.lunionlab.turbo_restaurant.model.RoleModel;
-import com.lunionlab.turbo_restaurant.model.UserModel;
-import com.lunionlab.turbo_restaurant.repository.CodeOptRepository;
-import com.lunionlab.turbo_restaurant.repository.RestaurantRepository;
-import com.lunionlab.turbo_restaurant.repository.UserRepository;
+import com.lunionlab.turbo_restaurant.entities.CodeOptModel;
+import com.lunionlab.turbo_restaurant.entities.RestaurantModel;
+import com.lunionlab.turbo_restaurant.entities.RoleModel;
+import com.lunionlab.turbo_restaurant.entities.UserModel;
+import com.lunionlab.turbo_restaurant.enums.ChangePassword;
+import com.lunionlab.turbo_restaurant.enums.DeletionEnum;
+import com.lunionlab.turbo_restaurant.enums.JwtAudienceEnum;
+import com.lunionlab.turbo_restaurant.enums.StatusEnum;
+import com.lunionlab.turbo_restaurant.exceptions.ErreurException;
+import com.lunionlab.turbo_restaurant.forms.*;
+import com.lunionlab.turbo_restaurant.repositories.CodeOptRepository;
+import com.lunionlab.turbo_restaurant.repositories.UserRepository;
 import com.lunionlab.turbo_restaurant.utilities.Report;
 import com.lunionlab.turbo_restaurant.utilities.Utility;
 import jakarta.validation.Valid;
@@ -28,12 +26,11 @@ import java.io.File;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
-@Service
 @Slf4j
+@Service
 public class UserService {
 
     private final UserRepository userRepository;
-    private final RestaurantRepository restaurantRepository;
     private final CodeOptRepository codeOptRepository;
 
     private final JwtService jwtService;
@@ -57,7 +54,6 @@ public class UserService {
 
     public UserService(
             UserRepository userRepository,
-            RestaurantRepository restaurantRepository,
             CodeOptRepository codeOptRepository,
             JwtService jwtService,
             GenericService genericService,
@@ -65,7 +61,6 @@ public class UserService {
             RoleService roleService
     ) {
         this.userRepository = userRepository;
-        this.restaurantRepository = restaurantRepository;
         this.codeOptRepository = codeOptRepository;
         this.jwtService = jwtService;
         this.genericService = genericService;
@@ -79,6 +74,7 @@ public class UserService {
     }
 
     public UserModel getUserByUsernameAndStatus(String username, Integer status) {
+        log.info("getUserByUsernameAndStatus called with username: {} and status: {}", username, status);
         return userRepository.findFirstByUsernameAndStatusAndDeleted(username, status, DeletionEnum.NO).orElse(null);
     }
 
@@ -89,19 +85,13 @@ public class UserService {
     public Object login(@Valid LoginForm form) {
         UserModel user = this.getUserByUsernameAndStatus(form.getUsername(), StatusEnum.DEFAULT_ENABLE);
         if (user == null) {
-            throw new BadCredentialsException("Login ou password incorrecte");
+            throw new BadCredentialsException("Login ou Password incorrecte");
         }
-        /*
-        if (user.getChangePassword() == null || user.getChangePassword() == ChangePassword.No) {
-            throw new ObjetNonAuthoriseException("CHANGER_MOT_PASSE");
-        }
-        */
+        
         if (user.getStatus().intValue() == StatusEnum.DEFAULT_DESABLE.intValue()
                 && user.getChangePassword() == ChangePassword.YES) {
-            throw new ErreurException("Compte inactif, veuillez contacter l'administrateur !");
+            throw new ErreurException("Compte Inactif, veuillez contacter l'administrateur !");
         }
-
-        Date now = new Date();
 
         if (Utility.checkPassword(form.getPassword(), user.getPassword())) {
 
@@ -109,17 +99,13 @@ public class UserService {
                 user.setExpiredPassword(Utility.dateFromInteger(PASSWORD_DELAY, ChronoUnit.DAYS));
                 user = userRepository.save(user);
             }
-            /*
-            if (user.getExpiredPassword().compareTo(now) < 0) {
-                throw new ObjetNonAuthoriseException("MOT_PASSE_EXPIRER");
-            }
-            */
+            
             // set attempt max connexion
             user.setAttempt(0);
             user = userRepository.save(user);
 
             // generate token
-            String token = jwtService.generateToken(user.getUsername(), JwtAudienceEnum.USER);
+            String token = jwtService.generateToken(user.getUsername(), JwtAudienceEnum.ADMIN);
             Map<String, Object> response = new HashMap<>();
             response.put("token", token);
             response.put("user", user);
@@ -139,11 +125,11 @@ public class UserService {
             if (user.getAttempt().intValue() >= MAX_ATTEMPT_CONNEXION.intValue()) {
                 user.setStatus(StatusEnum.DEFAULT_DESABLE);
                 user = userRepository.save(user);
-                throw new ErreurException("Vous avez atteint votre tentative de connexion !");
+                throw new ErreurException("Vous avez atteint votre tentative de connexion!");
             }
         }
 
-        throw new BadCredentialsException("Login ou password incorrecte !");
+        throw new BadCredentialsException("Login ou Password incorrecte!");
     }
 
     public Object registerFirstStep(@Valid RegisterFirstStepForm form) {

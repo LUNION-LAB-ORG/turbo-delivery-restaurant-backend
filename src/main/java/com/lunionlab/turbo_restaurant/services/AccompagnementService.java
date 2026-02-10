@@ -9,21 +9,21 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
 
-import com.lunionlab.turbo_restaurant.Enums.DeletionEnum;
-import com.lunionlab.turbo_restaurant.form.CreateAccompagnementForm;
-import com.lunionlab.turbo_restaurant.form.UpdateAccompagnementForm;
-import com.lunionlab.turbo_restaurant.model.AccompagnementModel;
-import com.lunionlab.turbo_restaurant.model.PlatModel;
-import com.lunionlab.turbo_restaurant.model.RestaurantModel;
-import com.lunionlab.turbo_restaurant.repository.AccompagnementRepo;
-import com.lunionlab.turbo_restaurant.repository.PlatRepository;
+import com.lunionlab.turbo_restaurant.entities.AccompagnementModel;
+import com.lunionlab.turbo_restaurant.entities.PlatModel;
+import com.lunionlab.turbo_restaurant.entities.RestaurantModel;
+import com.lunionlab.turbo_restaurant.enums.DeletionEnum;
+import com.lunionlab.turbo_restaurant.forms.CreateAccompagnementForm;
+import com.lunionlab.turbo_restaurant.forms.UpdateAccompagnementForm;
+import com.lunionlab.turbo_restaurant.repositories.AccompagnementRepo;
+import com.lunionlab.turbo_restaurant.repositories.PlatRepository;
 import com.lunionlab.turbo_restaurant.utilities.Report;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
-@Service
 @Slf4j
+@Service
 public class AccompagnementService {
     @Autowired
     AccompagnementRepo accompagnementRepo;

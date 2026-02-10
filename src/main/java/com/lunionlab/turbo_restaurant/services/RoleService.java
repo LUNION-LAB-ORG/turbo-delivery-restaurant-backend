@@ -7,10 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import com.lunionlab.turbo_restaurant.Enums.DeletionEnum;
-import com.lunionlab.turbo_restaurant.Enums.RoleEnum;
-import com.lunionlab.turbo_restaurant.model.RoleModel;
-import com.lunionlab.turbo_restaurant.repository.RoleRepository;
+import com.lunionlab.turbo_restaurant.entities.RoleModel;
+import com.lunionlab.turbo_restaurant.enums.DeletionEnum;
+import com.lunionlab.turbo_restaurant.enums.RoleEnum;
+import com.lunionlab.turbo_restaurant.repositories.RoleRepository;
 
 @Service
 public class RoleService {

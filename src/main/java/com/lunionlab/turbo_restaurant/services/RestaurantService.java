@@ -1,18 +1,15 @@
 package com.lunionlab.turbo_restaurant.services;
 
-import com.lunionlab.turbo_restaurant.Enums.DayOfWeekEnum;
-import com.lunionlab.turbo_restaurant.Enums.DeletionEnum;
-import com.lunionlab.turbo_restaurant.Enums.StatusEnum;
-import com.lunionlab.turbo_restaurant.exception.ErreurException;
-import com.lunionlab.turbo_restaurant.exception.ObjetNonTrouveException;
-import com.lunionlab.turbo_restaurant.form.*;
-import com.lunionlab.turbo_restaurant.model.*;
-import com.lunionlab.turbo_restaurant.objetvaleur.TypeCommission;
-import com.lunionlab.turbo_restaurant.repository.*;
-import com.lunionlab.turbo_restaurant.response.OrderItemResponse;
-import com.lunionlab.turbo_restaurant.utilities.Utility;
-import jakarta.validation.Valid;
-import lombok.extern.slf4j.Slf4j;
+import java.io.File;
+import java.io.IOException;
+import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -25,21 +22,53 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.IOException;
-import java.time.LocalTime;
-import java.util.*;
+import com.lunionlab.turbo_restaurant.entities.AccompagnementModel;
+import com.lunionlab.turbo_restaurant.entities.BoissonModel;
+import com.lunionlab.turbo_restaurant.entities.OpeningHoursModel;
+import com.lunionlab.turbo_restaurant.entities.OptionValeurModel;
+import com.lunionlab.turbo_restaurant.entities.OrderItemModel;
+import com.lunionlab.turbo_restaurant.entities.PlatModel;
+import com.lunionlab.turbo_restaurant.entities.RestaurantModel;
+import com.lunionlab.turbo_restaurant.entities.TypeCuisineRestaurantModel;
+import com.lunionlab.turbo_restaurant.entities.UserModel;
+import com.lunionlab.turbo_restaurant.entities.UserOrderM;
+import com.lunionlab.turbo_restaurant.enums.DayOfWeekEnum;
+import com.lunionlab.turbo_restaurant.enums.DeletionEnum;
+import com.lunionlab.turbo_restaurant.enums.StatusEnum;
+import com.lunionlab.turbo_restaurant.enums.TypeCommission;
+import com.lunionlab.turbo_restaurant.exceptions.ErreurException;
+import com.lunionlab.turbo_restaurant.exceptions.ObjetNonTrouveException;
+import com.lunionlab.turbo_restaurant.forms.AddOpeningForm;
+import com.lunionlab.turbo_restaurant.forms.CreateRestaurantForm;
+import com.lunionlab.turbo_restaurant.forms.RejectRestoForm;
+import com.lunionlab.turbo_restaurant.forms.SearchRestoForm;
+import com.lunionlab.turbo_restaurant.forms.UpdateRestaurant;
+import com.lunionlab.turbo_restaurant.forms.UpdateRestoCommissionForm;
+import com.lunionlab.turbo_restaurant.forms.UserOrderForm;
+import com.lunionlab.turbo_restaurant.repositories.AccompagnementRepo;
+import com.lunionlab.turbo_restaurant.repositories.BoissonRespository;
+import com.lunionlab.turbo_restaurant.repositories.OpeningHourRepo;
+import com.lunionlab.turbo_restaurant.repositories.OptionValeurRepo;
+import com.lunionlab.turbo_restaurant.repositories.PictureRestoRepository;
+import com.lunionlab.turbo_restaurant.repositories.PlatRepository;
+import com.lunionlab.turbo_restaurant.repositories.RestaurantRepository;
+import com.lunionlab.turbo_restaurant.repositories.TypeCuisineRestoRepository;
+import com.lunionlab.turbo_restaurant.repositories.UserOrderRepo;
+import com.lunionlab.turbo_restaurant.repositories.UserRepository;
+import com.lunionlab.turbo_restaurant.responses.OrderItemResponse;
+import com.lunionlab.turbo_restaurant.utilities.Utility;
 
-@Service
+import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
+
 @Slf4j
+@Service
 public class RestaurantService {
-
     private final RestaurantRepository restaurantRepository;
     private final BoissonRespository boissonRespository;
     private final AccompagnementRepo accompagnementRepo;
     private final OptionValeurRepo optionValeurRepo;
     private final UserRepository userRepository;
-    private final PictureRestoRepository pictureRestoRepository;
     private final TypeCuisineRestoRepository typeCuisineRestoRepository;
     private final OpeningHourRepo openingHourRepo;
     private final UserOrderRepo userOrderRepo;
@@ -55,25 +84,24 @@ public class RestaurantService {
     private String BACKEND;
 
     public RestaurantService(
-            RestaurantRepository restaurantRepository,
-            BoissonRespository boissonRespository,
-            AccompagnementRepo accompagnementRepo,
-            OptionValeurRepo optionValeurRepo,
-            UserRepository userRepository,
-            PictureRestoRepository pictureRestoRepository,
-            TypeCuisineRestoRepository typeCuisineRestoRepository,
-            OpeningHourRepo openingHourRepo,
-            UserOrderRepo userOrderRepo,
-            PlatRepository platRepository,
-            GenericService genericService,
-            RoleService roleService
+        RestaurantRepository restaurantRepository,
+        BoissonRespository boissonRespository,
+        AccompagnementRepo accompagnementRepo,
+        OptionValeurRepo optionValeurRepo,
+        UserRepository userRepository,
+        PictureRestoRepository pictureRestoRepository,
+        TypeCuisineRestoRepository typeCuisineRestoRepository,
+        OpeningHourRepo openingHourRepo,
+        UserOrderRepo userOrderRepo,
+        PlatRepository platRepository,
+        GenericService genericService,
+        RoleService roleService
     ) {
         this.restaurantRepository = restaurantRepository;
         this.boissonRespository = boissonRespository;
         this.accompagnementRepo = accompagnementRepo;
         this.optionValeurRepo = optionValeurRepo;
         this.userRepository = userRepository;
-        this.pictureRestoRepository = pictureRestoRepository;
         this.typeCuisineRestoRepository = typeCuisineRestoRepository;
         this.openingHourRepo = openingHourRepo;
         this.userOrderRepo = userOrderRepo;
@@ -630,10 +658,12 @@ public class RestaurantService {
     public void updateRestoCommission(UpdateRestoCommissionForm form) {
         TypeCommission type = form.getType();
         double commission = form.getCommission();
+        String methodRecouvrement = form.getMethodRecouvrement();
         RestaurantModel resto = restaurantRepository.findFirstByIdAndDeleted(form.getRestoId(), DeletionEnum.NO)
                 .orElseThrow(() -> new RuntimeException("Le restaurant n'existe pas !"));
         resto.setTypeCommission(type);
         resto.setCommission(commission);
+        resto.setMethodRecouvrement(methodRecouvrement);
         this.restaurantRepository.save(resto);
     }
 
@@ -655,4 +685,12 @@ public class RestaurantService {
         Page<RestaurantModel> restaurants = restaurantRepository.findAllByTypeCommissionAndDeletedFalse(typeCommission, pageable);
         return ResponseEntity.ok(restaurants);
     }
+
+    public Page<RestaurantModel> listRestaurants(String nomEtablissement, Pageable pageable) {
+        return restaurantRepository.findWithFilters(nomEtablissement, pageable);
+    }
+
+    public Optional<RestaurantModel> getRestaurantById(UUID id) {
+        return restaurantRepository.findById(id);
+    }    
 }

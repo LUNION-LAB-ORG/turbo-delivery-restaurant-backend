@@ -11,16 +11,16 @@ import org.springframework.web.client.HttpClientErrorException;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.lunionlab.turbo_restaurant.Enums.DeletionEnum;
-import com.lunionlab.turbo_restaurant.model.CollectionModel;
-import com.lunionlab.turbo_restaurant.repository.CollectionRepository;
-import com.lunionlab.turbo_restaurant.response.CollectionResponse;
+import com.lunionlab.turbo_restaurant.entities.CollectionModel;
+import com.lunionlab.turbo_restaurant.enums.DeletionEnum;
+import com.lunionlab.turbo_restaurant.repositories.CollectionRepository;
+import com.lunionlab.turbo_restaurant.responses.CollectionResponse;
 import com.lunionlab.turbo_restaurant.utilities.Report;
 
 import lombok.extern.slf4j.Slf4j;
 
-@Service
 @Slf4j
+@Service
 public class CollectionService {
     @Autowired
     CollectionRepository collectionRepository;

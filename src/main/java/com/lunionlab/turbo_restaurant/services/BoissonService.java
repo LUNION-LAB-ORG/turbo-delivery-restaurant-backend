@@ -9,23 +9,23 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
 
-import com.lunionlab.turbo_restaurant.Enums.DeletionEnum;
-import com.lunionlab.turbo_restaurant.Enums.StatusEnum;
 import com.lunionlab.turbo_restaurant.dto.BoissonDTO;
-import com.lunionlab.turbo_restaurant.form.CreateBoissonForm;
-import com.lunionlab.turbo_restaurant.form.UpdateBoissonForm;
-import com.lunionlab.turbo_restaurant.model.BoissonModel;
-import com.lunionlab.turbo_restaurant.model.RestaurantModel;
-import com.lunionlab.turbo_restaurant.repository.BoissonRespository;
-import com.lunionlab.turbo_restaurant.repository.PlatRepository;
-import com.lunionlab.turbo_restaurant.repository.RestaurantRepository;
+import com.lunionlab.turbo_restaurant.entities.BoissonModel;
+import com.lunionlab.turbo_restaurant.entities.RestaurantModel;
+import com.lunionlab.turbo_restaurant.enums.DeletionEnum;
+import com.lunionlab.turbo_restaurant.enums.StatusEnum;
+import com.lunionlab.turbo_restaurant.forms.CreateBoissonForm;
+import com.lunionlab.turbo_restaurant.forms.UpdateBoissonForm;
+import com.lunionlab.turbo_restaurant.repositories.BoissonRespository;
+import com.lunionlab.turbo_restaurant.repositories.PlatRepository;
+import com.lunionlab.turbo_restaurant.repositories.RestaurantRepository;
 import com.lunionlab.turbo_restaurant.utilities.Report;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
-@Service
 @Slf4j
+@Service
 public class BoissonService {
     @Autowired
     BoissonRespository boissonRespository;

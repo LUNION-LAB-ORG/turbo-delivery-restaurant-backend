@@ -3,7 +3,7 @@ package com.lunionlab.turbo_restaurant.mappers;
 import java.util.List;
 
 import com.lunionlab.turbo_restaurant.dto.PlatWithoutRestaurantAndCollectionDTO;
-import com.lunionlab.turbo_restaurant.model.PlatModel;
+import com.lunionlab.turbo_restaurant.entities.PlatModel;
 
 public class PlatWithoutRestaurantAndCollectionMapper {
     

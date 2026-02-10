@@ -18,7 +18,9 @@ import com.lunionlab.turbo_restaurant.utilities.Utility;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 public class JwtService {
 
@@ -28,29 +30,36 @@ public class JwtService {
     @Value("${jwt.secret}")
     private String secret;
 
+    private Key getSigningKey() {
+        return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+    }
+    
     public String generateToken(String username, String audience) {
         Date dateExp = Utility.dateFromInteger(TIME_EXP * 60, ChronoUnit.MINUTES);
-
-        return Jwts.builder().setAudience(audience).setExpiration(dateExp).setSubject(username)
-                .signWith(SignatureAlgorithm.HS256, secret).compact();
+        return Jwts.builder()
+            .setAudience(audience)
+            .setExpiration(dateExp)
+            .setSubject(username)
+            .signWith(getSigningKey(), SignatureAlgorithm.HS256) // <-- utiliser Key
+            .compact();
     }
-
+    
     public Map<String, String> getInfoFromToken(String token) {
         Map<String, String> infos = new HashMap<>();
         infos.put("audience", "");
         infos.put("identifier", "");
         try {
-            Key key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
             Claims claims = Jwts.parserBuilder()
-                                .setSigningKey(key)
-                                .build()
-                                .parseClaimsJws(token)
-                                .getBody();
+                .setSigningKey(getSigningKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
             infos.put("audience", claims.getAudience());
             infos.put("identifier", claims.getSubject());
-            return infos;
+            log.info("Token parsed successfully: audience={}, identifier={}", claims.getAudience(), claims.getSubject());
         } catch (Exception e) {
-            return infos;
+            log.error("Failed to parse token", e);
         }
+        return infos;
     }
 }

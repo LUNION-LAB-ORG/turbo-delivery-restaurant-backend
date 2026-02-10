@@ -1,4 +1,4 @@
-package com.lunionlab.turbo_restaurant.Enums;
+package com.lunionlab.turbo_restaurant.enums;
 
 public class DeletionEnum {
     public static Boolean NO = false;

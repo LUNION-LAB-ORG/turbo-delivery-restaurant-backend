@@ -1,4 +1,4 @@
-package com.lunionlab.turbo_restaurant.Enums;
+package com.lunionlab.turbo_restaurant.enums;
 
 public class RoleEnum {
     public static String ROLE_ADMIN = "ADMIN";

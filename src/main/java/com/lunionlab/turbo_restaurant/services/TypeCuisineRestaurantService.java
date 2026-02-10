@@ -7,21 +7,21 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
 
-import com.lunionlab.turbo_restaurant.Enums.DeletionEnum;
-import com.lunionlab.turbo_restaurant.form.AssignTypeCuisineRestoForm;
-import com.lunionlab.turbo_restaurant.model.RestaurantModel;
-import com.lunionlab.turbo_restaurant.model.TypeCuisineModel;
-import com.lunionlab.turbo_restaurant.model.TypeCuisineRestaurantModel;
-import com.lunionlab.turbo_restaurant.model.UserModel;
-import com.lunionlab.turbo_restaurant.repository.RestaurantRepository;
-import com.lunionlab.turbo_restaurant.repository.TypeCuisineRestoRepository;
+import com.lunionlab.turbo_restaurant.entities.RestaurantModel;
+import com.lunionlab.turbo_restaurant.entities.TypeCuisineModel;
+import com.lunionlab.turbo_restaurant.entities.TypeCuisineRestaurantModel;
+import com.lunionlab.turbo_restaurant.entities.UserModel;
+import com.lunionlab.turbo_restaurant.enums.DeletionEnum;
+import com.lunionlab.turbo_restaurant.forms.AssignTypeCuisineRestoForm;
+import com.lunionlab.turbo_restaurant.repositories.RestaurantRepository;
+import com.lunionlab.turbo_restaurant.repositories.TypeCuisineRestoRepository;
 import com.lunionlab.turbo_restaurant.utilities.Report;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
-@Service
 @Slf4j
+@Service
 public class TypeCuisineRestaurantService {
     @Autowired
     TypeCuisineService typeCuisineService;

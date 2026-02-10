@@ -1,0 +1,22 @@
+package com.lunionlab.turbo_restaurant.controllers;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.lunionlab.turbo_restaurant.services.TypeCuisineService;
+
+@RestController
+@RequestMapping(path = "api/V1/turbo/resto/type/cuisine")
+public class TypeCuisineController {
+    @Autowired
+    TypeCuisineService typeCuisineService;
+
+    @Secured({ "ROLE_CUSTOMER", "ROLE_ADMIN", "ROLE_USER" })
+    @GetMapping("/liste")
+    public Object getTypeCuisine() {
+        return typeCuisineService.getTypeCuisine();
+    }
+}

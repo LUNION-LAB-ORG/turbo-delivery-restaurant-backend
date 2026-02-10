@@ -11,18 +11,17 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.lunionlab.turbo_restaurant.model.PictureRestaurantModel;
-import com.lunionlab.turbo_restaurant.model.RestaurantModel;
-import com.lunionlab.turbo_restaurant.repository.PictureRestoRepository;
-import com.lunionlab.turbo_restaurant.repository.RestaurantRepository;
+import com.lunionlab.turbo_restaurant.entities.PictureRestaurantModel;
+import com.lunionlab.turbo_restaurant.entities.RestaurantModel;
+import com.lunionlab.turbo_restaurant.repositories.PictureRestoRepository;
+import com.lunionlab.turbo_restaurant.repositories.RestaurantRepository;
 import com.lunionlab.turbo_restaurant.utilities.Report;
 
 import lombok.extern.slf4j.Slf4j;
 
-@Service
 @Slf4j
+@Service
 public class PictureRestaurantService {
-
     @Autowired
     PictureRestoRepository pictureRestoRepository;
     @Autowired

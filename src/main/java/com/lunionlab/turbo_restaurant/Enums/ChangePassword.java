@@ -1,4 +1,4 @@
-package com.lunionlab.turbo_restaurant.Enums;
+package com.lunionlab.turbo_restaurant.enums;
 
 public class ChangePassword {
     public static Boolean No = false;

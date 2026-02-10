@@ -1,15 +1,15 @@
 package com.lunionlab.turbo_restaurant.services;
 
-import com.lunionlab.turbo_restaurant.Enums.DeletionEnum;
-import com.lunionlab.turbo_restaurant.Enums.StatusEnum;
 import com.lunionlab.turbo_restaurant.dto.NotificationsWebhookDto;
-import com.lunionlab.turbo_restaurant.exception.ObjetNonTrouveException;
-import com.lunionlab.turbo_restaurant.model.NotificationsWebhookModel;
-import com.lunionlab.turbo_restaurant.model.RestaurantModel;
-import com.lunionlab.turbo_restaurant.repository.NotificationsWebhookRepository;
-import com.lunionlab.turbo_restaurant.repository.RestaurantRepository;
+import com.lunionlab.turbo_restaurant.entities.NotificationsWebhookModel;
+import com.lunionlab.turbo_restaurant.entities.RestaurantModel;
+import com.lunionlab.turbo_restaurant.enums.DeletionEnum;
+import com.lunionlab.turbo_restaurant.enums.StatusEnum;
+import com.lunionlab.turbo_restaurant.exceptions.ObjetNonTrouveException;
+import com.lunionlab.turbo_restaurant.repositories.NotificationsWebhookRepository;
+import com.lunionlab.turbo_restaurant.repositories.RestaurantRepository;
+
 import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.UUID;
@@ -18,8 +18,8 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 
-@Service
 @Slf4j
+@Service
 public class NotificationsWebhookService {
 
     private final NotificationsWebhookRepository webhookRepository;
