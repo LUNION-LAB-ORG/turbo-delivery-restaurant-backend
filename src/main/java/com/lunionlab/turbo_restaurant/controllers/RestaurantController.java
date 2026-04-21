@@ -8,14 +8,18 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -23,10 +27,12 @@ import com.lunionlab.turbo_restaurant.entities.RestaurantModel;
 import com.lunionlab.turbo_restaurant.enums.TypeCommission;
 import com.lunionlab.turbo_restaurant.forms.AddOpeningForm;
 import com.lunionlab.turbo_restaurant.forms.CreateRestaurantForm;
+import com.lunionlab.turbo_restaurant.forms.CreateRestaurantV2Form;
 import com.lunionlab.turbo_restaurant.forms.RejectRestoForm;
 import com.lunionlab.turbo_restaurant.forms.SearchRestoForm;
 import com.lunionlab.turbo_restaurant.forms.UpdateRestaurant;
 import com.lunionlab.turbo_restaurant.forms.UpdateRestoCommissionForm;
+import com.lunionlab.turbo_restaurant.forms.UpdateRestaurantV2Form;
 import com.lunionlab.turbo_restaurant.forms.UserOrderForm;
 import com.lunionlab.turbo_restaurant.services.RestaurantService;
 import com.lunionlab.turbo_restaurant.services.UserService;
@@ -209,5 +215,29 @@ public class RestaurantController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         return restaurantService.getRestaurantsByTypeCommission(TypeCommission.POURCENTAGE, page, size);
+    }
+
+    // ── V2 : Création complète ────────────────────────────────────────────────
+    @PostMapping(value = "/v2/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public Object createRestaurantV2(
+            @Valid @ModelAttribute CreateRestaurantV2Form form,
+            @RequestPart("logo") MultipartFile logo,
+            @RequestPart(value = "coverImage", required = false) MultipartFile coverImage,
+            @RequestPart(value = "pictures", required = false) MultipartFile[] pictures,
+            @RequestPart(value = "document", required = false) MultipartFile document,
+            @RequestParam Map<String, String> allParams) {
+        return restaurantService.createRestaurantV2(form, logo, coverImage, pictures, document, allParams);
+    }
+
+    // ── V2 : Modification complète ───────────────────────────────────────────
+    @PutMapping(value = "/v2/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public Object updateRestaurantV2(
+            @ModelAttribute UpdateRestaurantV2Form form,
+            @RequestPart(value = "logo", required = false) MultipartFile logo,
+            @RequestPart(value = "coverImage", required = false) MultipartFile coverImage,
+            @RequestPart(value = "pictures", required = false) MultipartFile[] pictures,
+            @RequestPart(value = "document", required = false) MultipartFile document,
+            @RequestParam Map<String, String> allParams) {
+        return restaurantService.updateRestaurantV2(form, logo, coverImage, pictures, document, allParams);
     }
 }

@@ -8,7 +8,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.TreeMap;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,9 +27,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.lunionlab.turbo_restaurant.entities.AccompagnementModel;
 import com.lunionlab.turbo_restaurant.entities.BoissonModel;
+import com.lunionlab.turbo_restaurant.entities.ContactRestaurantModel;
 import com.lunionlab.turbo_restaurant.entities.OpeningHoursModel;
 import com.lunionlab.turbo_restaurant.entities.OptionValeurModel;
 import com.lunionlab.turbo_restaurant.entities.OrderItemModel;
+import com.lunionlab.turbo_restaurant.entities.PictureRestaurantModel;
 import com.lunionlab.turbo_restaurant.entities.PlatModel;
 import com.lunionlab.turbo_restaurant.entities.RestaurantModel;
 import com.lunionlab.turbo_restaurant.entities.TypeCuisineRestaurantModel;
@@ -40,10 +45,12 @@ import com.lunionlab.turbo_restaurant.exceptions.ErreurException;
 import com.lunionlab.turbo_restaurant.exceptions.ObjetNonTrouveException;
 import com.lunionlab.turbo_restaurant.forms.AddOpeningForm;
 import com.lunionlab.turbo_restaurant.forms.CreateRestaurantForm;
+import com.lunionlab.turbo_restaurant.forms.CreateRestaurantV2Form;
 import com.lunionlab.turbo_restaurant.forms.RejectRestoForm;
 import com.lunionlab.turbo_restaurant.forms.SearchRestoForm;
 import com.lunionlab.turbo_restaurant.forms.UpdateRestaurant;
 import com.lunionlab.turbo_restaurant.forms.UpdateRestoCommissionForm;
+import com.lunionlab.turbo_restaurant.forms.UpdateRestaurantV2Form;
 import com.lunionlab.turbo_restaurant.forms.UserOrderForm;
 import com.lunionlab.turbo_restaurant.repositories.AccompagnementRepo;
 import com.lunionlab.turbo_restaurant.repositories.BoissonRespository;
@@ -668,6 +675,36 @@ public class RestaurantService {
     }
 
 
+    private List<OpeningHoursModel> parseOpeningHours(Map<String, String> params, RestaurantModel restaurant) {
+        Pattern pattern = Pattern.compile("^openingHours\\[(\\d+)\\]\\[(\\w+)\\]$");
+        Map<Integer, OpeningHoursModel> map = new TreeMap<>();
+        for (Map.Entry<String, String> entry : params.entrySet()) {
+            Matcher m = pattern.matcher(entry.getKey());
+            if (m.matches()) {
+                int idx = Integer.parseInt(m.group(1));
+                String field = m.group(2);
+                OpeningHoursModel oh = map.computeIfAbsent(idx, k -> {
+                    OpeningHoursModel o = new OpeningHoursModel();
+                    o.setRestaurant(restaurant);
+                    return o;
+                });
+                switch (field) {
+                    case "dayOfWeek" -> oh.setDayOfWeek(entry.getValue().toUpperCase());
+                    case "openingTime" -> {
+                        if (entry.getValue() != null && !entry.getValue().isEmpty())
+                            oh.setOpeningTime(Utility.StrToLocalTime(entry.getValue()));
+                    }
+                    case "closingTime" -> {
+                        if (entry.getValue() != null && !entry.getValue().isEmpty())
+                            oh.setClosingTime(Utility.StrToLocalTime(entry.getValue()));
+                    }
+                    case "closed" -> oh.setClosed(Boolean.parseBoolean(entry.getValue()));
+                }
+            }
+        }
+        return new ArrayList<>(map.values());
+    }
+
     private void notifierErp(String nomEtablissement) {
         String message = "Un nouveau restaurant du nom de " + nomEtablissement + " vient d'être créé !";
         // String endpoint = BACKEND + "/erp/notification/notifier/erp";
@@ -692,5 +729,311 @@ public class RestaurantService {
 
     public Optional<RestaurantModel> getRestaurantById(UUID id) {
         return restaurantRepository.findById(id);
-    }    
+    }
+
+    @Transactional
+    public Object createRestaurantV2(
+            @Valid CreateRestaurantV2Form form,
+            MultipartFile logo,
+            MultipartFile coverImage,
+            MultipartFile[] pictures,
+            MultipartFile document,
+            Map<String, String> allParams) {
+
+        UserModel user = genericService.getAuthUser();
+        if (user == null) {
+            throw new ErreurException("Nous ne pouvons pas donner suite à votre opération !");
+        }
+        if (user.getRestaurant() != null) {
+            throw new ErreurException("Vous n'êtes pas habilité à ajouter plusieurs restaurants !");
+        }
+
+        // Validation email si fourni
+        String email = form.getEmail();
+        if (email != null && !email.isEmpty()) {
+            if (!Utility.checkEmail(email)) {
+                throw new ErreurException("L'email est invalide !");
+            }
+            if (restaurantRepository.existsByEmail(email)) {
+                throw new ErreurException("Cet email est déjà utilisé !");
+            }
+        }
+
+        // Logo requis
+        if (logo == null || logo.isEmpty()) {
+            throw new ErreurException("Le logo est requis !");
+        }
+        String logoExtension = genericService.getFileExtension(logo.getOriginalFilename());
+        if (!logoExtension.equalsIgnoreCase("png") &&
+                !logoExtension.equalsIgnoreCase("jpg") &&
+                !logoExtension.equalsIgnoreCase("jpeg")) {
+            throw new ErreurException("Le logo doit être au format jpg, jpeg ou png !");
+        }
+        String logoPath = genericService.generateFileName("logo") + "." + logoExtension;
+        try {
+            logo.transferTo(new File(logoPath).toPath());
+        } catch (IOException e) {
+            throw new ErreurException("Erreur lors de la sauvegarde du logo : " + e.getMessage());
+        }
+
+        // CoverImage optionnel
+        String coverImagePath = null;
+        if (coverImage != null && !coverImage.isEmpty()) {
+            String coverExtension = genericService.getFileExtension(coverImage.getOriginalFilename());
+            if (!coverExtension.equalsIgnoreCase("png") &&
+                    !coverExtension.equalsIgnoreCase("jpg") &&
+                    !coverExtension.equalsIgnoreCase("jpeg")) {
+                throw new ErreurException("L'image de couverture doit être au format jpg, jpeg ou png !");
+            }
+            coverImagePath = genericService.generateFileName("cover") + "." + coverExtension;
+            try {
+                coverImage.transferTo(new File(coverImagePath).toPath());
+            } catch (IOException e) {
+                throw new ErreurException("Erreur lors de la sauvegarde de l'image de couverture : " + e.getMessage());
+            }
+        }
+
+        // Document optionnel
+        String documentPath = null;
+        if (document != null && !document.isEmpty()) {
+            String docExtension = genericService.getFileExtension(document.getOriginalFilename());
+            documentPath = genericService.generateFileName("document") + "." + docExtension;
+            try {
+                document.transferTo(new File(documentPath).toPath());
+            } catch (IOException e) {
+                throw new ErreurException("Erreur lors de la sauvegarde du document : " + e.getMessage());
+            }
+        }
+
+        // Création du restaurant
+        RestaurantModel restaurant = new RestaurantModel();
+        restaurant.setNomEtablissement(form.getNomEtablissement());
+        restaurant.setTelephone(form.getTelephone());
+        restaurant.setEmail(email);
+        restaurant.setLocalisation(form.getLocalisation());
+        restaurant.setCommune(form.getCommune());
+        restaurant.setCodePostal(form.getCodePostal());
+        restaurant.setSiteWeb(form.getSiteWeb());
+        restaurant.setDescription(form.getDescription());
+        restaurant.setLogo(logoPath);
+        restaurant.setLogo_Url(logoPath);
+        restaurant.setCoverImage(coverImagePath);
+        restaurant.setCoverImageUrl(coverImagePath);
+        restaurant.setDocumentUrl(documentPath);
+        restaurant.setDocumentType(form.getDocumentType());
+        restaurant.setApiKeyResto(Utility.genererNouveauApiKeyRestaurant());
+
+        if (form.getTypeCommission() != null && !form.getTypeCommission().isEmpty()) {
+            try {
+                restaurant.setTypeCommission(TypeCommission.valueOf(form.getTypeCommission().toUpperCase()));
+            } catch (IllegalArgumentException e) {
+                throw new ErreurException("Type de commission invalide : FIXE ou POURCENTAGE attendu !");
+            }
+        }
+        if (form.getCommission() != null) {
+            restaurant.setCommission(form.getCommission());
+        }
+        if (form.getMethodRecouvrement() != null && !form.getMethodRecouvrement().isEmpty()) {
+            restaurant.setMethodRecouvrement(form.getMethodRecouvrement());
+        }
+
+        restaurant = restaurantRepository.save(restaurant);
+
+        // Photos de l'établissement
+        if (pictures != null) {
+            for (MultipartFile pic : pictures) {
+                if (pic == null || pic.isEmpty()) continue;
+                String picExtension = genericService.getFileExtension(pic.getOriginalFilename());
+                if (!picExtension.equalsIgnoreCase("png") &&
+                        !picExtension.equalsIgnoreCase("jpg") &&
+                        !picExtension.equalsIgnoreCase("jpeg")) continue;
+                String picPath = genericService.generateFileName("picture_restaurant") + "." + picExtension;
+                genericService.compressImage(pic, new File(picPath));
+                restaurant.getPictures().add(new PictureRestaurantModel(picPath, restaurant));
+            }
+        }
+
+        // Horaires d'ouverture
+        for (OpeningHoursModel oh : parseOpeningHours(allParams, restaurant)) {
+            restaurant.getOpeningHours().add(oh);
+        }
+
+        // Contacts
+        int i = 0;
+        while (allParams.containsKey("contact_nom_" + i)) {
+            String nom = allParams.get("contact_nom_" + i);
+            String tel = allParams.getOrDefault("contact_telephone_" + i, "");
+            if (nom != null && !nom.isEmpty()) {
+                restaurant.getContacts().add(new ContactRestaurantModel(nom, tel, restaurant));
+            }
+            i++;
+        }
+
+        restaurant = restaurantRepository.save(restaurant);
+
+        user.setRole(roleService.getAdmin());
+        user.setRestaurant(restaurant);
+        userRepository.save(user);
+
+        this.notifierErp(restaurant.getNomEtablissement());
+        return ResponseEntity.ok(Map.of("restaurant", restaurant, "createdBy", user));
+    }
+
+    @Transactional
+    public Object updateRestaurantV2(
+            UpdateRestaurantV2Form form,
+            MultipartFile logo,
+            MultipartFile coverImage,
+            MultipartFile[] pictures,
+            MultipartFile document,
+            Map<String, String> allParams) {
+
+        UserModel userAuth = genericService.getAuthUser();
+        RestaurantModel restaurant = userAuth.getRestaurant();
+        if (restaurant == null) {
+            throw new ErreurException("Vous n'avez pas de restaurant !");
+        }
+
+        // Champs texte
+        if (form.getNomEtablissement() != null && !form.getNomEtablissement().isEmpty()) {
+            restaurant.setNomEtablissement(form.getNomEtablissement());
+        }
+        if (form.getTelephone() != null && !form.getTelephone().isEmpty()) {
+            restaurant.setTelephone(form.getTelephone());
+        }
+        if (form.getEmail() != null && !form.getEmail().isEmpty()) {
+            restaurant.setEmail(form.getEmail());
+        }
+        if (form.getLocalisation() != null && !form.getLocalisation().isEmpty()) {
+            restaurant.setLocalisation(form.getLocalisation());
+        }
+        if (form.getCommune() != null && !form.getCommune().isEmpty()) {
+            restaurant.setCommune(form.getCommune());
+        }
+        if (form.getCodePostal() != null && !form.getCodePostal().isEmpty()) {
+            restaurant.setCodePostal(form.getCodePostal());
+        }
+        if (form.getSiteWeb() != null && !form.getSiteWeb().isEmpty()) {
+            restaurant.setSiteWeb(form.getSiteWeb());
+        }
+        if (form.getDescription() != null && !form.getDescription().isEmpty()) {
+            restaurant.setDescription(form.getDescription());
+        }
+        if (form.getDocumentType() != null && !form.getDocumentType().isEmpty()) {
+            restaurant.setDocumentType(form.getDocumentType());
+        }
+
+        // Commission
+        if (form.getTypeCommission() != null && !form.getTypeCommission().isEmpty()) {
+            try {
+                restaurant.setTypeCommission(TypeCommission.valueOf(form.getTypeCommission().toUpperCase()));
+            } catch (IllegalArgumentException e) {
+                throw new ErreurException("Type de commission invalide : FIXE ou POURCENTAGE attendu !");
+            }
+        }
+        if (form.getCommission() != null) {
+            restaurant.setCommission(form.getCommission());
+        }
+        if (form.getMethodRecouvrement() != null && !form.getMethodRecouvrement().isEmpty()) {
+            restaurant.setMethodRecouvrement(form.getMethodRecouvrement());
+        }
+
+        // Logo
+        if (logo != null && !logo.isEmpty()) {
+            String logExtension = genericService.getFileExtension(logo.getOriginalFilename());
+            if (!logExtension.equalsIgnoreCase("png") &&
+                    !logExtension.equalsIgnoreCase("jpg") &&
+                    !logExtension.equalsIgnoreCase("jpeg")) {
+                throw new ErreurException("Le logo doit être au format jpg, jpeg ou png !");
+            }
+            String logoPath = genericService.generateFileName("logo") + "." + logExtension;
+            try {
+                logo.transferTo(new File(logoPath).toPath());
+                restaurant.setLogo(logoPath);
+                restaurant.setLogo_Url(logoPath);
+            } catch (IOException e) {
+                throw new ErreurException("Erreur lors de la sauvegarde du logo : " + e.getMessage());
+            }
+        }
+
+        // CoverImage
+        if (coverImage != null && !coverImage.isEmpty()) {
+            String coverExtension = genericService.getFileExtension(coverImage.getOriginalFilename());
+            if (!coverExtension.equalsIgnoreCase("png") &&
+                    !coverExtension.equalsIgnoreCase("jpg") &&
+                    !coverExtension.equalsIgnoreCase("jpeg")) {
+                throw new ErreurException("L'image de couverture doit être au format jpg, jpeg ou png !");
+            }
+            String coverPath = genericService.generateFileName("cover") + "." + coverExtension;
+            try {
+                coverImage.transferTo(new File(coverPath).toPath());
+                restaurant.setCoverImage(coverPath);
+                restaurant.setCoverImageUrl(coverPath);
+            } catch (IOException e) {
+                throw new ErreurException("Erreur lors de la sauvegarde de l'image de couverture : " + e.getMessage());
+            }
+        }
+
+        // Document
+        if (document != null && !document.isEmpty()) {
+            String docExtension = genericService.getFileExtension(document.getOriginalFilename());
+            String docPath = genericService.generateFileName("document") + "." + docExtension;
+            try {
+                document.transferTo(new File(docPath).toPath());
+                restaurant.setDocumentUrl(docPath);
+            } catch (IOException e) {
+                throw new ErreurException("Erreur lors de la sauvegarde du document : " + e.getMessage());
+            }
+        }
+
+        // Nouvelles photos
+        if (pictures != null && pictures.length > 0) {
+            for (MultipartFile pic : pictures) {
+                if (pic == null || pic.isEmpty()) continue;
+                String picExtension = genericService.getFileExtension(pic.getOriginalFilename());
+                if (!picExtension.equalsIgnoreCase("png") &&
+                        !picExtension.equalsIgnoreCase("jpg") &&
+                        !picExtension.equalsIgnoreCase("jpeg")) continue;
+                String picPath = genericService.generateFileName("picture_restaurant") + "." + picExtension;
+                genericService.compressImage(pic, new File(picPath));
+                restaurant.getPictures().add(new PictureRestaurantModel(picPath, restaurant));
+            }
+        }
+
+        // Mise à jour des horaires (upsert par jour)
+        List<OpeningHoursModel> parsedHours = parseOpeningHours(allParams, restaurant);
+        if (!parsedHours.isEmpty()) {
+            for (OpeningHoursModel oh : parsedHours) {
+                Optional<OpeningHoursModel> existing = restaurant.getOpeningHours().stream()
+                        .filter(e -> e.getDayOfWeek().equalsIgnoreCase(oh.getDayOfWeek()))
+                        .findFirst();
+                if (existing.isPresent()) {
+                    OpeningHoursModel e = existing.get();
+                    e.setClosed(oh.getClosed());
+                    if (oh.getOpeningTime() != null) e.setOpeningTime(oh.getOpeningTime());
+                    if (oh.getClosingTime() != null) e.setClosingTime(oh.getClosingTime());
+                } else {
+                    restaurant.getOpeningHours().add(oh);
+                }
+            }
+        }
+
+        // Remplacement des contacts si envoyés
+        boolean hasContacts = allParams.keySet().stream().anyMatch(k -> k.startsWith("contact_nom_"));
+        if (hasContacts) {
+            restaurant.getContacts().clear();
+            int i = 0;
+            while (allParams.containsKey("contact_nom_" + i)) {
+                String nom = allParams.get("contact_nom_" + i);
+                String tel = allParams.getOrDefault("contact_telephone_" + i, "");
+                if (nom != null && !nom.isEmpty()) {
+                    restaurant.getContacts().add(new ContactRestaurantModel(nom, tel, restaurant));
+                }
+                i++;
+            }
+        }
+
+        restaurant = restaurantRepository.save(restaurant);
+        return ResponseEntity.ok(restaurant);
+    }
 }

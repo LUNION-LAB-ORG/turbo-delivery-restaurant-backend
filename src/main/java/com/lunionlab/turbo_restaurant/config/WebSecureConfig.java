@@ -78,7 +78,9 @@ public class WebSecureConfig {
                 "/api/V1/turbo/resto/boisson/get/by/resto/**",
                 "/api/turbo/resto/collection/get/by/customer",
                 "/api/V1/turbo/restaurant/{restoId}/users",
-                "/api/V1/turbo/restaurant/update-commission"
+                "/api/V1/turbo/restaurant/update-commission",
+                "/api/V1/turbo/restaurant/v2/create",
+                "/api/V1/turbo/restaurant/v2/update"
             ).permitAll()
             .anyRequest().authenticated();
         });

@@ -40,12 +40,19 @@ public class RestaurantModel extends BaseModel {
     private String methodRecouvrement;
     private Boolean isOpen = ClosedEnums.YES;
 
+    private String coverImage;
+    private String coverImageUrl;
+    private String documentType;
+
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<PictureRestaurantModel> pictures = new ArrayList<PictureRestaurantModel>();
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<OpeningHoursModel> openingHours = new ArrayList<OpeningHoursModel>();
+    @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<ContactRestaurantModel> contacts = new ArrayList<ContactRestaurantModel>();
 
     public RestaurantModel(String nomEtablissement, String description, String email, String telephone,
             String codePostal, String commune, String localisation, String siteWeb, String logo, String logo_Url,
