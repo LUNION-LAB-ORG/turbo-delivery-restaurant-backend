@@ -103,10 +103,16 @@ public class RestaurantController {
     public ResponseEntity<Page<RestaurantModel>> listRestaurants(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) String nomEtablissement
+            @RequestParam(required = false) String nomEtablissement,
+            @RequestParam(required = false) String localisation,
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false) String telephone,
+            @RequestParam(required = false) String commune,
+            @RequestParam(required = false) String methodRecouvrement,
+            @RequestParam(required = false) String typeCommission
     ) {
         PageRequest pageable = PageRequest.of(page, size, Sort.by("date_service").descending());
-        Page<RestaurantModel> restaurants = restaurantService.listRestaurants(nomEtablissement, pageable);
+        Page<RestaurantModel> restaurants = restaurantService.listRestaurants(nomEtablissement, localisation, email, telephone, commune, methodRecouvrement, typeCommission, pageable);
         return ResponseEntity.ok(restaurants);
     }
 

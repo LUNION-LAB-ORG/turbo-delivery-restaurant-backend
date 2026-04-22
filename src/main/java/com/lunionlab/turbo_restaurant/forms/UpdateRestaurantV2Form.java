@@ -1,11 +1,16 @@
 package com.lunionlab.turbo_restaurant.forms;
 
+import java.util.UUID;
+
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
 public class UpdateRestaurantV2Form {
+
+    // ── Identifiant (requis si non connecté) ───────────────
+    private UUID restoId;
 
     // ── Informations générales ──────────────────────────
     private String nomEtablissement;

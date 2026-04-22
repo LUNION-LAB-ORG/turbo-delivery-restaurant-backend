@@ -228,6 +228,7 @@ public class RestaurantService {
         restaurant.setLongitude(form.getLongitude());
         restaurant.setIdLocation(form.getIdLocation());
         restaurant.setApiKeyResto(apiKeyResto);
+        restaurant.setStatus(StatusEnum.RESTO_VALID_BY_OPSMANAGER);
         restaurant = restaurantRepository.save(restaurant);
 
         user.setRole(roleService.getAdmin());
@@ -723,8 +724,8 @@ public class RestaurantService {
         return ResponseEntity.ok(restaurants);
     }
 
-    public Page<RestaurantModel> listRestaurants(String nomEtablissement, Pageable pageable) {
-        return restaurantRepository.findWithFilters(nomEtablissement, pageable);
+    public Page<RestaurantModel> listRestaurants(String nomEtablissement, String localisation, String email, String telephone, String commune, String methodRecouvrement, String typeCommission, Pageable pageable) {
+        return restaurantRepository.findWithFilters(nomEtablissement, localisation, email, telephone, commune, methodRecouvrement, typeCommission, pageable);
     }
 
     public Optional<RestaurantModel> getRestaurantById(UUID id) {
@@ -741,10 +742,7 @@ public class RestaurantService {
             Map<String, String> allParams) {
 
         UserModel user = genericService.getAuthUser();
-        if (user == null) {
-            throw new ErreurException("Nous ne pouvons pas donner suite à votre opération !");
-        }
-        if (user.getRestaurant() != null) {
+        if (user != null && user.getRestaurant() != null) {
             throw new ErreurException("Vous n'êtes pas habilité à ajouter plusieurs restaurants !");
         }
 
@@ -871,12 +869,14 @@ public class RestaurantService {
 
         restaurant = restaurantRepository.save(restaurant);
 
-        user.setRole(roleService.getAdmin());
-        user.setRestaurant(restaurant);
-        userRepository.save(user);
+        if (user != null) {
+            user.setRole(roleService.getAdmin());
+            user.setRestaurant(restaurant);
+            userRepository.save(user);
+        }
 
         this.notifierErp(restaurant.getNomEtablissement());
-        return ResponseEntity.ok(Map.of("restaurant", restaurant, "createdBy", user));
+        return ResponseEntity.ok(Map.of("restaurant", restaurant));
     }
 
     @Transactional
@@ -889,9 +889,17 @@ public class RestaurantService {
             Map<String, String> allParams) {
 
         UserModel userAuth = genericService.getAuthUser();
-        RestaurantModel restaurant = userAuth.getRestaurant();
-        if (restaurant == null) {
-            throw new ErreurException("Vous n'avez pas de restaurant !");
+
+        RestaurantModel restaurant;
+        if (userAuth != null && userAuth.getRestaurant() != null) {
+            // utilisateur connecté : on prend son restaurant
+            restaurant = userAuth.getRestaurant();
+        } else if (form.getRestoId() != null) {
+            // endpoint public : on recherche par restoId
+            restaurant = restaurantRepository.findFirstByIdAndDeleted(form.getRestoId(), DeletionEnum.NO)
+                    .orElseThrow(() -> new ErreurException("Restaurant introuvable !"));
+        } else {
+            throw new ErreurException("Vous devez fournir un restoId ou être connecté !");
         }
 
         // Champs texte

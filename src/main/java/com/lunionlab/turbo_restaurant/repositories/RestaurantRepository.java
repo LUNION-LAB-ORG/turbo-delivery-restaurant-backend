@@ -64,6 +64,12 @@ public interface RestaurantRepository extends JpaRepository<RestaurantModel, UUI
             SELECT *
             FROM restaurant r
             WHERE (:nomEtablissement IS NULL OR r.nom_etablissement ILIKE CONCAT('%', :nomEtablissement, '%'))
+            AND (:localisation IS NULL OR r.localisation ILIKE CONCAT('%', :localisation, '%'))
+            AND (:email IS NULL OR r.email ILIKE CONCAT('%', :email, '%'))
+            AND (:telephone IS NULL OR r.telephone ILIKE CONCAT('%', :telephone, '%'))
+            AND (:commune IS NULL OR r.commune ILIKE CONCAT('%', :commune, '%'))
+            AND (:methodRecouvrement IS NULL OR r.method_recouvrement ILIKE CONCAT('%', :methodRecouvrement, '%'))
+            AND (:typeCommission IS NULL OR r.type_commission = :typeCommission)
             AND r.deleted = false
             ORDER BY r.date_service DESC
         """,
@@ -71,12 +77,24 @@ public interface RestaurantRepository extends JpaRepository<RestaurantModel, UUI
             SELECT COUNT(*)
             FROM restaurant r
             WHERE (:nomEtablissement IS NULL OR r.nom_etablissement ILIKE CONCAT('%', :nomEtablissement, '%'))
+            AND (:localisation IS NULL OR r.localisation ILIKE CONCAT('%', :localisation, '%'))
+            AND (:email IS NULL OR r.email ILIKE CONCAT('%', :email, '%'))
+            AND (:telephone IS NULL OR r.telephone ILIKE CONCAT('%', :telephone, '%'))
+            AND (:commune IS NULL OR r.commune ILIKE CONCAT('%', :commune, '%'))
+            AND (:methodRecouvrement IS NULL OR r.method_recouvrement ILIKE CONCAT('%', :methodRecouvrement, '%'))
+            AND (:typeCommission IS NULL OR r.type_commission = :typeCommission)
             AND r.deleted = false
         """,
         nativeQuery = true
     )
     Page<RestaurantModel> findWithFilters(
         @Param("nomEtablissement") String nomEtablissement,
+        @Param("localisation") String localisation,
+        @Param("email") String email,
+        @Param("telephone") String telephone,
+        @Param("commune") String commune,
+        @Param("methodRecouvrement") String methodRecouvrement,
+        @Param("typeCommission") String typeCommission,
         Pageable pageable
     );
 }
