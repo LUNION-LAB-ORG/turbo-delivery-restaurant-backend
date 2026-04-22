@@ -820,6 +820,7 @@ public class RestaurantService {
         restaurant.setDocumentUrl(documentPath);
         restaurant.setDocumentType(form.getDocumentType());
         restaurant.setApiKeyResto(Utility.genererNouveauApiKeyRestaurant());
+        restaurant.setStatus(StatusEnum.RESTO_VALID_BY_OPSMANAGER);
 
         if (form.getTypeCommission() != null && !form.getTypeCommission().isEmpty()) {
             try {
