@@ -105,17 +105,8 @@ public interface RestaurantRepository extends JpaRepository<RestaurantModel, UUI
                 COUNT(*) FILTER (WHERE r.type_commission = 'POURCENTAGE') AS pourcentage,
                 COUNT(*) FILTER (WHERE r.type_commission = 'FIXE') AS fixe,
                 COUNT(*) FILTER (WHERE r.method_recouvrement ILIKE '%quotidien%') AS quotidien,
-                COUNT(*) FILTER (
-                    WHERE r.method_recouvrement ILIKE '%bi%hebdomadaire%'
-                       OR r.method_recouvrement ILIKE '%bihebdomadaire%'
-                       OR r.method_recouvrement ILIKE '%bi-hebdomadaire%'
-                ) AS bi_hebdomadaire,
-                COUNT(*) FILTER (
-                    WHERE r.method_recouvrement ILIKE '%hebdomadaire%'
-                      AND r.method_recouvrement NOT ILIKE '%bi%hebdomadaire%'
-                      AND r.method_recouvrement NOT ILIKE '%bihebdomadaire%'
-                      AND r.method_recouvrement NOT ILIKE '%bi-hebdomadaire%'
-                ) AS hebdomadaire,
+                COUNT(*) FILTER (WHERE r.method_recouvrement ILIKE '%hebdomadaire%') AS hebdomadaire,
+                COUNT(*) FILTER (WHERE r.method_recouvrement ILIKE '%quinzaine%') AS quinzaine,
                 COUNT(*) FILTER (WHERE r.method_recouvrement ILIKE '%mensuel%') AS mensuel
             FROM restaurant r
             WHERE (:search IS NULL

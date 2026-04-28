@@ -744,7 +744,7 @@ public class RestaurantService {
         long fixe = row.get("fixe") == null ? 0L : ((Number) row.get("fixe")).longValue();
         long quotidien = row.get("quotidien") == null ? 0L : ((Number) row.get("quotidien")).longValue();
         long hebdomadaire = row.get("hebdomadaire") == null ? 0L : ((Number) row.get("hebdomadaire")).longValue();
-        long biHebdomadaire = row.get("quinzaine") == null ? 0L : ((Number) row.get("quinzaine")).longValue();
+        long quinzaine = row.get("quinzaine") == null ? 0L : ((Number) row.get("quinzaine")).longValue();
         long mensuel = row.get("mensuel") == null ? 0L : ((Number) row.get("mensuel")).longValue();
 
         Map<String, Object> commissions = new java.util.LinkedHashMap<>();
@@ -754,7 +754,7 @@ public class RestaurantService {
         Map<String, Object> cyclesPaiement = new java.util.LinkedHashMap<>();
         cyclesPaiement.put("quotidien", quotidien);
         cyclesPaiement.put("hebdomadaire", hebdomadaire);
-        cyclesPaiement.put("biHebdomadaire", biHebdomadaire);
+        cyclesPaiement.put("quinzaine", quinzaine);
         cyclesPaiement.put("mensuel", mensuel);
 
         Map<String, Object> result = new java.util.LinkedHashMap<>();
