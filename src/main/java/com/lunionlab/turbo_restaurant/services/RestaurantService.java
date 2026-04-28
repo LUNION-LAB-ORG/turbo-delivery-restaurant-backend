@@ -728,8 +728,87 @@ public class RestaurantService {
         return restaurantRepository.findWithFilters(nomEtablissement, localisation, email, telephone, commune, methodRecouvrement, typeCommission, pageable);
     }
 
+    public Map<String, Object> getPartenairesStats(String search, String localisation, String email,
+            String telephone, String commune, String methodRecouvrement) {
+        String s = (search == null || search.isBlank()) ? null : search;
+        String loc = (localisation == null || localisation.isBlank()) ? null : localisation;
+        String em = (email == null || email.isBlank()) ? null : email;
+        String tel = (telephone == null || telephone.isBlank()) ? null : telephone;
+        String com = (commune == null || commune.isBlank()) ? null : commune;
+        String mr = (methodRecouvrement == null || methodRecouvrement.isBlank()) ? null : methodRecouvrement;
+
+        Map<String, Object> row = restaurantRepository.getPartenairesStats(s, loc, em, tel, com, mr);
+
+        long total = row.get("total") == null ? 0L : ((Number) row.get("total")).longValue();
+        long pourcentage = row.get("pourcentage") == null ? 0L : ((Number) row.get("pourcentage")).longValue();
+        long fixe = row.get("fixe") == null ? 0L : ((Number) row.get("fixe")).longValue();
+        long quotidien = row.get("quotidien") == null ? 0L : ((Number) row.get("quotidien")).longValue();
+        long hebdomadaire = row.get("hebdomadaire") == null ? 0L : ((Number) row.get("hebdomadaire")).longValue();
+        long biHebdomadaire = row.get("bi_hebdomadaire") == null ? 0L : ((Number) row.get("bi_hebdomadaire")).longValue();
+        long mensuel = row.get("mensuel") == null ? 0L : ((Number) row.get("mensuel")).longValue();
+
+        Map<String, Object> commissions = new java.util.LinkedHashMap<>();
+        commissions.put("pourcentage", pourcentage);
+        commissions.put("fixe", fixe);
+
+        Map<String, Object> cyclesPaiement = new java.util.LinkedHashMap<>();
+        cyclesPaiement.put("quotidien", quotidien);
+        cyclesPaiement.put("hebdomadaire", hebdomadaire);
+        cyclesPaiement.put("biHebdomadaire", biHebdomadaire);
+        cyclesPaiement.put("mensuel", mensuel);
+
+        Map<String, Object> result = new java.util.LinkedHashMap<>();
+        result.put("totalPartenaires", total);
+        result.put("commissions", commissions);
+        result.put("cyclesPaiement", cyclesPaiement);
+        return result;
+    }
+
     public Optional<RestaurantModel> getRestaurantById(UUID id) {
         return restaurantRepository.findById(id);
+    }
+
+    public Object activateRestaurant(UUID id) {
+        RestaurantModel restaurant = restaurantRepository.findFirstByIdAndDeleted(id, DeletionEnum.NO)
+                .orElseThrow(() -> new ErreurException("Le restaurant specifié n'existe pas !"));
+        if (restaurant.getStatus() != null
+                && restaurant.getStatus().intValue() == StatusEnum.RESTO_VALID_BY_OPSMANAGER.intValue()) {
+            throw new ErreurException("Ce partenaire est déjà actif !");
+        }
+        restaurant.setStatus(StatusEnum.RESTO_VALID_BY_OPSMANAGER);
+        return ResponseEntity.ok(restaurantRepository.save(restaurant));
+    }
+
+    public Object deactivateRestaurant(UUID id) {
+        RestaurantModel restaurant = restaurantRepository.findFirstByIdAndDeleted(id, DeletionEnum.NO)
+                .orElseThrow(() -> new ErreurException("Le restaurant specifié n'existe pas !"));
+        if (restaurant.getStatus() != null
+                && restaurant.getStatus().intValue() == StatusEnum.DEFAULT_DESABLE.intValue()) {
+            throw new ErreurException("Ce partenaire est déjà désactivé !");
+        }
+        restaurant.setStatus(StatusEnum.DEFAULT_DESABLE);
+        return ResponseEntity.ok(restaurantRepository.save(restaurant));
+    }
+
+    public Object softDeleteRestaurant(UUID id) {
+        RestaurantModel restaurant = restaurantRepository.findFirstByIdAndDeleted(id, DeletionEnum.NO)
+                .orElseThrow(() -> new ErreurException("Le restaurant specifié n'existe pas !"));
+        restaurant.setDeleted(DeletionEnum.YES);
+        restaurantRepository.save(restaurant);
+        return ResponseEntity.ok(Map.of(
+                "message", "Partenaire supprimé avec succès",
+                "id", id
+        ));
+    }
+
+    public Object forceDeleteRestaurant(UUID id) {
+        RestaurantModel restaurant = restaurantRepository.findById(id)
+                .orElseThrow(() -> new ErreurException("Le restaurant specifié n'existe pas !"));
+        restaurantRepository.delete(restaurant);
+        return ResponseEntity.ok(Map.of(
+                "message", "Partenaire supprimé définitivement",
+                "id", id
+        ));
     }
 
     @Transactional

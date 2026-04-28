@@ -12,8 +12,10 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -114,6 +116,40 @@ public class RestaurantController {
         PageRequest pageable = PageRequest.of(page, size, Sort.by("date_service").descending());
         Page<RestaurantModel> restaurants = restaurantService.listRestaurants(nomEtablissement, localisation, email, telephone, commune, methodRecouvrement, typeCommission, pageable);
         return ResponseEntity.ok(restaurants);
+    }
+
+    @PatchMapping("/{id}/activate")
+    public Object activateRestaurant(@PathVariable UUID id) {
+        return restaurantService.activateRestaurant(id);
+    }
+
+    @PatchMapping("/{id}/deactivate")
+    public Object deactivateRestaurant(@PathVariable UUID id) {
+        return restaurantService.deactivateRestaurant(id);
+    }
+
+    @DeleteMapping("/{id}")
+    public Object softDeleteRestaurant(@PathVariable UUID id) {
+        return restaurantService.softDeleteRestaurant(id);
+    }
+
+    @DeleteMapping("/{id}/force")
+    public Object forceDeleteRestaurant(@PathVariable UUID id) {
+        return restaurantService.forceDeleteRestaurant(id);
+    }
+
+    @GetMapping("/stats")
+    public ResponseEntity<Map<String, Object>> getPartenairesStats(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String localisation,
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false) String telephone,
+            @RequestParam(required = false) String commune,
+            @RequestParam(required = false) String methodRecouvrement
+    ) {
+        return ResponseEntity.ok(
+            restaurantService.getPartenairesStats(search, localisation, email, telephone, commune, methodRecouvrement)
+        );
     }
 
     @GetMapping("/{id}/detail")

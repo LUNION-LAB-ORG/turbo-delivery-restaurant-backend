@@ -53,7 +53,12 @@ public class WebSecureConfig {
                 "/api/V1/turbo/restaurant/not/validated/**",
                 
                 "/api/V1/turbo/restaurant/pagination",
+                "/api/V1/turbo/restaurant/stats",
                 "/api/V1/turbo/restaurant/*/detail",
+                "/api/V1/turbo/restaurant/*/activate",
+                "/api/V1/turbo/restaurant/*/deactivate",
+                "/api/V1/turbo/restaurant/*",
+                "/api/V1/turbo/restaurant/*/force",
 
                 "/api/V1/turbo/restaurant/validated/authservice/**",
                 "/api/V1/turbo/restaurant/validated/opsmanager/**",

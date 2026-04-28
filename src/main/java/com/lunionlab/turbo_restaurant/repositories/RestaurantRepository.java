@@ -97,4 +97,46 @@ public interface RestaurantRepository extends JpaRepository<RestaurantModel, UUI
         @Param("typeCommission") String typeCommission,
         Pageable pageable
     );
+
+    @Query(
+        value = """
+            SELECT
+                COUNT(*) AS total,
+                COUNT(*) FILTER (WHERE r.type_commission = 'POURCENTAGE') AS pourcentage,
+                COUNT(*) FILTER (WHERE r.type_commission = 'FIXE') AS fixe,
+                COUNT(*) FILTER (WHERE r.method_recouvrement ILIKE '%quotidien%') AS quotidien,
+                COUNT(*) FILTER (
+                    WHERE r.method_recouvrement ILIKE '%bi%hebdomadaire%'
+                       OR r.method_recouvrement ILIKE '%bihebdomadaire%'
+                       OR r.method_recouvrement ILIKE '%bi-hebdomadaire%'
+                ) AS bi_hebdomadaire,
+                COUNT(*) FILTER (
+                    WHERE r.method_recouvrement ILIKE '%hebdomadaire%'
+                      AND r.method_recouvrement NOT ILIKE '%bi%hebdomadaire%'
+                      AND r.method_recouvrement NOT ILIKE '%bihebdomadaire%'
+                      AND r.method_recouvrement NOT ILIKE '%bi-hebdomadaire%'
+                ) AS hebdomadaire,
+                COUNT(*) FILTER (WHERE r.method_recouvrement ILIKE '%mensuel%') AS mensuel
+            FROM restaurant r
+            WHERE (:search IS NULL
+                   OR r.nom_etablissement ILIKE CONCAT('%', :search, '%')
+                   OR r.email ILIKE CONCAT('%', :search, '%')
+                   OR r.telephone ILIKE CONCAT('%', :search, '%'))
+            AND (:localisation IS NULL OR r.localisation ILIKE CONCAT('%', :localisation, '%'))
+            AND (:email IS NULL OR r.email ILIKE CONCAT('%', :email, '%'))
+            AND (:telephone IS NULL OR r.telephone ILIKE CONCAT('%', :telephone, '%'))
+            AND (:commune IS NULL OR r.commune ILIKE CONCAT('%', :commune, '%'))
+            AND (:methodRecouvrement IS NULL OR r.method_recouvrement ILIKE CONCAT('%', :methodRecouvrement, '%'))
+            AND r.deleted = false
+        """,
+        nativeQuery = true
+    )
+    java.util.Map<String, Object> getPartenairesStats(
+        @Param("search") String search,
+        @Param("localisation") String localisation,
+        @Param("email") String email,
+        @Param("telephone") String telephone,
+        @Param("commune") String commune,
+        @Param("methodRecouvrement") String methodRecouvrement
+    );
 }
